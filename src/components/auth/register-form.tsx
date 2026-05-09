@@ -79,16 +79,18 @@ export function RegisterForm() {
   return (
     <div className="w-full">
       <Tabs defaultValue="employee" className="w-full mb-8" onValueChange={roleTabHandler}>
-        <TabsList className="w-full flex justify-start gap-8 border-b border-gray-200 bg-transparent p-0 h-auto rounded-none">
+        <TabsList className="w-80 flex justify-start bg-transparent p-0 h-auto rounded-none">
           <TabsTrigger 
             value="employee" 
-            className="rounded-none border-b-2 border-transparent px-1 pb-3 pt-2 text-base font-medium text-gray-500 hover:text-gray-700 data-[state=active]:border-[#D13C92] data-[state=active]:text-[#D13C92] data-[state=active]:bg-transparent data-[state=active]:shadow-none bg-transparent shadow-none"
+            style={{ backgroundColor: "transparent", boxShadow: "none" }}
+            className="justify-start rounded-none border-b-2 px-1 pb-3 pt-2 text-base font-medium text-gray-500 hover:text-gray-700 data-active:border-b-[#D13C92] data-active:text-[#D13C92] data-[state=active]:border-[#D13C92] data-[state=active]:text-[#D13C92]"
           >
             Employee
           </TabsTrigger>
           <TabsTrigger 
             value="manager" 
-            className="rounded-none border-b-2 border-transparent px-1 pb-3 pt-2 text-base font-medium text-gray-500 hover:text-gray-700 data-[state=active]:border-[#D13C92] data-[state=active]:text-[#D13C92] data-[state=active]:bg-transparent data-[state=active]:shadow-none bg-transparent shadow-none"
+            style={{ backgroundColor: "transparent", boxShadow: "none" }}
+            className="justify-start rounded-none border-b-2 border-transparent px-1 pb-3 pt-2 text-base font-medium text-gray-500 hover:text-gray-700 data-active:border-b-[#D13C92] data-active:text-[#D13C92] data-[state=active]:border-[#D13C92] data-[state=active]:text-[#D13C92]"
           >
             Manager
           </TabsTrigger>
@@ -163,11 +165,11 @@ export function RegisterForm() {
               control={form.control}
               name="salon"
               render={({ field }) => (
-                <FormItem className="space-y-1.5 flex-none">
+                <FormItem className="space-y-1.5 flex-none w-full">
                   <FormLabel className="text-sm font-semibold text-[#020617]">Salon</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className="rounded-md px-3 py-5 border-gray-200 focus:ring-[#D13C92] text-gray-500">
+                      <SelectTrigger className="w-full rounded-md px-3 py-5 border-gray-200 focus:ring-[#D13C92] text-gray-500">
                         <SelectValue placeholder="Salon Name" />
                       </SelectTrigger>
                     </FormControl>
