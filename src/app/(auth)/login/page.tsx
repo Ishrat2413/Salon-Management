@@ -6,12 +6,12 @@ export default function LoginPage() {
     <div className="flex min-h-screen bg-[#fef8f8] items-center justify-center p-4 sm:p-8">
       <div className="w-full 2xl:px-40 xl:px-32 lg:px-24 md:px-12 sm:px-8 px-0 grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-25 items-stretch">
         {/* Left Side: Image */}
-        <div className="relative hidden md:block w-full h-full min-h-[500px] rounded-lg overflow-hidden shadow-sm">
+        <div className="relative hidden md:block w-full h-full min-h-125 rounded-2xl overflow-hidden shadow-sm">
           <Image
             src="/auth/leftImage.svg"
             alt="Style City Login Background"
             fill
-            className="object-cover"
+            className="object-cover object-center scale-[1.02]"
             priority
           />
         </div>
