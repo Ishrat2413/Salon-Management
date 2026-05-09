@@ -54,52 +54,43 @@ export function Sidebar({ mobileOpen, onMobileOpenChange }: SidebarProps) {
 
   const sidebarContent = (
     <>
-      <div className='flex items-center gap-3 border-b border-slate-200 px-5 py-5'>
-        <Image
-          src='/logo.svg'
-          alt='Style City'
-          width={42}
-          height={42}
-          className='shrink-0'
-        />
-        <div
-          className={cn(
-            "min-w-0 transition-all duration-300",
-            isCollapsed
-              ? "md:w-0 md:opacity-0 md:overflow-hidden"
-              : "md:opacity-100",
-          )}>
-          <p className='truncate text-sm font-semibold text-slate-900'>
-            Style City
-          </p>
-          <p className='truncate text-xs text-slate-500'>
-            Beauty Bar Dashboard
-          </p>
+      <div className='relative flex items-center px-5 py-5'>
+        <div className='flex flex-1 items-center justify-center pb-5 border-b border-[#C7B29B] '>
+          <Image
+            src='/logo.svg'
+            alt='Style City'
+            width={100}
+            height={100}
+            className='h-23 w-auto mx-auto'
+            priority 
+          />
         </div>
 
-        <Button
-          type='button'
-          variant='ghost'
-          size='icon-sm'
-          className='ml-auto hidden md:inline-flex'
-          onClick={() => setIsCollapsed((value) => !value)}
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
-          {isCollapsed ? (
-            <ChevronRight className='h-4 w-4' />
-          ) : (
-            <ChevronLeft className='h-4 w-4' />
-          )}
-        </Button>
+        <div className='absolute right-5 flex items-center gap-1'>
+          <Button
+            type='button'
+            variant='ghost'
+            size='icon-sm'
+            className='hidden md:inline-flex'
+            onClick={() => setIsCollapsed((value) => !value)}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
+            {isCollapsed ? (
+              <ChevronRight className='h-4 w-4' />
+            ) : (
+              <ChevronLeft className='h-4 w-4' />
+            )}
+          </Button>
 
-        <Button
-          type='button'
-          variant='ghost'
-          size='icon-sm'
-          className='ml-auto md:hidden'
-          onClick={() => onMobileOpenChange(false)}
-          aria-label='Close sidebar'>
-          <X className='h-4 w-4' />
-        </Button>
+          <Button
+            type='button'
+            variant='ghost'
+            size='icon-sm'
+            className='md:hidden'
+            onClick={() => onMobileOpenChange(false)}
+            aria-label='Close sidebar'>
+            <X className='h-4 w-4' />
+          </Button>
+        </div>
       </div>
 
       <nav className='flex-1 space-y-1 overflow-y-auto px-3 py-4'>
@@ -114,9 +105,9 @@ export function Sidebar({ mobileOpen, onMobileOpenChange }: SidebarProps) {
               onClick={() => onMobileOpenChange(false)}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "group flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium transition-all duration-200",
+                "group flex items-center gap-3 rounded-[8px] px-3 py-3 text-sm font-medium transition-all duration-200",
                 active
-                  ? "bg-[#D6449A] text-white shadow-[0_10px_30px_-15px_rgba(214,68,154,0.9)]"
+                  ? "bg-(--primary-color) text-white "
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
                 isCollapsed && "md:justify-center md:px-2",
               )}>

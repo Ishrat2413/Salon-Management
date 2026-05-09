@@ -31,7 +31,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className='min-h-screen bg-slate-50 md:flex'>
+    <div className='min-h-screen bg-(--primary-background) md:flex'>
       <Sidebar mobileOpen={mobileOpen} onMobileOpenChange={setMobileOpen} />
 
       <Button
