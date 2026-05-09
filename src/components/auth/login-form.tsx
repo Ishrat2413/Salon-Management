@@ -106,11 +106,11 @@ export function LoginForm() {
         <p className="font-semibold text-foreground">Demo Credentials:</p>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 w-full text-xs">
           <div><span className="font-medium">Email:</span> employee@gmail.com</div>
-          <div><span className="font-medium">Pass:</span> employee123</div>
+          <div><span className="font-medium">Pass:</span> employee@123</div>
           <div><span className="font-medium">Email:</span> manager@gmail.com</div>
-          <div><span className="font-medium">Pass:</span> manager123</div>
+          <div><span className="font-medium">Pass:</span> manager@123</div>
           <div><span className="font-medium">Email:</span> admin@gmail.com</div>
-          <div><span className="font-medium">Pass:</span> admin123</div>
+          <div><span className="font-medium">Pass:</span> admin@123</div>
         </div>
       </CardFooter>
     </Card>
