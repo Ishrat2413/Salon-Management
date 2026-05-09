@@ -25,16 +25,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Check local storage on mount
-    const storedUser = localStorage.getItem('demo_user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        localStorage.removeItem('demo_user');
+    // Check local storage on mount asynchronously to prevent hydration/sync state issues
+    Promise.resolve().then(() => {
+      const storedUser = localStorage.getItem('demo_user');
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          localStorage.removeItem('demo_user');
+        }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    });
   }, []);
 
   useEffect(() => {
