@@ -16,8 +16,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
 
 const formSchema = z.object({
   email: z.string().min(1, { message: "Email is required." }),
@@ -27,6 +28,7 @@ const formSchema = z.object({
 export function LoginForm() {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,59 +62,83 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
-        <CardDescription className="text-center">
-          Enter your demo credentials to access the dashboard.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="employee / manager / admin" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Login"}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter className="flex flex-col items-start gap-2 text-sm text-muted-foreground border-t pt-4">
-        <p className="font-semibold text-foreground">Demo Credentials:</p>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1 w-full text-xs">
-          <div><span className="font-medium">Email:</span> employee@gmail.com</div>
-          <div><span className="font-medium">Pass:</span> employee@123</div>
-          <div><span className="font-medium">Email:</span> manager@gmail.com</div>
-          <div><span className="font-medium">Pass:</span> manager@123</div>
-          <div><span className="font-medium">Email:</span> admin@gmail.com</div>
-          <div><span className="font-medium">Pass:</span> admin@123</div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem className="space-y-2">
+              <FormLabel className="text-sm font-semibold text-[#020617]">Email</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="@peduarte" 
+                  className="rounded-md px-3 py-5 border-gray-200 focus-visible:ring-[#D6449A]" 
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem className="space-y-2">
+              <div className="flex items-center justify-between">
+                <FormLabel className="text-sm font-semibold text-[#020617]">Password</FormLabel>
+                <Link 
+                  href="#" 
+                  className="text-xs font-medium text-[#020617] hover:text-[#1F2937] transition-colors"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+              <FormControl>
+                <div className="relative">
+                  <Input 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="Enter your password" 
+                    className="rounded-md px-3 py-5 border-gray-200 focus-visible:ring-[#D6449A]" 
+                    {...field} 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </FormControl>
+              <p className="text-xs text-[#D6449A] mt-1 cursor-pointer w-fit hover:underline">Remember me</p>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-sm text-gray-600">
+            Don&apos;t have an account? <Link href="/register" className="text-[#D6449A] font-medium hover:underline ml-1">Sign up</Link>
+          </p>
+          <Button 
+            type="submit" 
+            className="bg-[#D6449A] hover:bg-[#B33580] text-white rounded-md px-10 py-5 transition-all" 
+            disabled={isLoading}
+          >
+            {isLoading ? "Logging in..." : "Log in"}
+          </Button>
         </div>
-      </CardFooter>
-    </Card>
+
+        {/* Demo Credentials Info block removed from main view to match design perfectly. 
+            Logging will still work with the demo users. */}
+      </form>
+    </Form>
   );
 }
