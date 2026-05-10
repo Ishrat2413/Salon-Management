@@ -5,11 +5,9 @@ import { Rankings } from './admin/rankings';
 
 export function AdminDashboard() {
   return (
-    <div className="bg-brand-bg min-h-screen p-4 sm:p-8 text-brand-textPrimary">
-      {/* BEGIN: Dashboard Container */}
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className=" min-h-screen text-brand-textPrimary">
+      <div className="mx-auto  space-y-6">
         
-        {/* BEGIN: Top Controls */}
         <div className="flex justify-end">
           <div className="relative">
             <button className="bg-white border border-gray-200 rounded-md py-2 px-4 flex items-center space-x-2 text-sm text-gray-600 shadow-sm hover:bg-gray-50">
@@ -19,15 +17,12 @@ export function AdminDashboard() {
             </button>
           </div>
         </div>
-        {/* END: Top Controls */}
 
-        {/* Modular Components */}
         <SummaryCards />
         <RecentEntries />
         <Rankings />
 
       </div>
-      {/* END: Dashboard Container */}
     </div>
   );
 }

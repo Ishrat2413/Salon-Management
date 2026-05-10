@@ -10,7 +10,6 @@ export function RecentEntries() {
         {/* Entry 1 */}
         <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
           <div className="flex items-center space-x-4">
-            <div className="w-2 h-2 rounded-full bg-gray-300"></div>
             <div>
               <p className="text-sm font-semibold text-gray-800">Harvest Monitoring</p>
               <div className="flex items-center text-xs text-gray-500 mt-1 space-x-2">
@@ -29,7 +28,6 @@ export function RecentEntries() {
         {/* Entry 2 */}
         <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors bg-gray-50/50">
           <div className="flex items-center space-x-4">
-            <div className="w-2 h-2 rounded-full bg-gray-300"></div>
             <div>
               <p className="text-sm font-semibold text-gray-800">Cornrows</p>
               <div className="flex items-center text-xs text-gray-500 mt-1 space-x-2">
@@ -48,13 +46,12 @@ export function RecentEntries() {
         {/* Entry 3 */}
         <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
           <div className="flex items-center space-x-4">
-            <div className="w-2 h-2 rounded-full bg-gray-300"></div>
             <div>
               <p className="text-sm font-semibold text-gray-800">Knotless Braids</p>
               <div className="flex items-center text-xs text-gray-500 mt-1 space-x-2">
+                <span>10:00 AM</span>
                 <span>Downtown Salon</span>
                 <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path></svg>
-                <span>10:00 AM</span>
               </div>
             </div>
           </div>
@@ -67,13 +64,12 @@ export function RecentEntries() {
         {/* Entry 4 */}
         <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors bg-gray-50/50">
           <div className="flex items-center space-x-4">
-            <div className="w-2 h-2 rounded-full bg-gray-300"></div>
             <div>
               <p className="text-sm font-semibold text-gray-800">Knotless Braids</p>
               <div className="flex items-center text-xs text-gray-500 mt-1 space-x-2">
                 <span>Downtown Salon</span>
-                <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path></svg>
                 <span>10:00 AM</span>
+                <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path></svg>
               </div>
             </div>
           </div>
