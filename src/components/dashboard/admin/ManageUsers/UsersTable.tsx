@@ -4,7 +4,7 @@ import {
   ColumnDef,
 } from "@/components/univarsalTable/UnivarsalTable.type";
 import UniversalTable from "@/components/univarsalTable/Universaltable";
-import { SquarePen } from "lucide-react";
+import { SquarePen, Trash2 } from "lucide-react";
 import React from "react";
 
 type User = {
@@ -114,8 +114,8 @@ const userActions: ActionDef<User>[] = [
   {
     label: "Edit",
     icon: (
-      <span>
-        <SquarePen />
+      <span className='text-[#155DFC]'>
+        <SquarePen className='w-5  h-5' />
       </span>
     ),
     className: "ut-edit-btn",
@@ -123,7 +123,11 @@ const userActions: ActionDef<User>[] = [
   },
   {
     label: "Delete",
-    icon: <span style={{ color: "#e05252" }}>🗑</span>,
+    icon: (
+      <span style={{ color: "#e05252" }} className='text-[#155DFC] '>
+        <Trash2 className='w-5  h-5' />
+      </span>
+    ),
     onClick: (row) => alert(`Delete: ${row.name}`),
   },
 ];

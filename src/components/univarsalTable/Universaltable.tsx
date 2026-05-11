@@ -181,7 +181,7 @@ export function UniversalTable<T extends Record<string, unknown>>({
                         textAlign: col.align ?? "left",
                         fontWeight: 500,
                         fontSize: 13,
-                        color: "#6b6b8a",
+                        color: "#1F2937",
                         whiteSpace: "nowrap",
                         width: col.width,
                         cursor: col.sortable ? "pointer" : "default",
@@ -323,7 +323,7 @@ export function UniversalTable<T extends Record<string, unknown>>({
                                   marginLeft: 6,
                                   padding: "5px 8px",
                                   borderRadius: 7,
-                                  border: "1px solid #ece9f1",
+
                                   background: "transparent",
                                   cursor: "pointer",
                                   fontSize: 13,
@@ -406,8 +406,8 @@ export function UniversalTable<T extends Record<string, unknown>>({
                       style={{
                         padding: "5px 10px",
                         borderRadius: 7,
-                        border: `1px solid ${page === p ? "#7c6fcd" : "#ece9f1"}`,
-                        background: page === p ? "#7c6fcd" : "#fff",
+                        // border: `1px solid ${page === p ? "#7c6fcd" : "#ece9f1"}`,
+                        background: page === p ? "#D13C92" : "#fff",
                         color: page === p ? "#fff" : "#6b6b8a",
                         cursor: "pointer",
                         fontWeight: page === p ? 600 : 400,
