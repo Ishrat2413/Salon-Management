@@ -101,12 +101,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${sofiaPro.className} ${sofiaPro.variable} antialiased`}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-        <Toaster position="top-right" richColors />
+    <html lang='en'>
+      <body
+        className={`${sofiaPro.className} ${sofiaPro.variable} antialiased`}>
+        <AuthProvider>{children}</AuthProvider>
+        <Toaster position='top-right' richColors />
       </body>
     </html>
   );
