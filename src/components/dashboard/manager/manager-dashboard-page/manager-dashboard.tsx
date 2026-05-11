@@ -1,9 +1,9 @@
-import React from "react";
+import { ManagerSummaryCard } from "./manager-summary-card";
 
 export default function ManagerDashboard() {
   return (
     <section>
-      <p>Hi</p>
+      <ManagerSummaryCard />
     </section>
   );
 }
