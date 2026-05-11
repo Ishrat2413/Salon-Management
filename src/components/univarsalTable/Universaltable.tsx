@@ -28,7 +28,7 @@ function defaultStatusClass(value: string): StatusConfig {
   return { bg: "#f0f0f5", color: "#555", label: value };
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Component ─────────
 
 export function UniversalTable<T extends Record<string, unknown>>({
   data,
@@ -137,10 +137,11 @@ export function UniversalTable<T extends Record<string, unknown>>({
 
   return (
     <div
-      className={`ut-wrapper ${className}`}
+      className={`ut-wrapper ${className} bg-white p-8 rounded-xl`}
       style={{ fontFamily: "inherit" }}>
       {title && (
         <h2
+          className='pb-4'
           style={{
             fontSize: 20,
             fontWeight: 600,
@@ -157,17 +158,17 @@ export function UniversalTable<T extends Record<string, unknown>>({
           borderRadius: 14,
           overflow: "hidden",
           background: "#fff",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+          boxShadow: "",
         }}>
         <div style={{ overflowX: "auto" }}>
           <table
-            className={`ut-table ${tableClassName}`}
+            className={`ut-table ${tableClassName} p-4`}
             style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
             <thead>
               <tr
                 style={{
-                  borderBottom: "1px solid #ece9f1",
-                  background: "#faf9fd",
+                  borderBottom: "1px solid #E2E8F0",
+                  background: "#ffff",
                 }}>
                 {columns.map((col) => {
                   const key = col.key as string;
@@ -176,7 +177,7 @@ export function UniversalTable<T extends Record<string, unknown>>({
                     <th
                       key={key}
                       style={{
-                        padding: "12px 16px",
+                        padding: "16px  16px",
                         textAlign: col.align ?? "left",
                         fontWeight: 500,
                         fontSize: 13,
@@ -362,7 +363,7 @@ export function UniversalTable<T extends Record<string, unknown>>({
               fontSize: 13,
               color: "#9999b5",
             }}>
-            <span>
+            <span className='py-4'>
               Showing {sorted.length === 0 ? 0 : (page - 1) * pageSize + 1} to{" "}
               {Math.min(page * pageSize, sorted.length)} of {sorted.length}{" "}
               records
