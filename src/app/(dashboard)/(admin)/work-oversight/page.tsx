@@ -1,12 +1,11 @@
-"use client";
+import WorkOversightPage from "@/components/dashboard/admin/work-oversight/WorkOversightPage";
 
-import { DashboardPage } from "@/components/layout/dashboard-page";
-
-export default function WorkOversightPage() {
+const page = () => {
   return (
-    <DashboardPage
-      title='Work Oversight'
-      description='Monitor active work and operational oversight tasks.'
-    />
+    <div>
+      <WorkOversightPage />
+    </div>
   );
-}
+};
+
+export default page;
