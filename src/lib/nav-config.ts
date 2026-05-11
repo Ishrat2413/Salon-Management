@@ -1,5 +1,4 @@
 import {
-  type LucideIcon,
   BarChart3,
   Briefcase,
   History,
@@ -11,11 +10,12 @@ import {
   Wallet,
 } from "lucide-react";
 import type { UserRole } from "./auth";
+import type { ElementType } from "react";
 
 export interface SidebarNavItem {
   title: string;
   href: string;
-  icon: LucideIcon;
+  icon: ElementType;
 }
 
 export const NAV_CONFIG: Record<UserRole, SidebarNavItem[]> = {
