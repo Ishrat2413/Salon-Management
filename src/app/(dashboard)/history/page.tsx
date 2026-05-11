@@ -14,9 +14,7 @@ export default function HistoryPage() {
   return (
     <RoleGuard allowed={["employee", "admin"]}>
       {user.role === "admin" ? (
-        <DashboardLayout>
-          <AdminHistory />
-        </DashboardLayout>
+        <AdminHistory />
       ) : (
         <DashboardPage
           title='History'
