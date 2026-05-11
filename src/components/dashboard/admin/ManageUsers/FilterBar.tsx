@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface FilterBarProps {
   onSearchChange?: (value: string) => void;
@@ -15,16 +15,16 @@ const FilterBar: React.FC<FilterBarProps> = ({
   onSearchChange,
   onRoleChange,
   onSalonChange,
-  searchPlaceholder = "Search by name or email...",
-  rolePlaceholder = "Filter by Role",
-  salonPlaceholder = "Filter by Salon",
+  searchPlaceholder = 'Search by name or email...',
+  rolePlaceholder = 'Filter by Role',
+  salonPlaceholder = 'Filter by Salon',
   roles = [
-    { value: "admin", label: "Admin" },
-    { value: "user", label: "User" },
+    { value: 'admin', label: 'Admin' },
+    { value: 'user', label: 'User' },
   ],
   salons = [
-    { value: "salon1", label: "Salon 1" },
-    { value: "salon2", label: "Salon 2" },
+    { value: 'salon1', label: 'Salon 1' },
+    { value: 'salon2', label: 'Salon 2' },
   ],
 }) => {
   return (
@@ -33,9 +33,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         <div className='flex flex-col md:flex-row gap-4'>
           {/* Search Section */}
           <div className='flex-1 flex flex-col gap-1.5'>
-            <label
-              className='font-semibold text-xs text-[#334155] pl-1'
-              htmlFor='search-input'>
+            <label className='font-semibold text-xs text-[#334155] pl-1' htmlFor='search-input'>
               Search
             </label>
             <div className='relative'>
@@ -46,7 +44,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
                   fill='none'
                   stroke='currentColor'
                   strokeWidth='2'
-                  viewBox='0 0 24 24'>
+                  viewBox='0 0 24 24'
+                >
                   <path
                     d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
                     strokeLinecap='round'
@@ -66,9 +65,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
           {/* Role Filter Section */}
           <div className='flex-1 flex flex-col gap-1.5'>
-            <label
-              className='font-semibold text-xs text-[#364153] pl-1'
-              htmlFor='role-select'>
+            <label className='font-semibold text-xs text-[#364153] pl-1' htmlFor='role-select'>
               Role
             </label>
             <div className='relative'>
@@ -76,7 +73,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 className='block w-full pl-4 pr-10 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#334155] sm:text-sm appearance-none'
                 id='role-select'
                 defaultValue=''
-                onChange={(e) => onRoleChange?.(e.target.value)}>
+                onChange={(e) => onRoleChange?.(e.target.value)}
+              >
                 <option disabled value=''>
                   {rolePlaceholder}
                 </option>
@@ -93,12 +91,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
                   fill='none'
                   stroke='currentColor'
                   strokeWidth='2'
-                  viewBox='0 0 24 24'>
-                  <path
-                    d='M19 9l-7 7-7-7'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                  />
+                  viewBox='0 0 24 24'
+                >
+                  <path d='M19 9l-7 7-7-7' strokeLinecap='round' strokeLinejoin='round' />
                 </svg>
               </div>
             </div>
@@ -106,9 +101,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
           {/* Salon Filter Section */}
           <div className='flex-1 flex flex-col gap-1.5'>
-            <label
-              className='font-semibold text-xs text-gray-600 pl-1'
-              htmlFor='salon-select'>
+            <label className='font-semibold text-xs text-gray-600 pl-1' htmlFor='salon-select'>
               Salon
             </label>
             <div className='relative'>
@@ -116,7 +109,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 className='block w-full pl-4 pr-10 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#334155] sm:text-sm appearance-none'
                 id='salon-select'
                 defaultValue=''
-                onChange={(e) => onSalonChange?.(e.target.value)}>
+                onChange={(e) => onSalonChange?.(e.target.value)}
+              >
                 <option disabled value=''>
                   {salonPlaceholder}
                 </option>
@@ -133,15 +127,13 @@ const FilterBar: React.FC<FilterBarProps> = ({
                   fill='none'
                   stroke='currentColor'
                   strokeWidth='2'
-                  viewBox='0 0 24 24'>
-                  <path
-                    d='M19 9l-7 7-7-7'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                  />
+                  viewBox='0 0 24 24'
+                >
+                  <path d='M19 9l-7 7-7-7' strokeLinecap='round' strokeLinejoin='round' />
                 </svg>
               </div>
             </div>
+            <p>hello</p>
           </div>
         </div>
       </div>
