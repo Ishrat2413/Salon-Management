@@ -14,7 +14,7 @@ export type ServiceEntry = {
   price: number;
   tip: number;
   dateTime: string;
-  status: "Approved" | "Pending Review";
+  status: "Approved" | "Pending Review" | "Corrections Made";
 };
 
 export const serviceData: ServiceEntry[] = [
