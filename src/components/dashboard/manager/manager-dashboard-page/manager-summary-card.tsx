@@ -124,7 +124,7 @@ export function ManagerSummaryCard() {
       </div>
 
       {/* Summary Cards */}
-      <div className='grid grid-cols-1 gap-6 md:grid-cols-3'>
+      <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6 xl:grid-cols-3'>
         {summaryCardData.map((card, index) => (
           <div
             key={index}
@@ -141,7 +141,7 @@ export function ManagerSummaryCard() {
               <h3 className='text-[1.05rem] font-medium tracking-tight text-[#9fb0cf]'>
                 {card.title}
               </h3>
-              <p className='mt-1 text-4xl font-semibold tracking-tight text-[#b01e76]'>
+              <p className='mt-1 text-2xl md:text-4xl font-semibold tracking-tight text-[#b01e76]'>
                 {card.subtitle}
               </p>
               <div className='mt-4'>{card.bottom}</div>
@@ -151,33 +151,31 @@ export function ManagerSummaryCard() {
       </div>
 
       {/* Pending Management Actions */}
-      <div className='bg-[#FEF3E2] p-6 rounded-[12px]'>
-        <div className='flex items-start gap-3 my-8'>
-          <div className='mt-0.5'>
-            <div className='w-6 h-6 flex items-center justify-center text-white'>
-              <TriangleAlert className='h-12 w-12' color='#E8881A' />
-            </div>
+      <div className='bg-[#FEF3E2] p-2 md:p-6 rounded-[12px]'>
+        <div className='flex items-center justify-start gap-3'>
+          <div className='w-12 h-12 flex items-center justify-center text-white'>
+            <TriangleAlert className='h-12 w-12' color='#E8881A' />
           </div>
 
           <div>
-            <h2 className='text-xl font-semibold text-gray-900'>
+            <h2 className='text-2xl font-medium text-[#1F1A17]'>
               Pending Management Actions
             </h2>
-            <p className='text-sm text-gray-600 mt-0.5'>
+            <p className='text-sm text-[#625750] mt-1'>
               2 items need your review
             </p>
           </div>
         </div>
 
         {/* Items */}
-        <div className='space-y-3'>
+        <div className='space-y-3 mt-8'>
           {/* Item 1 */}
-          <div className='bg-white border border-[#F5E8C7] hover:border-[#E5D4A8] rounded-xl px-5 py-4 text-gray-800 transition-colors cursor-pointer'>
+          <div className='bg-[#FFF8F2] border border-[#FDE68A] hover:border-[#E5D4A8] rounded-xl px-5 py-4 text-gray-800 transition-colors cursor-pointer'>
             3 employee have not submitted entries for today
           </div>
 
           {/* Item 2 */}
-          <div className='bg-white border border-[#F5E8C7] hover:border-[#E5D4A8] rounded-xl px-5 py-4 text-gray-800 transition-colors cursor-pointer'>
+          <div className='bg-[#FFF8F2] border border-[#FDE68A] hover:border-[#E5D4A8] rounded-xl px-5 py-4 text-gray-800 transition-colors cursor-pointer'>
             3 employee have not submitted entries for today
           </div>
         </div>
