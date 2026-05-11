@@ -1,8 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/providers/auth-provider";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
+import { AdminDashboard } from "@/components/dashboard/admin/admin-dashboard";
 
 export default function HomePage() {
   const { user, logout } = useAuth();
