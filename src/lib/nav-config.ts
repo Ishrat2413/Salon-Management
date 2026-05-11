@@ -27,6 +27,7 @@ export const NAV_CONFIG: Record<UserRole, SidebarNavItem[]> = {
   ],
   manager: [
     { title: "Dashboard", href: "/", icon: LayoutDashboard },
+    { title: "Add Entry", href: "/add-entry", icon: PlusCircle },
     { title: "Review Entries", href: "/review-entries", icon: FileText },
     { title: "Reports", href: "/reports", icon: BarChart3 },
     { title: "Profile", href: "/profile", icon: User },
