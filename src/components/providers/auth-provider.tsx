@@ -10,9 +10,15 @@ import { useRouter, usePathname } from "next/navigation";
 import type { UserRole } from "@/lib/auth";
 
 export interface User {
-  email: string;
-  role: UserRole;
+  id?: string;
   name: string;
+  email: string;
+  location?: string;
+  role: UserRole;
+  title?: string;
+  phone?: string;
+  salonName?: string;
+  salonLocation?: string;
 }
 
 interface AuthContextType {
@@ -112,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isHydrated) return;
 
-    const isAuthPage = pathname === '/login' || pathname === '/register';
+    const isAuthPage = pathname === "/login" || pathname === "/register";
 
     if (!user && !isAuthPage) {
       router.replace("/login");
