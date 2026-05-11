@@ -40,7 +40,7 @@ export default function AddNewEntryForm() {
                 </CardHeader>
 
                 <CardContent>
-                    <form className="space-y-8">
+                    <form className="space-y-8 overflow-x-auto">
                         {/* Primary Info */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                             {/* Employee Name */}
@@ -159,23 +159,23 @@ export default function AddNewEntryForm() {
                         </div>
 
                         {/* Braider Table */}
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
                             <table className="w-full">
-                                <thead>
-                                    <tr className="border-b text-left text-xs uppercase tracking-wider text-gray-500">
-                                        <th className="pb-4 font-semibold">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="whitespace-nowrap px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                                             Braider Name
                                         </th>
 
-                                        <th className="pb-4 text-center font-semibold">
+                                        <th className="whitespace-nowrap px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
                                             Service $
                                         </th>
 
-                                        <th className="pb-4 text-center font-semibold">
+                                        <th className="whitespace-nowrap px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">
                                             Tip $
                                         </th>
 
-                                        <th className="pb-4 text-right font-semibold">
+                                        <th className="whitespace-nowrap px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
                                             Action
                                         </th>
                                     </tr>
@@ -185,11 +185,12 @@ export default function AddNewEntryForm() {
                                     {braiders.map((braider) => (
                                         <tr
                                             key={braider.id}
-                                            className="border-b border-gray-100"
+                                            className="border-t border-gray-100 transition-colors hover:bg-gray-50/70"
                                         >
-                                            <td className="py-4">
+                                            {/* Braider Select */}
+                                            <td className="px-6 py-4">
                                                 <Select>
-                                                    <SelectTrigger className="w-full">
+                                                    <SelectTrigger className="h-11 w-full border-gray-200 bg-white">
                                                         <SelectValue
                                                             placeholder={
                                                                 braider.name
@@ -209,22 +210,29 @@ export default function AddNewEntryForm() {
                                                 </Select>
                                             </td>
 
-                                            <td className="py-4 text-center text-gray-500">
-                                                {braider.service}
+                                            {/* Service */}
+                                            <td className="px-6 py-4 text-center">
+                                                <span className="font-medium text-gray-700">
+                                                    {braider.service}
+                                                </span>
                                             </td>
 
-                                            <td className="py-4 text-center text-gray-500">
-                                                {braider.tip}
+                                            {/* Tip */}
+                                            <td className="px-6 py-4 text-center">
+                                                <span className="font-medium text-gray-700">
+                                                    {braider.tip}
+                                                </span>
                                             </td>
 
-                                            <td className="py-4 text-right">
+                                            {/* Action */}
+                                            <td className="px-6 py-4 text-right">
                                                 <Button
                                                     type="button"
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="text-gray-400 hover:text-red-500"
+                                                    className="h-9 w-9 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500"
                                                 >
-                                                    <Trash2 className="h-5 w-5" />
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </td>
                                         </tr>
