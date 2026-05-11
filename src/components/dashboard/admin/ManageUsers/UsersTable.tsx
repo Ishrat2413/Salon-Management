@@ -1,7 +1,10 @@
 "use client";
+import {
+  ActionDef,
+  ColumnDef,
+} from "@/components/univarsalTable/UnivarsalTable.type";
+import UniversalTable from "@/components/univarsalTable/Universaltable";
 import React from "react";
-import { ActionDef, ColumnDef } from "../univarsalTable/UnivarsalTable.type";
-import UniversalTable from "../univarsalTable/Universaltable";
 
 type User = {
   id: number;
