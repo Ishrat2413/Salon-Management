@@ -7,7 +7,7 @@ import UniversalTable from "@/components/univarsalTable/Universaltable";
 import { SquarePen, Trash2 } from "lucide-react";
 import React from "react";
 
-type User = {
+export type User = {
   id: number;
   name: string;
   role: "Admin" | "Manager" | "Employee";
@@ -15,41 +15,6 @@ type User = {
   email: string;
   status: "Active" | "Inactive";
 };
-
-const usersData: User[] = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    role: "Admin",
-    salon: "Glam Studio",
-    email: "sarah@example.com",
-    status: "Active",
-  },
-  {
-    id: 2,
-    name: "Mike Chen",
-    role: "Manager",
-    salon: "Style Lounge",
-    email: "mike@example.com",
-    status: "Active",
-  },
-  {
-    id: 3,
-    name: "Emily Rodriguez",
-    role: "Employee",
-    salon: "Beauty Bar",
-    email: "emily@example.com",
-    status: "Active",
-  },
-  {
-    id: 4,
-    name: "Emily Rodriguez",
-    role: "Employee",
-    salon: "Glam Studio",
-    email: "emily2@example.com",
-    status: "Inactive",
-  },
-];
 
 // Role badge color custom define
 const roleBadgeStyle: Record<string, React.CSSProperties> = {
@@ -132,11 +97,15 @@ const userActions: ActionDef<User>[] = [
   },
 ];
 
-export function UsersTable() {
+interface UsersTableProps {
+  data: User[];
+}
+
+export function UsersTable({ data }: UsersTableProps) {
   return (
     <UniversalTable<User>
-      title='All Users (5)'
-      data={usersData}
+      title={`All Users (${data.length})`}
+      data={data}
       columns={userColumns}
       actions={userActions}
       pageSize={10}
