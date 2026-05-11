@@ -29,6 +29,16 @@
 } */
 
 @theme inline {
+  --color-brand-bg: #fdf5f5;
+  --color-brand-card: #ffffff;
+  --color-brand-textPrimary: #1e293b;
+  --color-brand-textSecondary: #64748b;
+  --color-brand-pinkSoft: #fce7f3;
+  --color-brand-pinkIcon: #db2777;
+  --color-brand-greenSoft: #dcfce7;
+  --color-brand-greenText: #15803d;
+  --color-brand-border: #f1f5f9;
+
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);

@@ -1,15 +1,28 @@
 "use client";
 
+import { useAuth } from "@/components/providers/auth-provider";
 import RoleGuard from "@/components/layout/role-guard";
 import { DashboardPage } from "@/components/layout/dashboard-page";
+import { AdminHistory } from "@/components/dashboard/admin/admin-history";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
 
 export default function HistoryPage() {
+  const { user } = useAuth();
+
+  if (!user) return null;
+
   return (
     <RoleGuard allowed={["employee", "admin"]}>
-      <DashboardPage
-        title='History'
-        description='Review recent activity and past dashboard actions.'
-      />
+      {user.role === "admin" ? (
+        <DashboardLayout>
+          <AdminHistory />
+        </DashboardLayout>
+      ) : (
+        <DashboardPage
+          title='History'
+          description='Review recent activity and past dashboard actions.'
+        />
+      )}
     </RoleGuard>
   );
 }

@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isHydrated) return;
 
-    const isAuthPage = pathname === "/login";
+    const isAuthPage = pathname === '/login' || pathname === '/register';
 
     if (!user && !isAuthPage) {
       router.replace("/login");

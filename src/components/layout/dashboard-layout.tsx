@@ -34,18 +34,26 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     <div className='min-h-screen bg-(--primary-background) md:flex'>
       <Sidebar mobileOpen={mobileOpen} onMobileOpenChange={setMobileOpen} />
 
-      <Button
-        type='button'
-        variant='outline'
-        size='icon'
-        className='fixed left-4 top-4 z-40 md:hidden'
-        onClick={() => setMobileOpen(true)}
-        aria-label='Open sidebar'>
-        <Menu className='h-4 w-4' />
-      </Button>
+      <main className='flex-1 flex flex-col min-w-0'>
+        <header className="sticky top-0 z-30 flex items-center gap-4 bg-white/80 backdrop-blur-md px-4 py-4 sm:px-6 lg:px-8 border-b border-gray-100">
+          <Button
+            type='button'
+            variant='outline'
+            size='icon'
+            className='md:hidden shrink-0'
+            onClick={() => setMobileOpen(true)}
+            aria-label='Open sidebar'>
+            <Menu className='h-5 w-5' />
+          </Button>
+          <div>
+            <h1 className="text-xl font-bold text-gray-800">Welcome, {user.name}</h1>
+            <p className="text-sm text-gray-500">Here&apos;s what&apos;s happening today</p>
+          </div>
+        </header>
 
-      <main className='flex-1 px-4 py-16 sm:px-6 sm:py-6 lg:px-10 lg:py-8'>
-        {children}
+        <div className='flex-1 m-10'>
+          {children}
+        </div>
       </main>
     </div>
   );
