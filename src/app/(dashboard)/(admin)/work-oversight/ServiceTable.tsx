@@ -1,8 +1,12 @@
 "use client";
-import { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
+import {
+  ActionDef,
+  ColumnDef,
+} from "@/components/univarsalTable/UnivarsalTable.type";
 import UniversalTable from "@/components/univarsalTable/Universaltable";
+import { SquarePen, Trash2 } from "lucide-react";
 
-type ServiceEntry = {
+export type ServiceEntry = {
   id: number;
   name: string;
   service: string;
@@ -13,7 +17,7 @@ type ServiceEntry = {
   status: "Approved" | "Pending Review";
 };
 
-const serviceData: ServiceEntry[] = [
+export const serviceData: ServiceEntry[] = [
   {
     id: 1,
     name: "Sarah Johnson",
@@ -89,13 +93,36 @@ const serviceColumns: ColumnDef<ServiceEntry>[] = [
   },
 ];
 
-export function ServiceEntriesTable() {
+const serviceAction: ActionDef<ServiceEntry>[] = [
+  {
+    label: "Edit",
+    icon: (
+      <span className='text-[#155DFC]'>
+        <SquarePen className='w-5  h-5' />
+      </span>
+    ),
+    className: "ut-edit-btn",
+    onClick: (row) => alert(`Edit: ${row.name}`),
+  },
+  {
+    label: "Delete",
+    icon: (
+      <span style={{ color: "#e05252" }} className='text-[#155DFC] '>
+        <Trash2 className='w-5  h-5' />
+      </span>
+    ),
+    onClick: (row) => alert(`Delete: ${row.name}`),
+  },
+];
+
+export function ServiceEntriesTable({ data = serviceData }: { data?: ServiceEntry[] }) {
   return (
     <UniversalTable<ServiceEntry>
       title='Service Entries'
-      data={serviceData}
+      data={data}
       columns={serviceColumns}
       pageSize={10}
+      actions={serviceAction}
     />
   );
 }
