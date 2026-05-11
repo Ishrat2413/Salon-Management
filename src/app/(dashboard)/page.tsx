@@ -10,16 +10,17 @@ export default function HomePage() {
   if (!user) return null;
 
   return (
-    <DashboardLayout>
+    <div>
       {user.role === "admin" ? (
         <AdminDashboard />
       ) : (
-        <div className="p-8">
-          <h1>Welcome, {user.name} ({user.role})</h1>
+        <div className='p-8'>
+          <h1>
+            Welcome, {user.name} ({user.role})
+          </h1>
           <p>This is the standard dashboard view.</p>
         </div>
       )}
-    </DashboardLayout>
+    </div>
   );
 }
-
