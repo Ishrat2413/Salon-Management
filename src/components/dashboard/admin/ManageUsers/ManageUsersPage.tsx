@@ -1,4 +1,4 @@
-import { UsersTable } from "@/components/testTable/Universaltable";
+import { UsersTable } from "./UsersTable";
 
 const ManageUsersPage = () => {
   return (
