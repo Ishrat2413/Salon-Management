@@ -1,12 +1,11 @@
-"use client";
+import ManageUsersPage from "@/components/dashboard/admin/ManageUsersPage";
 
-import { DashboardPage } from "@/components/layout/dashboard-page";
-
-export default function ManageUsersPage() {
+const page = () => {
   return (
-    <DashboardPage
-      title='Manage Users'
-      description='Add, update, or review team members and permissions.'
-    />
+    <div>
+      <ManageUsersPage />
+    </div>
   );
-}
+};
+
+export default page;
