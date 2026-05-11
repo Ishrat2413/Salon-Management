@@ -180,7 +180,7 @@ export function UniversalTable<T extends Record<string, unknown>>({
                         padding: "16px  16px",
                         textAlign: col.align ?? "left",
                         fontWeight: 500,
-                        fontSize: 13,
+                        fontSize: 15,
                         color: "#1F2937",
                         whiteSpace: "nowrap",
                         width: col.width,
