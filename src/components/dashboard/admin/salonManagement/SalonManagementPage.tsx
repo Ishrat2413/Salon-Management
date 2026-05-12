@@ -1,7 +1,11 @@
-import React from "react";
+import SalonTable from "./SalonTable";
 
 const SalonManagementPage = () => {
-  return <div></div>;
+  return (
+    <div>
+      <SalonTable />
+    </div>
+  );
 };
 
 export default SalonManagementPage;
