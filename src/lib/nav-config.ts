@@ -1,21 +1,21 @@
 import {
-  type LucideIcon,
   BarChart3,
   Briefcase,
-  History,
-  LayoutDashboard,
   FileText,
+  History,
+  House,
+  LayoutDashboard,
   PlusCircle,
   User,
-  Users,
   Wallet,
 } from "lucide-react";
+import type { ElementType } from "react";
 import type { UserRole } from "./auth";
 
 export interface SidebarNavItem {
   title: string;
   href: string;
-  icon: LucideIcon;
+  icon: ElementType;
 }
 
 export const NAV_CONFIG: Record<UserRole, SidebarNavItem[]> = {
@@ -34,9 +34,10 @@ export const NAV_CONFIG: Record<UserRole, SidebarNavItem[]> = {
   ],
   admin: [
     { title: "Dashboard", href: "/", icon: LayoutDashboard },
+    { title: "Add Entry", href: "/add-entry", icon: PlusCircle },
     { title: "History", href: "/history", icon: History },
-    { title: "Manage Users", href: "/manage-users", icon: Users },
-    { title: "Work Oversight", href: "/work-oversight", icon: Briefcase },
+    { title: "Manage Users", href: "/manage-users", icon: House },
+    { title: "Salon Management", href: "/salon-management", icon: Briefcase },
     { title: "Payroll", href: "/payroll", icon: Wallet },
     { title: "Reports", href: "/reports", icon: BarChart3 },
     { title: "Profile", href: "/profile", icon: User },

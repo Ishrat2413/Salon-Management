@@ -1,8 +1,7 @@
 "use client";
 
+import UserProfile from "@/components/dashboard/common/UserProfile";
 import RoleGuard from "@/components/layout/role-guard";
-import { DashboardPage } from "@/components/layout/dashboard-page";
-import ManagerProfilePage from "@/components/dashboard/manager/manager-profile/manager-profile-page";
 import { useAuth } from "@/components/providers/auth-provider";
 import EmployeeProfile from "@/components/dashboard/employee/employee-profile";
 
@@ -13,9 +12,11 @@ export default function ProfilePage() {
   return (
     <RoleGuard allowed={["employee", "manager", "admin"]}>
       <div>
-        {/* {user.role === "admin" ? <AdminDashboard /> : null} */}
-        {user.role === "manager" ? <ManagerProfilePage /> : null}
-        {user.role === "employee" ? <EmployeeProfile /> : null}
+        {/* {user.role === "admin" ? <UserProfile /> : null}
+        {user.role === "manager" ? <ManagerProfilePage /> : null} */}
+        {/* {user.role === "employee" ? <EmployeeDashboard /> : null} */}
+
+        <UserProfile />
       </div>
     </RoleGuard>
   );

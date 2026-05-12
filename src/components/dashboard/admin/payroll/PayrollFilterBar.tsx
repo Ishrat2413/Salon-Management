@@ -1,42 +1,49 @@
+"use client";
 import React from "react";
 
-interface FilterBarProps {
+interface PayrollFilterBarProps {
   onSearchChange?: (value: string) => void;
-  onRoleChange?: (value: string) => void;
+  onDateChange?: (value: string) => void;
+  onEmployeeChange?: (value: string) => void;
   onSalonChange?: (value: string) => void;
   searchPlaceholder?: string;
-  rolePlaceholder?: string;
+  datePlaceholder?: string;
+  employeePlaceholder?: string;
   salonPlaceholder?: string;
-  roles?: Array<{ value: string; label: string }>;
+  employees?: Array<{ value: string; label: string }>;
   salons?: Array<{ value: string; label: string }>;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({
+const PayrollFilterBar: React.FC<PayrollFilterBarProps> = ({
   onSearchChange,
-  onRoleChange,
+  onDateChange,
+  onEmployeeChange,
   onSalonChange,
   searchPlaceholder = "Search by name or email...",
-  rolePlaceholder = "Filter by Role",
+  datePlaceholder = "mm/dd/yy",
+  employeePlaceholder = "Filter by Employee",
   salonPlaceholder = "Filter by Salon",
-  roles = [
-    { value: "admin", label: "Admin" },
-    { value: "user", label: "User" },
+  employees = [
+    { value: "employee1", label: "Employee 1" },
+    { value: "employee2", label: "Employee 2" },
+    { value: "employee3", label: "Employee 3" },
   ],
   salons = [
     { value: "salon1", label: "Salon 1" },
     { value: "salon2", label: "Salon 2" },
+    { value: "salon3", label: "Salon 3" },
   ],
 }) => {
   return (
     <div className='w-full mx-auto pb-6'>
-      <div className='bg-[#FFFFFF] rounded-xl p-5  filter-container-shadow'>
+      <div className='bg-[#FFFFFF] rounded-xl p-5 filter-container-shadow'>
         <div className='flex flex-col md:flex-row gap-4'>
           {/* Search Section */}
           <div className='flex-1 flex flex-col gap-1.5'>
             <label
               className='font-semibold text-xs text-[#334155] pl-1'
               htmlFor='search-input'>
-              Search
+              Name or email
             </label>
             <div className='relative'>
               <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
@@ -64,25 +71,63 @@ const FilterBar: React.FC<FilterBarProps> = ({
             </div>
           </div>
 
-          {/* Role Filter Section */}
+          {/* Date Filter Section */}
           <div className='flex-1 flex flex-col gap-1.5'>
             <label
-              className='font-semibold text-xs text-[#364153] pl-1'
-              htmlFor='role-select'>
-              Role
+              className='font-semibold text-xs text-[#334155] pl-1'
+              htmlFor='date-input'>
+              Sort By date
+            </label>
+            <div className='relative'>
+              <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
+                {/* Calendar Icon */}
+                <svg
+                  className='h-4 w-4 text-[#a0aec0]'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                  viewBox='0 0 24 24'>
+                  <rect x='3' y='4' width='18' height='18' rx='2' ry='2' />
+                  <line x1='16' y1='2' x2='16' y2='6' />
+                  <line x1='8' y1='2' x2='8' y2='6' />
+                  <line x1='3' y1='10' x2='21' y2='10' />
+                </svg>
+              </div>
+              <input
+                className='block w-full pl-9 pr-3 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#334155] sm:text-sm'
+                id='date-input'
+                placeholder={datePlaceholder}
+                type='text'
+                onChange={(e) => onDateChange?.(e.target.value)}
+                onFocus={(e) => (e.target.type = "date")}
+                onBlur={(e) => {
+                  if (!e.target.value) {
+                    e.target.type = "text";
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Employee Filter Section */}
+          <div className='flex-1 flex flex-col gap-1.5'>
+            <label
+              className='font-semibold text-xs text-[#334155] pl-1'
+              htmlFor='employee-select'>
+              Employee
             </label>
             <div className='relative'>
               <select
                 className='block w-full pl-4 pr-10 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#334155] sm:text-sm appearance-none'
-                id='role-select'
+                id='employee-select'
                 defaultValue=''
-                onChange={(e) => onRoleChange?.(e.target.value)}>
+                onChange={(e) => onEmployeeChange?.(e.target.value)}>
                 <option disabled value=''>
-                  {rolePlaceholder}
+                  {employeePlaceholder}
                 </option>
-                {roles.map((role) => (
-                  <option key={role.value} value={role.value}>
-                    {role.label}
+                {employees.map((employee) => (
+                  <option key={employee.value} value={employee.value}>
+                    {employee.label}
                   </option>
                 ))}
               </select>
@@ -107,7 +152,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           {/* Salon Filter Section */}
           <div className='flex-1 flex flex-col gap-1.5'>
             <label
-              className='font-semibold text-xs text-gray-600 pl-1'
+              className='font-semibold text-xs text-[#334155] pl-1'
               htmlFor='salon-select'>
               Salon
             </label>
@@ -157,4 +202,4 @@ const FilterBar: React.FC<FilterBarProps> = ({
   );
 };
 
-export default FilterBar;
+export default PayrollFilterBar;

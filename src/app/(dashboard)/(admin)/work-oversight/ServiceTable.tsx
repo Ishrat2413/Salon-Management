@@ -1,8 +1,15 @@
 "use client";
-import { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
-import UniversalTable from "@/components/univarsalTable/Universaltable";
 
-type ServiceEntry = {
+import {
+  ActionDef,
+  ColumnDef,
+} from "@/components/univarsalTable/UnivarsalTable.type";
+import UniversalTable from "@/components/univarsalTable/Universaltable";
+import { SquarePen, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { EditServiceModal } from "./EditServiceModal";
+
+export type ServiceEntry = {
   id: number;
   name: string;
   service: string;
@@ -10,10 +17,10 @@ type ServiceEntry = {
   price: number;
   tip: number;
   dateTime: string;
-  status: "Approved" | "Pending Review";
+  status: "Approved" | "Pending Review" | "Corrections Made";
 };
 
-const serviceData: ServiceEntry[] = [
+export const serviceData: ServiceEntry[] = [
   {
     id: 1,
     name: "Sarah Johnson",
@@ -85,17 +92,68 @@ const serviceColumns: ColumnDef<ServiceEntry>[] = [
         color: "#b07d00",
         label: "Pending Review",
       },
+      "Corrections Made": {
+        bg: "#fef0f0",
+        color: "#c0392b",
+        label: "Corrections Made",
+      },
     },
   },
 ];
 
-export function ServiceEntriesTable() {
+export function ServiceEntriesTable({ data = serviceData }: { data?: ServiceEntry[] }) {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<ServiceEntry | null>(null);
+
+  const handleEdit = (entry: ServiceEntry) => {
+    setSelectedEntry(entry);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSave = (updatedEntry: ServiceEntry) => {
+    // In a real application, you would perform an API call here
+    // or update the parent state. For now, we simulate the save.
+    console.log("Saving service entry:", updatedEntry);
+  };
+
+  const serviceAction: ActionDef<ServiceEntry>[] = [
+    {
+      label: "Edit",
+      icon: (
+        <span className="text-[#155DFC]">
+          <SquarePen className="w-5 h-5" />
+        </span>
+      ),
+      className: "ut-edit-btn",
+      onClick: (row) => handleEdit(row),
+    },
+    {
+      label: "Delete",
+      icon: (
+        <span style={{ color: "#e05252" }} className="text-[#155DFC]">
+          <Trash2 className="w-5 h-5" />
+        </span>
+      ),
+      onClick: (row) => alert(`Delete: ${row.name}`),
+    },
+  ];
+
   return (
-    <UniversalTable<ServiceEntry>
-      title='Service Entries'
-      data={serviceData}
-      columns={serviceColumns}
-      pageSize={10}
-    />
+    <>
+      <UniversalTable<ServiceEntry>
+        title='Service Entries'
+        data={data}
+        columns={serviceColumns}
+        pageSize={10}
+        actions={serviceAction}
+      />
+
+      <EditServiceModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        entry={selectedEntry}
+        onSave={handleSave}
+      />
+    </>
   );
 }
