@@ -118,7 +118,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isHydrated) return;
 
-    const isAuthPage = pathname === "/login" || pathname === "/register";
+    const isAuthPage =
+      pathname === "/login" ||
+      pathname === "/register" ||
+      pathname === "/forgot-password" ||
+      pathname === "/reset-password" ||
+      pathname === "/verify-identity" ||
+      pathname === "/success-reset";
 
     if (!user && !isAuthPage) {
       router.replace("/login");
