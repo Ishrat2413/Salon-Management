@@ -33,7 +33,10 @@ const ServicePage = () => {
         onSalonChange={setSalonFilter}
         salons={salons}
       />
-      <AllServices services={filteredServices} />
+      <AllServices 
+        services={filteredServices} 
+        salons={salons.map(s => s.label)}
+      />
     </div>
   );
 };

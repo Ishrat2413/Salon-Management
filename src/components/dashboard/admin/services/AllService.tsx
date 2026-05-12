@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { Plus } from "lucide-react";
+import { AddServiceModal } from "./AddServiceModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -13,6 +15,7 @@ export interface ServiceItem {
 interface AllServicesProps {
   services?: ServiceItem[];
   onItemClick?: (item: ServiceItem) => void;
+  salons?: string[];
 }
 
 // ─── Default Data ─────────────────────────────────────────────────────────────
@@ -31,15 +34,31 @@ export const defaultServices: ServiceItem[] = [
 export function AllServices({
   services = defaultServices,
   onItemClick,
+  salons = ["Glam Studio", "Style Lounge", "Beauty Bar"],
 }: AllServicesProps) {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const handleAddService = (newService: Omit<ServiceItem, "id">) => {
+    console.log("Adding service:", newService);
+    // Logic to update state or call API would go here
+  };
+
   return (
     <div
       className='w-full bg-white rounded-[24px] border border-white shadow-sm px-8 py-10'
       style={{ background: "#fff" }}>
       {/* Page Header */}
-      <h1 className='text-[22px] font-semibold text-[#334c6e] mb-8 leading-none'>
-        All Services ({services.length})
-      </h1>
+      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8'>
+        <h1 className='text-[22px] font-semibold text-[#334c6e] leading-none'>
+          All Services ({services.length})
+        </h1>
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className='flex items-center justify-center gap-2 h-[40px] px-5 bg-[#D83B8F] text-white text-[13px] font-medium rounded-[8px] hover:bg-[#C23580] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#D83B8F]/20'>
+          <Plus className='w-4 h-4' />
+          Add Service
+        </button>
+      </div>
 
       {/* List Card */}
       <div className='border border-[#f0f2f5] rounded-[12px] overflow-hidden bg-white '>
@@ -83,6 +102,13 @@ export function AllServices({
           )}
         </div>
       </div>
+
+      <AddServiceModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAdd={handleAddService}
+        salons={salons}
+      />
     </div>
   );
 }
