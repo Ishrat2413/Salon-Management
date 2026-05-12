@@ -8,7 +8,8 @@ import {
 import UniversalTable from "@/components/univarsalTable/Universaltable";
 import { EditSalonModal } from "./EditSalonModal";
 import { AddSalonModal } from "./AddSalonModal";
-import { Plus } from "lucide-react";
+import { AddManagerModal } from "./AddManagerModal";
+import { Plus, UserPlus } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -151,7 +152,11 @@ interface SalonTableProps {
 export function SalonTable({ data }: SalonTableProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAddManagerModalOpen, setIsAddManagerModalOpen] = useState(false);
   const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
+
+  // Extract unique salon names for manager assignment
+  const salonNames = Array.from(new Set(data.map((s) => s.salonName)));
 
   const handleEdit = (salon: Salon) => {
     setSelectedSalon(salon);
@@ -166,6 +171,11 @@ export function SalonTable({ data }: SalonTableProps) {
   const handleAdd = (newSalon: Omit<Salon, "id" | "employees">) => {
     // Logic for adding (usually parent state update or API call)
     console.log("Adding new salon:", newSalon);
+  };
+
+  const handleAddManager = (newManager: any) => {
+    // Logic for adding manager (usually parent state update or API call)
+    console.log("Adding new manager:", newManager);
   };
 
   const salonActions: ActionDef<Salon>[] = [
@@ -200,12 +210,20 @@ export function SalonTable({ data }: SalonTableProps) {
           <h1 className='text-[22px] font-semibold text-[#1E3A5F]'>
             Salon Management
           </h1>
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className='flex items-center justify-center gap-2 h-[40px] px-5 bg-[#D83B8F] text-white text-[13px] font-medium rounded-[8px] hover:bg-[#C23580] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#D83B8F]/20'>
-            <Plus className='w-4 h-4' />
-            Add Salon
-          </button>
+          <div className='flex items-center gap-3'>
+            <button
+              onClick={() => setIsAddManagerModalOpen(true)}
+              className='flex items-center justify-center gap-2 h-[40px] px-5 bg-white border border-[#D1D5DB] text-[#374151] text-[13px] font-medium rounded-[8px] hover:bg-[#F9FAFB] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#D83B8F]/20'>
+              <UserPlus className='w-4 h-4 text-[#6B7280]' />
+              Add Manager
+            </button>
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className='flex items-center justify-center gap-2 h-[40px] px-5 bg-[#D83B8F] text-white text-[13px] font-medium rounded-[8px] hover:bg-[#C23580] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#D83B8F]/20'>
+              <Plus className='w-4 h-4' />
+              Add Salon
+            </button>
+          </div>
         </div>
 
         {/* Universal Table */}
@@ -230,6 +248,13 @@ export function SalonTable({ data }: SalonTableProps) {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAdd}
+      />
+
+      <AddManagerModal
+        isOpen={isAddManagerModalOpen}
+        onClose={() => setIsAddManagerModalOpen(false)}
+        onAdd={handleAddManager}
+        salons={salonNames}
       />
     </div>
   );
