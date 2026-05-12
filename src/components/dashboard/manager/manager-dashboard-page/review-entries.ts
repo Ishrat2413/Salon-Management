@@ -3,6 +3,7 @@ export interface ReviewEntry extends Record<string, unknown> {
   employee: string;
   service: string;
   amount: number;
+  percentage?: string;
   tip: number;
   date: string;
   time: string;
@@ -15,6 +16,7 @@ export const reviewEntriesData: ReviewEntry[] = [
     employee: "Sarah Johnson",
     service: "Haircut & Color",
     amount: 85.0,
+    percentage: "50%-50%",
     tip: 15.0,
     date: "2024-05-10",
     time: "10:30 AM",
@@ -45,6 +47,7 @@ export const reviewEntriesData: ReviewEntry[] = [
     employee: "Jessica Lee",
     service: "Hair Styling",
     amount: 45.0,
+    percentage: "50%-50%",
     tip: 8.0,
     date: "2024-05-09",
     time: "3:30 PM",
@@ -75,6 +78,7 @@ export const reviewEntriesData: ReviewEntry[] = [
     employee: "Emily Rodriguez",
     service: "Waxing",
     amount: 40.0,
+    percentage: "50%-50%",
     tip: 7.0,
     date: "2024-05-08",
     time: "2:00 PM",
@@ -145,6 +149,7 @@ export const reviewEntriesData: ReviewEntry[] = [
     employee: "Jessica Lee",
     service: "Hair Styling",
     amount: 45.0,
+    percentage: "50%-50%",
     tip: 8.0,
     date: "2024-05-09",
     time: "3:30 PM",
@@ -185,6 +190,7 @@ export const reviewEntriesData: ReviewEntry[] = [
     employee: "Mike Chen",
     service: "Massage",
     amount: 55.0,
+    percentage: "50%-50%",
     tip: 10.0,
     date: "2024-05-08",
     time: "10:15 AM",
@@ -205,6 +211,7 @@ export const reviewEntriesData: ReviewEntry[] = [
     employee: "David Park",
     service: "Eyebrow Design",
     amount: 15.0,
+    percentage: "50%-50%",
     tip: 3.0,
     date: "2024-05-07",
     time: "3:15 PM",

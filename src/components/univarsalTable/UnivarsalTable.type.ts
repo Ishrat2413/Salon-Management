@@ -33,6 +33,7 @@ export type UniversalTableProps<T extends Record<string, unknown>> = {
   className?: string;
   tableClassName?: string;
   rowClassName?: (row: T, index: number) => string;
+  rowStyle?: (row: T, index: number) => React.CSSProperties;
   onRowClick?: (row: T, index: number) => void;
   emptyMessage?: string;
   showPagination?: boolean;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UniversalTable } from "@/components/univarsalTable/Universaltable";
 import type { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
 import {
@@ -9,12 +9,31 @@ import {
   MessageCircle,
   FilePen,
   MessageSquare,
+  Funnel,
+  ChevronDown,
 } from "lucide-react";
 import { reviewEntriesData, ReviewEntry } from "./review-entries";
 
 export default function AllReviewEntries() {
-  const filteredData = useMemo(() => reviewEntriesData, []);
+  const periodOptions = ["This week", "This month", "This year"] as const;
+  const filteredData = reviewEntriesData;
+  const [selectedPeriod, setSelectedPeriod] =
+    useState<(typeof periodOptions)[number]>("This week");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonLabel = selectedPeriod;
+
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, []);
   const columns: ColumnDef<ReviewEntry>[] = [
     {
       key: "employee",
@@ -32,15 +51,20 @@ export default function AllReviewEntries() {
       key: "amount",
       header: "Amount",
       width: "12%",
-      align: "right",
       sortable: true,
       render: (value) => `$${Number(value).toFixed(2)}`,
+    },
+    {
+      key: "percentage",
+      header: "Percentage",
+      width: "12%",
+      sortable: true,
+      render: (value) => (value ? `${value}` : ""),
     },
     {
       key: "tip",
       header: "Tip",
       width: "10%",
-      align: "right",
       sortable: true,
       render: (value) => `$${Number(value).toFixed(2)}`,
     },
@@ -98,6 +122,39 @@ export default function AllReviewEntries() {
           Review Entries{" "}
           <span className='text-sm'>({reviewEntriesData.length})</span>
         </h2>
+        <div className='flex justify-end' ref={menuRef}>
+          <div className='relative'>
+            <button
+              type='button'
+              onClick={() => setIsMenuOpen((current) => !current)}
+              className='flex items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm transition-colors hover:bg-gray-50'>
+              <Funnel />
+              <span>{menuButtonLabel}</span>
+              <ChevronDown className='h-4 w-4 text-gray-400' />
+            </button>
+
+            {isMenuOpen ? (
+              <div className='absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg'>
+                {periodOptions.map((option) => (
+                  <button
+                    key={option}
+                    type='button'
+                    onClick={() => {
+                      setSelectedPeriod(option);
+                      setIsMenuOpen(false);
+                    }}
+                    className={`block w-full px-4 py-3 text-left text-sm transition-colors hover:bg-[#fbf4f7] ${
+                      selectedPeriod === option
+                        ? "bg-[#fbf4f7] font-semibold text-[#b41f78]"
+                        : "text-gray-600"
+                    }`}>
+                    {option}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
       </div>
 
       {/* Table */}
@@ -107,6 +164,9 @@ export default function AllReviewEntries() {
         emptyMessage='No entries found.'
         showPagination
         className='p-0!'
+        rowStyle={(row) =>
+          (row as ReviewEntry).percentage ? { backgroundColor: "#FFF2F8" } : {}
+        }
       />
     </div>
   );
@@ -163,7 +223,6 @@ function ReviewEntryActions({ row }: { row: ReviewEntry }) {
             onClick: () => console.log("Reject:", row.id),
           },
         ];
-
   return (
     <div className='flex items-center justify-start gap-2' ref={menuRef}>
       {directActions.map((action) => (

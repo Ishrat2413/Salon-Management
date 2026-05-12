@@ -1,12 +1,11 @@
 "use client";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { UniversalTable } from "@/components/univarsalTable/Universaltable";
 import type { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
 import {
   Flag,
   MoreVertical,
-  Edit2,
   MessageCircle,
   FilePen,
   MessageSquare,
@@ -49,15 +48,20 @@ export default function ManagerReviewEntries() {
       key: "amount",
       header: "Amount",
       width: "12%",
-      align: "right",
       sortable: true,
       render: (value) => `$${Number(value).toFixed(2)}`,
+    },
+    {
+      key: "percentage",
+      header: "Percentage",
+      width: "12%",
+      sortable: true,
+      render: (value) => (value ? `${value}` : ""),
     },
     {
       key: "tip",
       header: "Tip",
       width: "10%",
-      align: "right",
       sortable: true,
       render: (value) => `$${Number(value).toFixed(2)}`,
     },
@@ -127,6 +131,9 @@ export default function ManagerReviewEntries() {
         emptyMessage='No entries found.'
         showPagination={false}
         className='p-0!'
+        rowStyle={(row) =>
+          (row as ReviewEntry).percentage ? { backgroundColor: "#FFF2F8" } : {}
+        }
       />
     </div>
   );
