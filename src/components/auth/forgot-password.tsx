@@ -54,7 +54,7 @@ export function ForgotPasswordPage() {
     <div className='flex min-h-screen bg-[#fdf5f7] items-center justify-center p-4 sm:p-8'>
       <div className='w-full 2xl:px-40 xl:px-32 lg:px-24 md:px-12 sm:px-8 px-0 grid grid-cols-1 md:grid-cols-2 gap-8 items-center '>
         {/* Left Side: Image */}
-        <div className='relative hidden md:block w-full rounded-2xl overflow-hidden shadow-md h-200'>
+        <div className='relative hidden md:block w-full rounded-2xl overflow-hidden shadow-md h-180'>
           <Image
             src='/auth/leftImage.svg'
             alt='Hair salon background'
