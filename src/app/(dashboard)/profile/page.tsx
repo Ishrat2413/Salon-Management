@@ -3,6 +3,7 @@
 import UserProfile from "@/components/dashboard/common/UserProfile";
 import RoleGuard from "@/components/layout/role-guard";
 import { useAuth } from "@/components/providers/auth-provider";
+import EmployeeProfile from "@/components/dashboard/employee/employee-profile";
 
 export default function ProfilePage() {
   const { user } = useAuth();
