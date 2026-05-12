@@ -7,6 +7,8 @@ import {
 } from "@/components/univarsalTable/UnivarsalTable.type";
 import UniversalTable from "@/components/univarsalTable/Universaltable";
 import { EditSalonModal } from "./EditSalonModal";
+import { AddSalonModal } from "./AddSalonModal";
+import { Plus } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -148,6 +150,7 @@ interface SalonTableProps {
 
 export function SalonTable({ data }: SalonTableProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
 
   const handleEdit = (salon: Salon) => {
@@ -158,6 +161,11 @@ export function SalonTable({ data }: SalonTableProps) {
   const handleSave = (updatedSalon: Salon) => {
     // Logic for saving (usually parent state update or API call)
     console.log("Saving salon:", updatedSalon);
+  };
+
+  const handleAdd = (newSalon: Omit<Salon, "id" | "employees">) => {
+    // Logic for adding (usually parent state update or API call)
+    console.log("Adding new salon:", newSalon);
   };
 
   const salonActions: ActionDef<Salon>[] = [
@@ -188,10 +196,16 @@ export function SalonTable({ data }: SalonTableProps) {
         className='w-full bg-white rounded-xl shadow border border-gray-100'
         style={{ minHeight: 300 }}>
         {/* Page Header */}
-        <div className='px-8 pt-8 pb-2'>
+        <div className='px-8 pt-8 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
           <h1 className='text-[22px] font-semibold text-[#1E3A5F]'>
             Salon Management
           </h1>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className='flex items-center justify-center gap-2 h-[40px] px-5 bg-[#D83B8F] text-white text-[13px] font-medium rounded-[8px] hover:bg-[#C23580] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#D83B8F]/20'>
+            <Plus className='w-4 h-4' />
+            Add Salon
+          </button>
         </div>
 
         {/* Universal Table */}
@@ -210,6 +224,12 @@ export function SalonTable({ data }: SalonTableProps) {
         onClose={() => setIsEditModalOpen(false)}
         salon={selectedSalon}
         onSave={handleSave}
+      />
+
+      <AddSalonModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAdd={handleAdd}
       />
     </div>
   );
