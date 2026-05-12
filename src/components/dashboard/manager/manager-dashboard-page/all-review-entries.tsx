@@ -13,6 +13,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { reviewEntriesData, ReviewEntry } from "./review-entries";
+import { ManagerCommentModal } from "./manager-comment-modal";
+import { ManagerEditModal } from "./manager-edit-modal";
 
 export default function AllReviewEntries() {
   const periodOptions = ["This week", "This month", "This year"] as const;
@@ -174,6 +176,8 @@ export default function AllReviewEntries() {
 
 function ReviewEntryActions({ row }: { row: ReviewEntry }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -197,14 +201,14 @@ function ReviewEntryActions({ row }: { row: ReviewEntry }) {
             icon: <FilePen className='h-4 w-4' strokeWidth={3} />,
             tone: "#1850D8",
             border: "#1850D8",
-            onClick: () => console.log("Edit:", row.id),
+            onClick: () => setShowEditModal(true),
           },
           {
             label: "Comment",
             icon: <MessageSquare className='h-4 w-4' strokeWidth={3} />,
             tone: "#30A860",
             border: "#30A860",
-            onClick: () => console.log("Comment:", row.id),
+            onClick: () => setShowCommentModal(true),
           },
         ]
       : [
@@ -223,6 +227,7 @@ function ReviewEntryActions({ row }: { row: ReviewEntry }) {
             onClick: () => console.log("Reject:", row.id),
           },
         ];
+
   return (
     <div className='flex items-center justify-start gap-2' ref={menuRef}>
       {directActions.map((action) => (
@@ -255,7 +260,7 @@ function ReviewEntryActions({ row }: { row: ReviewEntry }) {
                 type='button'
                 onClick={() => {
                   setIsOpen(false);
-                  console.log("Edit:", row.id);
+                  setShowEditModal(true);
                 }}
                 className='flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-gray-700 transition hover:bg-[#fbf4f7]'>
                 <FilePen className='h-4 w-4 text-gray-500' />
@@ -265,7 +270,7 @@ function ReviewEntryActions({ row }: { row: ReviewEntry }) {
                 type='button'
                 onClick={() => {
                   setIsOpen(false);
-                  console.log("Comment:", row.id);
+                  setShowCommentModal(true);
                 }}
                 className='flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-gray-700 transition hover:bg-[#fbf4f7]'>
                 <MessageCircle className='h-4 w-4 text-gray-500' />
@@ -275,6 +280,18 @@ function ReviewEntryActions({ row }: { row: ReviewEntry }) {
           ) : null}
         </div>
       ) : null}
+
+      <ManagerCommentModal
+        open={showCommentModal}
+        onClose={() => setShowCommentModal(false)}
+        entryId={row.id}
+      />
+
+      <ManagerEditModal
+        open={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        row={row}
+      />
     </div>
   );
 }
