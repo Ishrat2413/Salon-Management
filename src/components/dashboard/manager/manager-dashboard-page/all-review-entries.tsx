@@ -1,36 +1,19 @@
 "use client";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+
+import { useEffect, useMemo, useRef, useState } from "react";
 import { UniversalTable } from "@/components/univarsalTable/Universaltable";
 import type { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
 import {
   Flag,
   MoreVertical,
-  Edit2,
   MessageCircle,
   FilePen,
   MessageSquare,
 } from "lucide-react";
 import { reviewEntriesData, ReviewEntry } from "./review-entries";
 
-export default function ManagerReviewEntries() {
-  const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-
-  const filteredData = useMemo(() => {
-    return reviewEntriesData.filter((entry) => {
-      const matchesSearch =
-        entry.employee.toLowerCase().includes(search.toLowerCase()) ||
-        entry.service.toLowerCase().includes(search.toLowerCase());
-
-      const matchesStatus = statusFilter
-        ? entry.status.toLowerCase() === statusFilter.toLowerCase()
-        : true;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [search, statusFilter]);
+export default function AllReviewEntries() {
+  const filteredData = useMemo(() => reviewEntriesData, []);
 
   const columns: ColumnDef<ReviewEntry>[] = [
     {
@@ -111,21 +94,18 @@ export default function ManagerReviewEntries() {
     <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6'>
       {/* Header with View All Button */}
       <div className='flex items-center justify-between'>
-        <h2 className='text-3xl font-medium text-[#283E5C]'>Review Entries</h2>
-        <button
-          onClick={() => router.push("/review-entries")}
-          className='px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition'>
-          View All
-        </button>
+        <h2 className='text-3xl font-medium text-[#283E5C]'>
+          Review Entries{" "}
+          <span className='text-sm'>({reviewEntriesData.length})</span>
+        </h2>
       </div>
 
       {/* Table */}
       <UniversalTable
-        data={filteredData.slice(0, 7)}
+        data={filteredData}
         columns={columns}
-        pageSize={7}
         emptyMessage='No entries found.'
-        showPagination={false}
+        showPagination
         className='p-0!'
       />
     </div>

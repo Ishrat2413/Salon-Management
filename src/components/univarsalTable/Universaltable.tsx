@@ -178,7 +178,7 @@ export function UniversalTable<T extends Record<string, unknown>>({
                       key={key}
                       style={{
                         padding: "16px  16px",
-                        textAlign: col.align ?? "left",
+                        textAlign: "left",
                         fontWeight: 500,
                         fontSize: 15,
                         color: "#1F2937",
@@ -216,7 +216,7 @@ export function UniversalTable<T extends Record<string, unknown>>({
                   <th
                     style={{
                       padding: "12px 16px",
-                      textAlign: "right",
+                      textAlign: "left",
                       fontWeight: 500,
                       fontSize: 13,
                       color: "#6b6b8a",

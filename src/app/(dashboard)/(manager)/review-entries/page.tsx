@@ -1,12 +1,11 @@
 "use client";
 
-import { DashboardPage } from "@/components/layout/dashboard-page";
+import AllReviewEntries from "@/components/dashboard/manager/manager-dashboard-page/all-review-entries";
 
 export default function ReviewEntriesPage() {
   return (
-    <DashboardPage
-      title='Review Entries'
-      description='Approve or reject entries waiting for manager review.'
-    />
+    <>
+      <AllReviewEntries />
+    </>
   );
 }
