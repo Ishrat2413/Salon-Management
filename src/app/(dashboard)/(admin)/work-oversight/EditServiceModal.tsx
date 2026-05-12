@@ -1,18 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { ServiceEntry } from "./ServiceTable";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface ServiceEntry {
-  name: string;
-  service: string;
-  salon: string;
-  status: "Approved" | "Pending Review" | "Corrections Made";
-  price: number;
-  tip: number;
-  dateTime: string;
-}
 
 interface EditServiceModalProps {
   isOpen: boolean;
@@ -95,6 +86,7 @@ function SelectField({
 // ─── Default Seed Data ────────────────────────────────────────────────────────
 
 const defaultEntry: ServiceEntry = {
+  id: 0,
   name: "Sarah Johnson",
   service: "Box Braids",
   salon: "Glam Studio",

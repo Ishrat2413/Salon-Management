@@ -1,19 +1,21 @@
 "use client";
 
+import React, { useState } from "react";
 import {
   ActionDef,
   ColumnDef,
 } from "@/components/univarsalTable/UnivarsalTable.type";
 import UniversalTable from "@/components/univarsalTable/Universaltable";
+import { EditSalonModal } from "./EditSalonModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Employee = {
+export type Employee = {
   avatar: string;
   name: string;
 };
 
-type Salon = {
+export type Salon = {
   id: number;
   salonName: string;
   managerName: string;
@@ -21,47 +23,6 @@ type Salon = {
   totalEmployees: number;
   address: string;
 };
-
-// ─── Seed Data ────────────────────────────────────────────────────────────────
-
-const salonData: Salon[] = [
-  {
-    id: 1,
-    salonName: "Glam Studio",
-    managerName: "Emily Rodriguez",
-    employees: [
-      { avatar: "https://i.pravatar.cc/40?img=1", name: "Alice" },
-      { avatar: "https://i.pravatar.cc/40?img=2", name: "Bob" },
-      { avatar: "https://i.pravatar.cc/40?img=3", name: "Carol" },
-    ],
-    totalEmployees: 24,
-    address: "2715 Ash Dr. San Jose, South Dakota 83475",
-  },
-  {
-    id: 2,
-    salonName: "Style Lounge",
-    managerName: "Emily Rodriguez",
-    employees: [
-      { avatar: "https://i.pravatar.cc/40?img=4", name: "Dan" },
-      { avatar: "https://i.pravatar.cc/40?img=5", name: "Eve" },
-      { avatar: "https://i.pravatar.cc/40?img=6", name: "Frank" },
-    ],
-    totalEmployees: 24,
-    address: "3517 W. Gray St. Utica, Pennsylvania 57867",
-  },
-  {
-    id: 3,
-    salonName: "Beauty Bar",
-    managerName: "Emily Rodriguez",
-    employees: [
-      { avatar: "https://i.pravatar.cc/40?img=7", name: "Grace" },
-      { avatar: "https://i.pravatar.cc/40?img=8", name: "Hank" },
-      { avatar: "https://i.pravatar.cc/40?img=9", name: "Ivy" },
-    ],
-    totalEmployees: 24,
-    address: "2972 Westheimer Rd. Santa Ana, Illinois 85486",
-  },
-];
 
 // ─── Avatar Stack Component ───────────────────────────────────────────────────
 
@@ -179,46 +140,48 @@ const salonColumns: ColumnDef<Salon>[] = [
   },
 ];
 
-// ─── Action Definitions ───────────────────────────────────────────────────────
-
-const salonActions: ActionDef<Salon>[] = [
-  {
-    label: "Edit",
-    icon: (
-      <span className='text-[#3B82F6] hover:text-[#2563EB]'>
-        <EditIcon />
-      </span>
-    ),
-    className: "ut-edit-btn",
-    onClick: (row) => alert(`Edit: ${row.salonName}`),
-  },
-  {
-    label: "Delete",
-    icon: (
-      <span className='text-[#EF4444] hover:text-[#DC2626]'>
-        <TrashIcon />
-      </span>
-    ),
-    onClick: (row) => alert(`Delete: ${row.salonName}`),
-  },
-];
-
 // ─── Main Export ──────────────────────────────────────────────────────────────
-
-export type Salon = {
-  id: number;
-  salonName: string;
-  managerName: string;
-  employees: Employee[];
-  totalEmployees: number;
-  address: string;
-};
 
 interface SalonTableProps {
   data: Salon[];
 }
 
 export function SalonTable({ data }: SalonTableProps) {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
+
+  const handleEdit = (salon: Salon) => {
+    setSelectedSalon(salon);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSave = (updatedSalon: Salon) => {
+    // Logic for saving (usually parent state update or API call)
+    console.log("Saving salon:", updatedSalon);
+  };
+
+  const salonActions: ActionDef<Salon>[] = [
+    {
+      label: "Edit",
+      icon: (
+        <span className='text-[#3B82F6] hover:text-[#2563EB]'>
+          <EditIcon />
+        </span>
+      ),
+      className: "ut-edit-btn",
+      onClick: (row) => handleEdit(row),
+    },
+    {
+      label: "Delete",
+      icon: (
+        <span className='text-[#EF4444] hover:text-[#DC2626]'>
+          <TrashIcon />
+        </span>
+      ),
+      onClick: (row) => alert(`Delete: ${row.salonName}`),
+    },
+  ];
+
   return (
     <div className='flex items-start justify-center'>
       <div
@@ -241,6 +204,13 @@ export function SalonTable({ data }: SalonTableProps) {
           emptyMessage='No salons found.'
         />
       </div>
+
+      <EditSalonModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        salon={selectedSalon}
+        onSave={handleSave}
+      />
     </div>
   );
 }
