@@ -4,6 +4,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import RoleGuard from "@/components/layout/role-guard";
 import { DashboardPage } from "@/components/layout/dashboard-page";
 import { AdminHistory } from "@/components/dashboard/admin/admin-history";
+import EmployeeHistory from "@/components/dashboard/employee/employee-history";
 
 export default function HistoryPage() {
   const { user } = useAuth();
@@ -15,10 +16,7 @@ export default function HistoryPage() {
       {user.role === "admin" ? (
         <AdminHistory />
       ) : (
-        <DashboardPage
-          title='History'
-          description='Review recent activity and past dashboard actions.'
-        />
+        <EmployeeHistory/>
       )}
     </RoleGuard>
   );
