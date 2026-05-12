@@ -1,10 +1,13 @@
 "use client";
 
+import React from "react";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ServiceItem {
   id: number;
   name: string;
+  salon: string;
 }
 
 interface AllServicesProps {
@@ -14,13 +17,13 @@ interface AllServicesProps {
 
 // ─── Default Data ─────────────────────────────────────────────────────────────
 
-const defaultServices: ServiceItem[] = [
-  { id: 1, name: "Sarah Johnson" },
-  { id: 2, name: "Mike Chen" },
-  { id: 3, name: "Emily Rodriguez" },
-  { id: 4, name: "Emily Rodriguez" },
-  { id: 5, name: "Emily Rodriguez" },
-  { id: 6, name: "Emily Rodriguez" },
+export const defaultServices: ServiceItem[] = [
+  { id: 1, name: "Box Braids", salon: "Glam Studio" },
+  { id: 2, name: "Cornrows", salon: "Style Lounge" },
+  { id: 3, name: "Weave Install", salon: "Beauty Bar" },
+  { id: 4, name: "Locs Maintenance", salon: "Glam Studio" },
+  { id: 5, name: "Twist Out", salon: "Style Lounge" },
+  { id: 6, name: "Crochet Braids", salon: "Beauty Bar" },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -31,7 +34,7 @@ export function AllServices({
 }: AllServicesProps) {
   return (
     <div
-      className='w-full  bg-white rounded-[24px] border border-white shadow-sm px-8 py-10'
+      className='w-full bg-white rounded-[24px] border border-white shadow-sm px-8 py-10'
       style={{ background: "#fff" }}>
       {/* Page Header */}
       <h1 className='text-[22px] font-semibold text-[#334c6e] mb-8 leading-none'>
@@ -41,9 +44,12 @@ export function AllServices({
       {/* List Card */}
       <div className='border border-[#f0f2f5] rounded-[12px] overflow-hidden bg-white '>
         {/* List Header */}
-        <div className='px-6 py-[18px] border-b border-[#f0f2f5] bg-white'>
+        <div className='px-6 py-[18px] border-b border-[#f0f2f5] bg-white grid grid-cols-2'>
           <span className='text-[13px] font-semibold text-[#1f2937] tracking-wide'>
             Service Name
+          </span>
+          <span className='text-[13px] font-semibold text-[#1f2937] tracking-wide'>
+            Salon
           </span>
         </div>
 
@@ -56,7 +62,7 @@ export function AllServices({
                 key={item.id}
                 onClick={() => onItemClick?.(item)}
                 className={`
-                  px-6 py-[14px] bg-white
+                  px-6 py-[14px] bg-white grid grid-cols-2
                   hover:bg-gray-50 transition-colors duration-150 ease-in-out
                   ${!isLast ? "border-b border-[#f0f2f5]" : "min-h-[56px] flex items-center"}
                   ${onItemClick ? "cursor-pointer" : ""}
@@ -64,9 +70,17 @@ export function AllServices({
                 <p className='text-[13px] font-medium text-[#5a6872] leading-none'>
                   {item.name}
                 </p>
+                <p className='text-[13px] font-medium text-[#9CA3AF] leading-none'>
+                  {item.salon}
+                </p>
               </div>
             );
           })}
+          {services.length === 0 && (
+            <div className='px-6 py-10 text-center text-[#9CA3AF] text-sm'>
+              No services found matching your filters.
+            </div>
+          )}
         </div>
       </div>
     </div>
