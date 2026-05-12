@@ -100,8 +100,8 @@ export function LoginForm() {
                   Password
                 </FormLabel>
                 <Link
-                  href='#'
-                  className='text-xs font-medium text-[#020617] hover:text-[#1F2937] transition-colors'>
+                  href='/forgot-password'
+                  className='text-xs font-medium text-[#020617] hover:text-[#1F2937] transition-colors underline'>
                   Forgot your password?
                 </Link>
               </div>
