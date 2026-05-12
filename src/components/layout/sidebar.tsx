@@ -62,7 +62,7 @@ export function Sidebar({ mobileOpen, onMobileOpenChange }: SidebarProps) {
             width={100}
             height={100}
             className='h-23 w-auto mx-auto'
-            priority 
+            priority
           />
         </div>
 
@@ -156,9 +156,17 @@ export function Sidebar({ mobileOpen, onMobileOpenChange }: SidebarProps) {
 
   return (
     <>
+      <div
+        aria-hidden='true'
+        className={cn(
+          "hidden shrink-0 md:block transition-[width] duration-300",
+          isCollapsed ? "md:w-20" : "md:w-80",
+        )}
+      />
+
       <aside
         className={cn(
-          "hidden min-h-screen shrink-0 flex-col border-r border-slate-200 bg-white transition-[width] duration-300 md:sticky md:top-0 md:flex",
+          "hidden min-h-screen flex-col border-r border-slate-200 bg-white transition-[width] duration-300 md:fixed md:left-0 md:top-0 md:z-40 md:flex",
           isCollapsed ? "md:w-20" : "md:w-80",
         )}>
         {sidebarContent}

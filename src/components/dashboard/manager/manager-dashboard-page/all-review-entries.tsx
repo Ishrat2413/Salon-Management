@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+
+import { useEffect, useRef, useState } from "react";
 import { UniversalTable } from "@/components/univarsalTable/Universaltable";
 import type { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
 import {
@@ -9,30 +9,33 @@ import {
   MessageCircle,
   FilePen,
   MessageSquare,
+  Funnel,
+  ChevronDown,
 } from "lucide-react";
 import { reviewEntriesData, ReviewEntry } from "./review-entries";
 import { ManagerCommentModal } from "./manager-comment-modal";
 import { ManagerEditModal } from "./manager-edit-modal";
 
-export default function ManagerReviewEntries() {
-  const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+export default function AllReviewEntries() {
+  const periodOptions = ["This week", "This month", "This year"] as const;
+  const filteredData = reviewEntriesData;
+  const [selectedPeriod, setSelectedPeriod] =
+    useState<(typeof periodOptions)[number]>("This week");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const filteredData = useMemo(() => {
-    return reviewEntriesData.filter((entry) => {
-      const matchesSearch =
-        entry.employee.toLowerCase().includes(search.toLowerCase()) ||
-        entry.service.toLowerCase().includes(search.toLowerCase());
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonLabel = selectedPeriod;
 
-      const matchesStatus = statusFilter
-        ? entry.status.toLowerCase() === statusFilter.toLowerCase()
-        : true;
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    }
 
-      return matchesSearch && matchesStatus;
-    });
-  }, [search, statusFilter]);
-
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, []);
   const columns: ColumnDef<ReviewEntry>[] = [
     {
       key: "employee",
@@ -117,21 +120,51 @@ export default function ManagerReviewEntries() {
     <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6'>
       {/* Header with View All Button */}
       <div className='flex items-center justify-between'>
-        <h2 className='text-3xl font-medium text-[#283E5C]'>Review Entries</h2>
-        <button
-          onClick={() => router.push("/review-entries")}
-          className='px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition'>
-          View All
-        </button>
+        <h2 className='text-3xl font-medium text-[#283E5C]'>
+          Review Entries{" "}
+          <span className='text-sm'>({reviewEntriesData.length})</span>
+        </h2>
+        <div className='flex justify-end' ref={menuRef}>
+          <div className='relative'>
+            <button
+              type='button'
+              onClick={() => setIsMenuOpen((current) => !current)}
+              className='flex items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm transition-colors hover:bg-gray-50'>
+              <Funnel />
+              <span>{menuButtonLabel}</span>
+              <ChevronDown className='h-4 w-4 text-gray-400' />
+            </button>
+
+            {isMenuOpen ? (
+              <div className='absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg'>
+                {periodOptions.map((option) => (
+                  <button
+                    key={option}
+                    type='button'
+                    onClick={() => {
+                      setSelectedPeriod(option);
+                      setIsMenuOpen(false);
+                    }}
+                    className={`block w-full px-4 py-3 text-left text-sm transition-colors hover:bg-[#fbf4f7] ${
+                      selectedPeriod === option
+                        ? "bg-[#fbf4f7] font-semibold text-[#b41f78]"
+                        : "text-gray-600"
+                    }`}>
+                    {option}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
       </div>
 
       {/* Table */}
       <UniversalTable
-        data={filteredData.slice(0, 7)}
+        data={filteredData}
         columns={columns}
-        pageSize={7}
         emptyMessage='No entries found.'
-        showPagination={false}
+        showPagination
         className='p-0!'
         rowStyle={(row) =>
           (row as ReviewEntry).percentage ? { backgroundColor: "#FFF2F8" } : {}

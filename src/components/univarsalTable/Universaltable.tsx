@@ -28,7 +28,7 @@ function defaultStatusClass(value: string): StatusConfig {
   return { bg: "#f0f0f5", color: "#555", label: value };
 }
 
-// ─── Component ─────────
+// ─── Component ───
 
 export function UniversalTable<T extends Record<string, unknown>>({
   data,
@@ -40,6 +40,7 @@ export function UniversalTable<T extends Record<string, unknown>>({
   className = "",
   tableClassName = "",
   rowClassName,
+  rowStyle,
   onRowClick,
   emptyMessage = "No data found.",
   showPagination = true,
@@ -178,7 +179,7 @@ export function UniversalTable<T extends Record<string, unknown>>({
                       key={key}
                       style={{
                         padding: "16px  16px",
-                        textAlign: col.align ?? "left",
+                        textAlign: "left",
                         fontWeight: 500,
                         fontSize: 15,
                         color: "#1F2937",
@@ -216,7 +217,7 @@ export function UniversalTable<T extends Record<string, unknown>>({
                   <th
                     style={{
                       padding: "12px 16px",
-                      textAlign: "right",
+                      textAlign: "left",
                       fontWeight: 500,
                       fontSize: 13,
                       color: "#6b6b8a",
@@ -271,6 +272,8 @@ export function UniversalTable<T extends Record<string, unknown>>({
                   const extraClass = rowClassName
                     ? rowClassName(row, rowIndex)
                     : "";
+                  const extraStyle = rowStyle ? rowStyle(row, rowIndex) : {};
+                  const originalBg = (extraStyle as any)?.backgroundColor || "";
                   return (
                     <tr
                       key={rowIndex}
@@ -280,12 +283,13 @@ export function UniversalTable<T extends Record<string, unknown>>({
                         borderBottom: "1px solid #f5f4fa",
                         cursor: onRowClick ? "pointer" : "default",
                         transition: "background 0.15s",
+                        ...extraStyle,
                       }}
                       onMouseEnter={(e) =>
                         (e.currentTarget.style.background = "#faf9fd")
                       }
                       onMouseLeave={(e) =>
-                        (e.currentTarget.style.background = "")
+                        (e.currentTarget.style.background = originalBg)
                       }>
                       {columns.map((col) => (
                         <td
