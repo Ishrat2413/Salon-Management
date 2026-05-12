@@ -1,16 +1,16 @@
 import {
   BarChart3,
   Briefcase,
+  FileText,
   History,
   LayoutDashboard,
-  FileText,
   PlusCircle,
   User,
   Users,
   Wallet,
 } from "lucide-react";
-import type { UserRole } from "./auth";
 import type { ElementType } from "react";
+import type { UserRole } from "./auth";
 
 export interface SidebarNavItem {
   title: string;
@@ -34,6 +34,7 @@ export const NAV_CONFIG: Record<UserRole, SidebarNavItem[]> = {
   ],
   admin: [
     { title: "Dashboard", href: "/", icon: LayoutDashboard },
+    { title: "Add Entry", href: "/add-entry", icon: PlusCircle },
     { title: "History", href: "/history", icon: History },
     { title: "Manage Users", href: "/manage-users", icon: Users },
     { title: "Work Oversight", href: "/work-oversight", icon: Briefcase },
