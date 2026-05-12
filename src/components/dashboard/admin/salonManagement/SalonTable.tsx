@@ -205,13 +205,24 @@ const salonActions: ActionDef<Salon>[] = [
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
-export function SalonTable() {
+export type Salon = {
+  id: number;
+  salonName: string;
+  managerName: string;
+  employees: Employee[];
+  totalEmployees: number;
+  address: string;
+};
+
+interface SalonTableProps {
+  data: Salon[];
+}
+
+export function SalonTable({ data }: SalonTableProps) {
   return (
-    <div
-      className='min-h-screen flex items-start justify-center p-8'
-      style={{ background: "#FDF9F9" }}>
+    <div className='flex items-start justify-center'>
       <div
-        className='w-full  bg-white rounded-xl shadow border border-gray-100'
+        className='w-full bg-white rounded-xl shadow border border-gray-100'
         style={{ minHeight: 300 }}>
         {/* Page Header */}
         <div className='px-8 pt-8 pb-2'>
@@ -222,7 +233,7 @@ export function SalonTable() {
 
         {/* Universal Table */}
         <UniversalTable<Salon>
-          data={salonData}
+          data={data}
           columns={salonColumns}
           actions={salonActions}
           pageSize={10}
