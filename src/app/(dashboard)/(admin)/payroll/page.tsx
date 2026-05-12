@@ -1,12 +1,11 @@
-"use client";
+import PayrollPage from "@/components/dashboard/admin/payroll/PayrollPage";
 
-import { DashboardPage } from "@/components/layout/dashboard-page";
-
-export default function PayrollPage() {
+const page = () => {
   return (
-    <DashboardPage
-      title='Payroll'
-      description='Track payroll actions and compensation-related workflows.'
-    />
+    <div>
+      <PayrollPage />
+    </div>
   );
-}
+};
+
+export default page;

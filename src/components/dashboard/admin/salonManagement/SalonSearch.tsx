@@ -1,46 +1,41 @@
+"use client";
+
 import React from "react";
 
-interface FilterBarProps {
+interface SalonSearchFilterProps {
   onSearchChange?: (value: string) => void;
-  onRoleChange?: (value: string) => void;
-  onSalonChange?: (value: string) => void;
+  onManagerChange?: (value: string) => void;
+  onAddressChange?: (value: string) => void;
   searchPlaceholder?: string;
-  rolePlaceholder?: string;
-  salonPlaceholder?: string;
-  roles?: Array<{ value: string; label: string }>;
-  salons?: Array<{ value: string; label: string }>;
+  managerPlaceholder?: string;
+  addressPlaceholder?: string;
+  managers?: Array<{ value: string; label: string }>;
+  addresses?: Array<{ value: string; label: string }>;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({
+const SalonSearchFilter: React.FC<SalonSearchFilterProps> = ({
   onSearchChange,
-  onRoleChange,
-  onSalonChange,
-  searchPlaceholder = "Search by name or email...",
-  rolePlaceholder = "Filter by Role",
-  salonPlaceholder = "Filter by Salon",
-  roles = [
-    { value: "admin", label: "Admin" },
-    { value: "user", label: "User" },
-  ],
-  salons = [
-    { value: "salon1", label: "Salon 1" },
-    { value: "salon2", label: "Salon 2" },
-  ],
+  onManagerChange,
+  onAddressChange,
+  searchPlaceholder = "Search by salon name...",
+  managerPlaceholder = "Filter by Manager",
+  addressPlaceholder = "Filter by Address",
+  managers = [],
+  addresses = [],
 }) => {
   return (
-    <div className='w-full mx-auto pb-6'>
-      <div className='bg-[#FFFFFF] rounded-xl p-5  filter-container-shadow'>
+    <div className='w-full mx-auto pb-10'>
+      <div className='bg-[#FFFFFF] rounded-xl p-5 border border-[#F3E8EE] filter-container-shadow'>
         <div className='flex flex-col md:flex-row gap-4'>
           {/* Search Section */}
           <div className='flex-1 flex flex-col gap-1.5'>
             <label
               className='font-semibold text-xs text-[#334155] pl-1'
               htmlFor='search-input'>
-              Search
+              Salon Name
             </label>
             <div className='relative'>
               <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-                {/* Magnifying Glass Icon */}
                 <svg
                   className='h-4 w-4 text-[#334155]'
                   fill='none'
@@ -55,7 +50,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 </svg>
               </div>
               <input
-                className='block w-full pl-9 pr-3 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#364153] placeholder-[#334155] sm:text-sm'
+                className='block w-full pl-9 pr-3 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-[#D83B8F]/20 focus:bg-white text-[#364153] placeholder-[#9CA3AF] sm:text-sm transition-all outline-none'
                 id='search-input'
                 placeholder={searchPlaceholder}
                 type='text'
@@ -64,30 +59,29 @@ const FilterBar: React.FC<FilterBarProps> = ({
             </div>
           </div>
 
-          {/* Role Filter Section */}
+          {/* Manager Filter Section */}
           <div className='flex-1 flex flex-col gap-1.5'>
             <label
               className='font-semibold text-xs text-[#364153] pl-1'
-              htmlFor='role-select'>
-              Role
+              htmlFor='manager-select'>
+              Manager
             </label>
             <div className='relative'>
               <select
-                className='block w-full pl-4 pr-10 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#334155] sm:text-sm appearance-none'
-                id='role-select'
+                className='block w-full pl-4 pr-10 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-[#D83B8F]/20 focus:bg-white text-[#334155] sm:text-sm appearance-none cursor-pointer transition-all outline-none'
+                id='manager-select'
                 defaultValue=''
-                onChange={(e) => onRoleChange?.(e.target.value)}>
-                <option disabled value=''>
-                  {rolePlaceholder}
+                onChange={(e) => onManagerChange?.(e.target.value)}>
+                <option value=''>
+                  {managerPlaceholder}
                 </option>
-                {roles.map((role) => (
-                  <option key={role.value} value={role.value}>
-                    {role.label}
+                {managers.map((manager) => (
+                  <option key={manager.value} value={manager.value}>
+                    {manager.label}
                   </option>
                 ))}
               </select>
               <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
-                {/* Chevron Down Icon */}
                 <svg
                   className='h-4 w-4 text-[#a0aec0]'
                   fill='none'
@@ -104,30 +98,29 @@ const FilterBar: React.FC<FilterBarProps> = ({
             </div>
           </div>
 
-          {/* Salon Filter Section */}
+          {/* Address Filter Section (Optional/Additional) */}
           <div className='flex-1 flex flex-col gap-1.5'>
             <label
               className='font-semibold text-xs text-gray-600 pl-1'
-              htmlFor='salon-select'>
-              Salon
+              htmlFor='address-select'>
+              Location
             </label>
             <div className='relative'>
               <select
-                className='block w-full pl-4 pr-10 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#334155] sm:text-sm appearance-none'
-                id='salon-select'
+                className='block w-full pl-4 pr-10 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-[#D83B8F]/20 focus:bg-white text-[#334155] sm:text-sm appearance-none cursor-pointer transition-all outline-none'
+                id='address-select'
                 defaultValue=''
-                onChange={(e) => onSalonChange?.(e.target.value)}>
-                <option disabled value=''>
-                  {salonPlaceholder}
+                onChange={(e) => onAddressChange?.(e.target.value)}>
+                <option value=''>
+                  {addressPlaceholder}
                 </option>
-                {salons.map((salon) => (
-                  <option key={salon.value} value={salon.value}>
-                    {salon.label}
+                {addresses.map((address) => (
+                  <option key={address.value} value={address.value}>
+                    {address.label}
                   </option>
                 ))}
               </select>
               <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
-                {/* Chevron Down Icon */}
                 <svg
                   className='h-4 w-4 text-[#a0aec0]'
                   fill='none'
@@ -148,13 +141,11 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
       <style jsx>{`
         .filter-container-shadow {
-          box-shadow:
-            0 1px 3px rgba(0, 0, 0, 0.05),
-            0 1px 2px rgba(0, 0, 0, 0.03);
+          box-shadow: 0 1px 4px 0 rgba(211, 60, 146, 0.04);
         }
       `}</style>
     </div>
   );
 };
 
-export default FilterBar;
+export default SalonSearchFilter;
