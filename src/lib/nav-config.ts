@@ -5,6 +5,7 @@ import {
   History,
   House,
   LayoutDashboard,
+  Plus,
   PlusCircle,
   User,
   Wallet,
@@ -35,6 +36,7 @@ export const NAV_CONFIG: Record<UserRole, SidebarNavItem[]> = {
   admin: [
     { title: "Dashboard", href: "/", icon: LayoutDashboard },
     { title: "Add Entry", href: "/add-entry", icon: PlusCircle },
+    { title: "Add Service", href: "/add-service", icon: Plus },
     { title: "History", href: "/history", icon: History },
     { title: "Manage Users", href: "/manage-users", icon: House },
     { title: "Salon Management", href: "/salon-management", icon: Briefcase },
