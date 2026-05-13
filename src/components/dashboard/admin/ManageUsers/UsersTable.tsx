@@ -16,7 +16,7 @@ export type User = {
   status: "PENDING" | "ACTIVE" | "SUSPEND" | "REJECTED";
 };
 
-// Role badge color custom define
+// Role badge color custom define for each role
 const roleBadgeStyle: Record<string, CSSProperties> = {
   Admin: {
     background: "#ffe8f5",
