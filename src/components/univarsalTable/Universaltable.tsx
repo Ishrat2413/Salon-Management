@@ -309,7 +309,7 @@ export function UniversalTable<T extends Record<string, unknown>>({
                         <td
                           style={{
                             padding: "10px 16px",
-                            textAlign: "right",
+                            textAlign: "left",
                             whiteSpace: "nowrap",
                           }}>
                           {actions!
