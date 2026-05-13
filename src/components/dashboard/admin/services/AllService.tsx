@@ -1,113 +1,149 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { AddServiceModal } from "./AddServiceModal";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface ServiceItem {
-  id: number;
-  name: string;
-  salon: string;
-}
+import { ServiceItem } from "@/lib/api/services/service.service";
 
 interface AllServicesProps {
-  services?: ServiceItem[];
-  onItemClick?: (item: ServiceItem) => void;
-  salons?: string[];
+  services: ServiceItem[];
+  total: number;
+  page: number;
+  limit: number;
+  isLoading: boolean;
+  isMutating: boolean;
+  onCreate: (payload: { name: string }) => Promise<void>;
+  onUpdate: (serviceId: string, payload: { name: string }) => Promise<void>;
+  onDelete: (serviceId: string) => Promise<void>;
+  onPageChange: (nextPage: number) => void;
 }
 
-// ─── Default Data ─────────────────────────────────────────────────────────────
-
-export const defaultServices: ServiceItem[] = [
-  { id: 1, name: "Box Braids", salon: "Glam Studio" },
-  { id: 2, name: "Cornrows", salon: "Style Lounge" },
-  { id: 3, name: "Weave Install", salon: "Beauty Bar" },
-  { id: 4, name: "Locs Maintenance", salon: "Glam Studio" },
-  { id: 5, name: "Twist Out", salon: "Style Lounge" },
-  { id: 6, name: "Crochet Braids", salon: "Beauty Bar" },
-];
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export function AllServices({
-  services = defaultServices,
-  onItemClick,
-  salons = ["Glam Studio", "Style Lounge", "Beauty Bar"],
+  services,
+  total,
+  page,
+  limit,
+  isLoading,
+  isMutating,
+  onCreate,
+  onUpdate,
+  onDelete,
+  onPageChange,
 }: AllServicesProps) {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingService, setEditingService] = useState<ServiceItem | null>(null);
 
-  const handleAddService = (newService: Omit<ServiceItem, "id">) => {
-    console.log("Adding service:", newService);
-    // Logic to update state or call API would go here
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  const handleDelete = async (item: ServiceItem) => {
+    const confirmed = window.confirm(`Delete service \"${item.name}\"?`);
+    if (!confirmed) return;
+
+    await onDelete(item.id);
   };
 
   return (
-    <div
-      className='w-full bg-white rounded-[24px] border border-white shadow-sm px-8 py-10'
-      style={{ background: "#fff" }}>
-      {/* Page Header */}
+    <div className='w-full bg-white rounded-[24px] border border-white shadow-sm px-8 py-10' style={{ background: "#fff" }}>
       <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8'>
-        <h1 className='text-[22px] font-semibold text-[#334c6e] leading-none'>
-          All Services ({services.length})
-        </h1>
+        <h1 className='text-[22px] font-semibold text-[#334c6e] leading-none'>All Services ({total})</h1>
         <button
-          onClick={() => setIsAddModalOpen(true)}
+          onClick={() => setIsCreateModalOpen(true)}
           className='flex items-center justify-center gap-2 h-[40px] px-5 bg-[#D83B8F] text-white text-[13px] font-medium rounded-[8px] hover:bg-[#C23580] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#D83B8F]/20'>
           <Plus className='w-4 h-4' />
           Add Service
         </button>
       </div>
 
-      {/* List Card */}
-      <div className='border border-[#f0f2f5] rounded-[12px] overflow-hidden bg-white '>
-        {/* List Header */}
-        <div className='px-6 py-[18px] border-b border-[#f0f2f5] bg-white grid grid-cols-2'>
-          <span className='text-[13px] font-semibold text-[#1f2937] tracking-wide'>
-            Service Name
-          </span>
-          <span className='text-[13px] font-semibold text-[#1f2937] tracking-wide'>
-            Salon
-          </span>
+      <div className='border border-[#f0f2f5] rounded-[12px] overflow-hidden bg-white'>
+        <div className='px-6 py-[18px] border-b border-[#f0f2f5] bg-white grid grid-cols-[1fr_auto] gap-3'>
+          <span className='text-[13px] font-semibold text-[#1f2937] tracking-wide'>Service Name</span>
+          <span className='text-[13px] font-semibold text-[#1f2937] tracking-wide text-right'>Actions</span>
         </div>
 
-        {/* List Items */}
         <div className='flex flex-col'>
-          {services.map((item, index) => {
-            const isLast = index === services.length - 1;
-            return (
-              <div
-                key={item.id}
-                onClick={() => onItemClick?.(item)}
-                className={`
-                  px-6 py-[14px] bg-white grid grid-cols-2
-                  hover:bg-gray-50 transition-colors duration-150 ease-in-out
-                  ${!isLast ? "border-b border-[#f0f2f5]" : "min-h-[56px] flex items-center"}
-                  ${onItemClick ? "cursor-pointer" : ""}
-                `}>
-                <p className='text-[13px] font-medium text-[#5a6872] leading-none'>
-                  {item.name}
-                </p>
-                <p className='text-[13px] font-medium text-[#9CA3AF] leading-none'>
-                  {item.salon}
-                </p>
-              </div>
-            );
-          })}
-          {services.length === 0 && (
-            <div className='px-6 py-10 text-center text-[#9CA3AF] text-sm'>
-              No services found matching your filters.
-            </div>
+          {isLoading ? (
+            <div className='px-6 py-10 text-center text-[#9CA3AF] text-sm'>Loading services...</div>
+          ) : services.length === 0 ? (
+            <div className='px-6 py-10 text-center text-[#9CA3AF] text-sm'>No services found.</div>
+          ) : (
+            services.map((item, index) => {
+              const isLast = index === services.length - 1;
+              return (
+                <div
+                  key={item.id}
+                  className={`px-6 py-[14px] bg-white grid grid-cols-[1fr_auto] gap-3 items-center ${!isLast ? "border-b border-[#f0f2f5]" : ""}`}>
+                  <p className='text-[13px] font-medium text-[#5a6872] leading-none'>{item.name}</p>
+
+                  <div className='flex items-center justify-end gap-2'>
+                    <button
+                      type='button'
+                      onClick={() => setEditingService(item)}
+                      className='h-8 w-8 rounded-md border border-[#E5E7EB] text-[#4B5563] hover:bg-[#F9FAFB] flex items-center justify-center'
+                      aria-label='Edit service'>
+                      <Pencil className='h-4 w-4' />
+                    </button>
+                    <button
+                      type='button'
+                      onClick={() => handleDelete(item)}
+                      disabled={isMutating}
+                      className='h-8 w-8 rounded-md border border-[#F3D6E6] text-[#D83B8F] hover:bg-[#FFF3FA] flex items-center justify-center disabled:opacity-60'
+                      aria-label='Delete service'>
+                      <Trash2 className='h-4 w-4' />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
           )}
         </div>
       </div>
 
+      <div className='mt-6 flex items-center justify-between'>
+        <p className='text-sm text-[#6B7280]'>
+          Page {page} of {totalPages}
+        </p>
+        <div className='flex items-center gap-2'>
+          <button
+            type='button'
+            onClick={() => onPageChange(page - 1)}
+            disabled={page <= 1 || isLoading}
+            className='h-9 px-4 rounded-md border border-[#E5E7EB] text-sm text-[#374151] disabled:opacity-50'>
+            Previous
+          </button>
+          <button
+            type='button'
+            onClick={() => onPageChange(page + 1)}
+            disabled={page >= totalPages || isLoading}
+            className='h-9 px-4 rounded-md border border-[#E5E7EB] text-sm text-[#374151] disabled:opacity-50'>
+            Next
+          </button>
+        </div>
+      </div>
+
       <AddServiceModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAdd={handleAddService}
-        salons={salons}
+        key={`create-${String(isCreateModalOpen)}`}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={async (payload) => {
+          await onCreate(payload);
+          setIsCreateModalOpen(false);
+        }}
+        mode='create'
+        isSubmitting={isMutating}
+      />
+
+      <AddServiceModal
+        key={`edit-${editingService?.id ?? "none"}-${String(Boolean(editingService))}`}
+        isOpen={Boolean(editingService)}
+        onClose={() => setEditingService(null)}
+        onSubmit={async (payload) => {
+          if (!editingService) return;
+          await onUpdate(editingService.id, payload);
+          setEditingService(null);
+        }}
+        mode='edit'
+        initialName={editingService?.name ?? ""}
+        isSubmitting={isMutating}
       />
     </div>
   );
