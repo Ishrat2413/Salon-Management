@@ -21,8 +21,8 @@ interface FieldProps {
 
 function Field({ label, children }: FieldProps) {
   return (
-    <div className='flex flex-col gap-[6px]'>
-      <label className='text-[13px] font-medium leading-[20px] text-[#374151]'>
+    <div className='flex flex-col gap-1.5'>
+      <label className='text-[13px] font-medium leading-5 text-[#374151]'>
         {label}
       </label>
       {children}
@@ -122,17 +122,17 @@ export function EditUserModal({
       {/* ── Modal ── */}
       <div className='fixed inset-0 z-50 flex items-center justify-center px-4'>
         <div
-          className='w-full max-w-[840px] rounded-[12px] bg-white shadow-[0_20px_25px_-5px_rgba(0,0,0,0.10),0_10px_10px_-5px_rgba(0,0,0,0.04)] overflow-hidden'
+          className='w-full max-w-210 rounded-[12px] bg-white shadow-[0_20px_25px_-5px_rgba(0,0,0,0.10),0_10px_10px_-5px_rgba(0,0,0,0.04)] overflow-hidden'
           onClick={(e) => e.stopPropagation()}>
           {/* Header */}
           <div className='relative px-8 pt-8 pb-5'>
-            <h2 className='text-[18px] font-semibold leading-[28px] text-[#111827]'>
+            <h2 className='text-[18px] font-semibold leading-7 text-[#111827]'>
               Edit User
             </h2>
             <button
               onClick={onClose}
               aria-label='Close'
-              className='absolute top-[22px] right-6 flex items-center justify-center text-[#9CA3AF] hover:text-[#6B7280] transition-colors focus:outline-none'>
+              className='absolute top-5.5 right-6 flex items-center justify-center text-[#9CA3AF] hover:text-[#6B7280] transition-colors focus:outline-none'>
               <svg
                 className='h-5 w-5'
                 fill='none'
@@ -154,13 +154,14 @@ export function EditUserModal({
           {/* Form Body */}
           <div className='px-8 py-7'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6'>
-              {/* Name */}
-              <Field label='User Name'>
+              {/* Full Name */}
+              <Field label='Full Name'>
                 <input
                   type='text'
-                  id='name'
-                  value={form.name}
-                  onChange={(e) => set("name")(e.target.value)}
+                  id='fullName'
+                  value={form.fullName}
+                  onChange={(e) => set("fullName")(e.target.value)}
+                  placeholder='Enter full name'
                   className={inputBase}
                 />
               </Field>
@@ -172,6 +173,7 @@ export function EditUserModal({
                   id='email'
                   value={form.email}
                   onChange={(e) => set("email")(e.target.value)}
+                  placeholder='Enter email address'
                   className={inputBase}
                 />
               </Field>
@@ -194,9 +196,10 @@ export function EditUserModal({
               <Field label='Salon'>
                 <input
                   type='text'
-                  id='salon'
-                  value={form.salon}
-                  onChange={(e) => set("salon")(e.target.value)}
+                  id='salonName'
+                  value={form.salonName}
+                  onChange={(e) => set("salonName")(e.target.value)}
+                  placeholder='Enter salon name'
                   className={inputBase}
                 />
               </Field>
@@ -207,10 +210,25 @@ export function EditUserModal({
                   id='status'
                   value={form.status}
                   onChange={set("status")}
-                  options={[
-                    { label: "Active", value: "Active" },
-                    { label: "Inactive", value: "Inactive" },
-                  ]}
+                  options={
+                    form.status === "ACTIVE"
+                      ? [
+                          { label: "Active", value: "ACTIVE" },
+                          { label: "Suspend", value: "SUSPEND" },
+                        ]
+                      : form.status === "PENDING"
+                        ? [
+                            { label: "Pending", value: "PENDING" },
+                            { label: "Active", value: "ACTIVE" },
+                            { label: "Reject", value: "REJECTED" },
+                          ]
+                        : form.status === "SUSPEND"
+                          ? [
+                              { label: "Suspended", value: "SUSPEND" },
+                              { label: "Active", value: "ACTIVE" },
+                            ]
+                          : [{ label: form.status, value: form.status }]
+                  }
                 />
               </Field>
             </div>
@@ -222,14 +240,14 @@ export function EditUserModal({
               type='button'
               onClick={onClose}
               disabled={loading}
-              className='h-[38px] rounded-[6px] border border-[#D1D5DB] bg-white px-6 text-[13px] font-medium text-[#374151] shadow-sm hover:bg-[#F9FAFB] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D83B8F] disabled:opacity-60'>
+              className='h-9.5 rounded-[6px] border border-[#D1D5DB] bg-white px-6 text-[13px] font-medium text-[#374151] shadow-sm hover:bg-[#F9FAFB] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D83B8F] disabled:opacity-60'>
               Cancel
             </button>
             <button
               type='button'
               onClick={handleSave}
               disabled={loading}
-              className='h-[38px] rounded-[6px] bg-[#D83B8F] px-6 text-[13px] font-medium text-white shadow-sm hover:bg-[#C23580] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D83B8F] disabled:opacity-70 flex items-center gap-2'>
+              className='h-9.5 rounded-[6px] bg-[#D83B8F] px-6 text-[13px] font-medium text-white shadow-sm hover:bg-[#C23580] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D83B8F] disabled:opacity-70 flex items-center gap-2'>
               {loading ? (
                 <>
                   <svg
