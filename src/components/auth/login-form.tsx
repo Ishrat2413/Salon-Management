@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -11,60 +10,29 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { USERS } from "@/lib/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import * as z from "zod";
-
-const formSchema = z.object({
-  email: z.string().min(1, { message: "Email is required." }),
-  password: z.string().min(1, { message: "Password is required." }),
-});
+import { loginSchema } from "@/actions/auth/auth.schema";
+import { useLoginMutation } from "@/actions/auth/useAuth";
 
 export function LoginForm() {
-  const { login } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const { mutate: login, isPending } = useLoginMutation();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-
-    // Simulate network request
-    setTimeout(() => {
-      setIsLoading(false);
-
-      const userKey = values.email
-        .toLowerCase()
-        .split("@")[0] as keyof typeof USERS;
-      const userDetails = USERS[userKey];
-
-      if (
-        userDetails &&
-        userDetails.password === values.password &&
-        userDetails.email === values.email.toLowerCase()
-      ) {
-        toast.success("Successfully logged in");
-        login({
-          email: userDetails.email,
-          role: userDetails.role,
-          name: userDetails.name,
-        });
-      } else {
-        toast.error("Invalid credentials. Please use demo details.");
-      }
-    }, 500);
+  function onSubmit(values: z.infer<typeof loginSchema>) {
+    login(values);
   }
 
   return (
@@ -80,7 +48,7 @@ export function LoginForm() {
               </FormLabel>
               <FormControl>
                 <Input
-                  placeholder='@peduarte'
+                  placeholder='email@example.com'
                   className='rounded-md px-3 py-5 border-gray-200 focus-visible:ring-[#D6449A]'
                   {...field}
                 />
@@ -125,9 +93,6 @@ export function LoginForm() {
                   </button>
                 </div>
               </FormControl>
-              <p className='text-xs text-[#D6449A] mt-1 cursor-pointer w-fit hover:underline'>
-                Remember me
-              </p>
               <FormMessage />
             </FormItem>
           )}
@@ -145,13 +110,10 @@ export function LoginForm() {
           <Button
             type='submit'
             className='bg-[#D6449A] hover:bg-[#B33580] text-white rounded-md px-10 py-5 transition-all'
-            disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Log in"}
+            disabled={isPending}>
+            {isPending ? "Logging in..." : "Log in"}
           </Button>
         </div>
-
-        {/* Demo Credentials Info block removed from main view to match design perfectly. 
-            Logging will still work with the demo users. */}
       </form>
     </Form>
   );

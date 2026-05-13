@@ -37,6 +37,41 @@ const AUTH_CHANGE_EVENT = "demo-user-change";
 let cachedStoredUserValue: string | null = null;
 let cachedStoredUser: User | null = null;
 
+function normalizeRole(role: string | undefined | null): UserRole | null {
+  if (!role) {
+    return null;
+  }
+
+  const normalizedRole = role.toLowerCase();
+
+  if (
+    normalizedRole === "employee" ||
+    normalizedRole === "manager" ||
+    normalizedRole === "admin"
+  ) {
+    return normalizedRole;
+  }
+
+  return null;
+}
+
+function normalizeUser(user: User | null): User | null {
+  if (!user) {
+    return null;
+  }
+
+  const role = normalizeRole(user.role);
+
+  if (!role) {
+    return null;
+  }
+
+  return {
+    ...user,
+    role,
+  };
+}
+
 function readStoredUser() {
   if (typeof window === "undefined") {
     return null;
@@ -56,7 +91,7 @@ function readStoredUser() {
   }
 
   try {
-    cachedStoredUser = JSON.parse(storedUser) as User;
+    cachedStoredUser = normalizeUser(JSON.parse(storedUser) as User);
     return cachedStoredUser;
   } catch {
     window.localStorage.removeItem(AUTH_STORAGE_KEY);
@@ -67,11 +102,13 @@ function readStoredUser() {
 }
 
 function writeStoredUser(user: User | null) {
-  if (user) {
-    const storedUser = JSON.stringify(user);
+  const normalizedUser = normalizeUser(user);
+
+  if (normalizedUser) {
+    const storedUser = JSON.stringify(normalizedUser);
     window.localStorage.setItem(AUTH_STORAGE_KEY, storedUser);
     cachedStoredUserValue = storedUser;
-    cachedStoredUser = user;
+    cachedStoredUser = normalizedUser;
     return;
   }
 

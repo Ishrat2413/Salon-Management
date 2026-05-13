@@ -47,7 +47,7 @@ export function Sidebar({ mobileOpen, onMobileOpenChange }: SidebarProps) {
   const navItems = useMemo(() => {
     if (!user) return [];
 
-    return NAV_CONFIG[user.role];
+    return NAV_CONFIG[user.role] ?? NAV_CONFIG.employee;
   }, [user]);
 
   if (!user) return null;

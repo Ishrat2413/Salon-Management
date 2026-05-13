@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 const sofiaPro = localFont({
   src: [
@@ -104,7 +105,9 @@ export default function RootLayout({
     <html lang='en'>
       <body
         className={`${sofiaPro.className} ${sofiaPro.variable} antialiased`}>
-        <AuthProvider>{children}</AuthProvider>
+        <QueryProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryProvider>
         <Toaster position='top-right' richColors />
       </body>
     </html>

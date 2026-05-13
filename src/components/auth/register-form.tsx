@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -22,77 +22,74 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { registerSchema } from "@/actions/auth/auth.schema";
+import { useRegisterMutation } from "@/actions/auth/useAuth";
+import { salonService } from "@/lib/api/services/salon.service";
 
-const formSchema = z
-  .object({
-    fullName: z.string().min(1, { message: "Last name is required." }),
-    email: z.string().email({ message: "Invalid email address." }),
-    salon: z.string().min(1, { message: "Salon is required." }),
-    password: z
-      .string()
-      .min(6, { message: "Password must be at least 6 characters." }),
-    confirmPassword: z.string().min(1, { message: "Please confirm password." }),
-    role: z.enum(["employee", "manager"]),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
+interface Salon {
+  id: string;
+  name: string;
+}
 
 export function RegisterForm() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [role, setRole] = useState<"employee" | "manager">("employee");
+  const [salons, setSalons] = useState<Salon[]>([]);
+  const { mutate: register, isPending } = useRegisterMutation();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       fullName: "",
       email: "",
-      salon: "",
+      salonId: "",
       password: "",
       confirmPassword: "",
-      role: "employee",
+      role: "EMPLOYEE",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
+  useEffect(() => {
+    async function fetchSalons() {
+      try {
+        const result = await salonService.getAllSalons({ limit: 100 });
+        console.log("Salons fetched:", result);
+        if (result.success) {
+          setSalons(result.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch salons:", error);
+      }
+    }
+    fetchSalons();
+  }, []);
 
-    // Simulate network request
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Account created successfully!");
-      router.push("/login");
-    }, 1000);
+  function onSubmit(values: z.infer<typeof registerSchema>) {
+    const { confirmPassword, ...data } = values;
+    register(data);
   }
 
   const roleTabHandler = (value: string) => {
-    setRole(value as "employee" | "manager");
-    form.setValue("role", value as "employee" | "manager");
+    form.setValue("role", value as "EMPLOYEE" | "MANAGER");
   };
 
   return (
     <div className='w-full'>
       <Tabs
-        defaultValue='employee'
+        defaultValue='EMPLOYEE'
         className='w-full mb-8'
         onValueChange={roleTabHandler}>
         <TabsList className='w-80 flex justify-start bg-transparent p-0 h-auto rounded-none'>
           <TabsTrigger
-            value='employee'
+            value='EMPLOYEE'
             style={{ backgroundColor: "transparent", boxShadow: "none" }}
             className='justify-start rounded-none border-b-2 px-1 pb-3 pt-2 text-base font-medium text-gray-500 hover:text-gray-700 data-active:border-b-[#D13C92] data-active:text-[#D13C92] data-[state=active]:border-[#D13C92] data-[state=active]:text-[#D13C92]'>
             Employee
           </TabsTrigger>
           <TabsTrigger
-            value='manager'
+            value='MANAGER'
             style={{ backgroundColor: "transparent", boxShadow: "none" }}
             className='justify-start rounded-none border-b-2 border-transparent px-1 pb-3 pt-2 text-base font-medium text-gray-500 hover:text-gray-700 data-active:border-b-[#D13C92] data-active:text-[#D13C92] data-[state=active]:border-[#D13C92] data-[state=active]:text-[#D13C92]'>
             Manager
@@ -142,7 +139,7 @@ export function RegisterForm() {
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder='@peduarte'
+                      placeholder='email@example.com'
                       className='rounded-md px-3 py-5 border-gray-200 focus-visible:ring-[#D13C92]'
                       {...field}
                     />
@@ -154,7 +151,7 @@ export function RegisterForm() {
 
             <FormField
               control={form.control}
-              name='salon'
+              name='salonId'
               render={({ field }) => (
                 <FormItem className='space-y-1.5 flex-none w-full'>
                   <FormLabel className='text-sm font-semibold text-[#020617]'>
@@ -162,16 +159,20 @@ export function RegisterForm() {
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}>
+                    value={field.value}>
                     <FormControl>
                       <SelectTrigger className='w-full rounded-md px-3 py-5 border-gray-200 focus:ring-[#D13C92] text-gray-500'>
-                        <SelectValue placeholder='Salon Name' />
+                        <SelectValue placeholder='Select a Salon'>
+                          {salons.find((s) => s.id === field.value)?.name || "Select a Salon"}
+                        </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value='salon1'>Downtown Elegance</SelectItem>
-                      <SelectItem value='salon2'>Uptown Glamour</SelectItem>
-                      <SelectItem value='salon3'>Suburban Style</SelectItem>
+                      {salons.map((salon) => (
+                        <SelectItem key={salon.id} value={salon.id}>
+                          {salon.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -259,8 +260,8 @@ export function RegisterForm() {
               <Button
                 type='submit'
                 className='bg-[#D13C92] hover:bg-[#A62D73] text-white rounded-md px-8 py-5 transition-all'
-                disabled={isLoading}>
-                {isLoading ? "Registering..." : "Sign up"}
+                disabled={isPending}>
+                {isPending ? "Registering..." : "Sign up"}
               </Button>
             </div>
           </form>
