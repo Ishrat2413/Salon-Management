@@ -29,8 +29,7 @@ import { useRouter } from "next/navigation";
 
 const formSchema = z
   .object({
-    firstName: z.string().min(1, { message: "First name is required." }),
-    lastName: z.string().min(1, { message: "Last name is required." }),
+    fullName: z.string().min(1, { message: "Last name is required." }),
     email: z.string().email({ message: "Invalid email address." }),
     salon: z.string().min(1, { message: "Salon is required." }),
     password: z
@@ -54,8 +53,7 @@ export function RegisterForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      fullName: "",
       email: "",
       salon: "",
       password: "",
@@ -116,31 +114,11 @@ export function RegisterForm() {
             className='space-y-5 flex flex-col min-h-0'>
             <FormField
               control={form.control}
-              name='firstName'
+              name='fullName'
               render={({ field }) => (
                 <FormItem className='space-y-1.5 flex-none'>
                   <FormLabel className='text-sm font-semibold text-[#020617]'>
-                    First Name
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder='Pedro Duarte'
-                      className='rounded-md px-3 py-5 border-gray-200 focus-visible:ring-[#D13C92]'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='lastName'
-              render={({ field }) => (
-                <FormItem className='space-y-1.5 flex-none'>
-                  <FormLabel className='text-sm font-semibold text-[#020617]'>
-                    Last Name
+                    Full Name
                   </FormLabel>
                   <FormControl>
                     <Input
