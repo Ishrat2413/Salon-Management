@@ -1,80 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  ActionDef,
-  ColumnDef,
-} from "@/components/univarsalTable/UnivarsalTable.type";
+import { ActionDef, ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
 import UniversalTable from "@/components/univarsalTable/Universaltable";
 import { EditSalonModal } from "./EditSalonModal";
 import { AddSalonModal } from "./AddSalonModal";
-import { AddManagerModal } from "./AddManagerModal";
-import { Plus, UserPlus } from "lucide-react";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export type Employee = {
-  avatar: string;
-  name: string;
-};
-
-export type Salon = {
-  id: number;
-  salonName: string;
-  managerName: string;
-  employees: Employee[];
-  totalEmployees: number;
-  address: string;
-};
-
-// ─── Avatar Stack Component ───────────────────────────────────────────────────
-
-function AvatarStack({
-  employees,
-  total,
-}: {
-  employees: Employee[];
-  total: number;
-}) {
-  const extra = total - employees.length;
-
-  return (
-    <div className='flex items-center gap-2'>
-      {/* Overlapping avatars */}
-      <div className='flex -space-x-2'>
-        {employees.map((emp, i) => (
-          <img
-            key={i}
-            src={emp.avatar}
-            alt={emp.name}
-            title={emp.name}
-            className='inline-block h-7 w-7 rounded-full ring-2 ring-white object-cover'
-          />
-        ))}
-        {extra > 0 && (
-          <div className='inline-flex items-center justify-center h-7 w-7 rounded-full ring-2 ring-white bg-[#F3F4F6] text-[10px] font-semibold text-[#6B7280]'>
-            +{extra > 9 ? 9 : extra}
-          </div>
-        )}
-      </div>
-      {/* Total count */}
-      <span className='text-xs text-[#9CA3AF]'>{total}+</span>
-    </div>
-  );
-}
-
-// ─── Edit & Delete Icons ──────────────────────────────────────────────────────
+import { Plus } from "lucide-react";
+import { SalonItem } from "@/lib/api/services/salon.service";
 
 function EditIcon() {
   return (
-    <svg
-      className='h-[15px] w-[15px]'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth={1.8}
-      strokeLinecap='round'
-      strokeLinejoin='round'>
+    <svg className='h-[15px] w-[15px]' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth={1.8} strokeLinecap='round' strokeLinejoin='round'>
       <path d='M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7' />
       <path d='M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z' />
     </svg>
@@ -83,14 +19,7 @@ function EditIcon() {
 
 function TrashIcon() {
   return (
-    <svg
-      className='h-[15px] w-[15px]'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth={1.8}
-      strokeLinecap='round'
-      strokeLinejoin='round'>
+    <svg className='h-[15px] w-[15px]' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth={1.8} strokeLinecap='round' strokeLinejoin='round'>
       <polyline points='3 6 5 6 21 6' />
       <path d='M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6' />
       <path d='M10 11v6M14 11v6' />
@@ -99,86 +28,67 @@ function TrashIcon() {
   );
 }
 
-// ─── Column Definitions ───────────────────────────────────────────────────────
-
-const salonColumns: ColumnDef<Salon>[] = [
+const salonColumns: ColumnDef<SalonItem>[] = [
   {
-    key: "salonName",
+    key: "name",
     header: "Salon Name",
     sortable: true,
-    width: "180px",
-    render: (value) => (
-      <span className='text-[13px] text-[#4B5563] font-normal'>
-        {value as string}
-      </span>
-    ),
-  },
-  {
-    key: "managerName",
-    header: "Manager Name",
-    width: "180px",
-    render: (value) => (
-      <span className='text-[13px] text-[#4B5563]'>{value as string}</span>
-    ),
-  },
-  {
-    key: "employees",
-    header: "Employee",
-    width: "200px",
-    render: (value, row) => (
-      <AvatarStack
-        employees={row.employees as Employee[]}
-        total={row.totalEmployees as number}
-      />
-    ),
+    width: "220px",
+    render: (value) => <span className='text-[13px] text-[#4B5563] font-normal'>{value as string}</span>,
   },
   {
     key: "address",
     header: "Address",
-    render: (value) => (
-      <span className='text-[12px] text-[#9CA3AF] leading-[1.5]'>
-        {value as string}
-      </span>
+    render: (value) => <span className='text-[12px] text-[#9CA3AF] leading-[1.5]'>{value as string}</span>,
+  },
+  {
+    key: "usersCount",
+    header: "Employees/Managers",
+    width: "170px",
+    render: (_value, row) => (
+      <span className='text-[13px] text-[#4B5563] font-medium'>{row._count?.users ?? 0}</span>
     ),
   },
 ];
 
-// ─── Main Export ──────────────────────────────────────────────────────────────
-
 interface SalonTableProps {
-  data: Salon[];
+  data: SalonItem[];
+  total: number;
+  page: number;
+  limit: number;
+  isLoading: boolean;
+  isMutating: boolean;
+  onCreate: (payload: { name: string; address: string }) => Promise<void>;
+  onUpdate: (salonId: string, payload: { name: string; address: string }) => Promise<void>;
+  onDelete: (salonId: string) => Promise<void>;
+  onPageChange: (nextPage: number) => void;
 }
 
-export function SalonTable({ data }: SalonTableProps) {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+export function SalonTable({
+  data,
+  total,
+  page,
+  limit,
+  isLoading,
+  isMutating,
+  onCreate,
+  onUpdate,
+  onDelete,
+  onPageChange,
+}: SalonTableProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isAddManagerModalOpen, setIsAddManagerModalOpen] = useState(false);
-  const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
+  const [selectedSalon, setSelectedSalon] = useState<SalonItem | null>(null);
 
-  // Extract unique salon names for manager assignment
-  const salonNames = Array.from(new Set(data.map((s) => s.salonName)));
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
-  const handleEdit = (salon: Salon) => {
-    setSelectedSalon(salon);
-    setIsEditModalOpen(true);
+  const handleDelete = async (salon: SalonItem) => {
+    const confirmed = window.confirm(`Delete salon \"${salon.name}\"?`);
+    if (!confirmed) return;
+
+    await onDelete(salon.id);
   };
 
-  const handleSave = (updatedSalon: Salon) => {
-    // Logic for saving (usually parent state update or API call)
-    console.log("Saving salon:", updatedSalon);
-  };
-
-  const handleAdd = (newSalon: Omit<Salon, "id" | "employees">) => {
-    // Logic for adding (usually parent state update or API call)
-    console.log("Adding new salon:", newSalon);
-  };
-
-  const handleAddManager = (newManager: any) => {
-    // Logic for adding manager (usually parent state update or API call)
-    console.log("Adding new manager:", newManager);
-  };
-
-  const salonActions: ActionDef<Salon>[] = [
+  const salonActions: ActionDef<SalonItem>[] = [
     {
       label: "Edit",
       icon: (
@@ -187,7 +97,7 @@ export function SalonTable({ data }: SalonTableProps) {
         </span>
       ),
       className: "ut-edit-btn",
-      onClick: (row) => handleEdit(row),
+      onClick: (row) => setSelectedSalon(row),
     },
     {
       label: "Delete",
@@ -196,65 +106,87 @@ export function SalonTable({ data }: SalonTableProps) {
           <TrashIcon />
         </span>
       ),
-      onClick: (row) => alert(`Delete: ${row.salonName}`),
+      onClick: (row) => {
+        void handleDelete(row);
+      },
     },
   ];
 
   return (
     <div className='flex items-start justify-center'>
-      <div
-        className='w-full bg-white rounded-xl shadow border border-gray-100'
-        style={{ minHeight: 300 }}>
-        {/* Page Header */}
+      <div className='w-full bg-white rounded-xl shadow border border-gray-100' style={{ minHeight: 300 }}>
         <div className='px-8 pt-8 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
-          <h1 className='text-[22px] font-semibold text-[#1E3A5F]'>
-            Salon Management
-          </h1>
-          <div className='flex items-center gap-3'>
+          <h1 className='text-[22px] font-semibold text-[#1E3A5F]'>Salon Management ({total})</h1>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className='flex items-center justify-center gap-2 h-[40px] px-5 bg-[#D83B8F] text-white text-[13px] font-medium rounded-[8px] hover:bg-[#C23580] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#D83B8F]/20'>
+            <Plus className='w-4 h-4' />
+            Add Salon
+          </button>
+        </div>
+
+        {isLoading ? (
+          <div className='px-8 pb-8 text-sm text-[#9CA3AF]'>Loading salons...</div>
+        ) : (
+          <UniversalTable<SalonItem>
+            data={data.map((item) => ({ ...item, usersCount: item._count?.users ?? 0 })) as any}
+            columns={salonColumns as any}
+            actions={salonActions as any}
+            pageSize={limit}
+            showPagination={false}
+            emptyMessage='No salons found.'
+          />
+        )}
+
+        <div className='px-8 py-5 flex items-center justify-between border-t border-[#F3F4F6]'>
+          <p className='text-sm text-[#6B7280]'>
+            Page {page} of {totalPages}
+          </p>
+          <div className='flex items-center gap-2'>
             <button
-              onClick={() => setIsAddManagerModalOpen(true)}
-              className='flex items-center justify-center gap-2 h-[40px] px-5 bg-white border border-[#D1D5DB] text-[#374151] text-[13px] font-medium rounded-[8px] hover:bg-[#F9FAFB] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#D83B8F]/20'>
-              <UserPlus className='w-4 h-4 text-[#6B7280]' />
-              Add Manager
+              type='button'
+              onClick={() => onPageChange(page - 1)}
+              disabled={page <= 1 || isLoading}
+              className='h-9 px-4 rounded-md border border-[#E5E7EB] text-sm text-[#374151] disabled:opacity-50'>
+              Previous
             </button>
             <button
-              onClick={() => setIsAddModalOpen(true)}
-              className='flex items-center justify-center gap-2 h-[40px] px-5 bg-[#D83B8F] text-white text-[13px] font-medium rounded-[8px] hover:bg-[#C23580] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#D83B8F]/20'>
-              <Plus className='w-4 h-4' />
-              Add Salon
+              type='button'
+              onClick={() => onPageChange(page + 1)}
+              disabled={page >= totalPages || isLoading}
+              className='h-9 px-4 rounded-md border border-[#E5E7EB] text-sm text-[#374151] disabled:opacity-50'>
+              Next
             </button>
           </div>
         </div>
-
-        {/* Universal Table */}
-        <UniversalTable<Salon>
-          data={data}
-          columns={salonColumns}
-          actions={salonActions}
-          pageSize={10}
-          showPagination={true}
-          emptyMessage='No salons found.'
-        />
       </div>
 
-      <EditSalonModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        salon={selectedSalon}
-        onSave={handleSave}
-      />
-
       <AddSalonModal
+        key={`create-${String(isAddModalOpen)}`}
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onAdd={handleAdd}
+        onSubmit={async (payload) => {
+          await onCreate(payload);
+          setIsAddModalOpen(false);
+        }}
+        mode='create'
+        isSubmitting={isMutating}
       />
 
-      <AddManagerModal
-        isOpen={isAddManagerModalOpen}
-        onClose={() => setIsAddManagerModalOpen(false)}
-        onAdd={handleAddManager}
-        salons={salonNames}
+      <EditSalonModal
+        key={`edit-${selectedSalon?.id ?? "none"}-${String(Boolean(selectedSalon))}`}
+        isOpen={Boolean(selectedSalon)}
+        onClose={() => setSelectedSalon(null)}
+        initialData={{
+          name: selectedSalon?.name ?? "",
+          address: selectedSalon?.address ?? "",
+        }}
+        onSave={async (payload) => {
+          if (!selectedSalon) return;
+          await onUpdate(selectedSalon.id, payload);
+          setSelectedSalon(null);
+        }}
+        isSubmitting={isMutating}
       />
     </div>
   );
