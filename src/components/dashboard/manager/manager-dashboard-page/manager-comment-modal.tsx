@@ -6,24 +6,28 @@ type ManagerCommentModalProps = {
   open: boolean;
   onClose: () => void;
   entryId: number;
+  onSave?: (comment: string) => void;
 };
 
 export function ManagerCommentModal({
   open,
   onClose,
   entryId,
+  onSave,
 }: ManagerCommentModalProps) {
   if (!open) return null;
 
-  return <CommentForm onClose={onClose} entryId={entryId} />;
+  return <CommentForm onClose={onClose} entryId={entryId} onSave={onSave} />;
 }
 
 function CommentForm({
   onClose,
   entryId,
+  onSave,
 }: {
   onClose: () => void;
   entryId: number;
+  onSave?: (comment: string) => void;
 }) {
   const [comment, setComment] = useState("");
 
@@ -57,10 +61,11 @@ function CommentForm({
             type='button'
             onClick={() => {
               console.log("Comment saved:", { entryId, comment });
+              if (onSave) onSave(comment);
               onClose();
             }}
             className='rounded-lg bg-pink-600 px-4 py-2 text-white hover:bg-pink-700'>
-            Save
+            Submit
           </button>
         </div>
       </div>

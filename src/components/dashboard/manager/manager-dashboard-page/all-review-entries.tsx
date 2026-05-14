@@ -5,16 +5,14 @@ import { UniversalTable } from "@/components/univarsalTable/Universaltable";
 import type { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
 import {
   Flag,
-  MoreVertical,
   MessageCircle,
   FilePen,
-  MessageSquare,
   Funnel,
   ChevronDown,
 } from "lucide-react";
 import { reviewEntriesData, ReviewEntry } from "./review-entries";
 import { ManagerCommentModal } from "./manager-comment-modal";
-import { ManagerEditModal } from "./manager-edit-modal";
+import { useRouter } from "next/navigation";
 
 export default function AllReviewEntries() {
   const periodOptions = ["This week", "This month", "This year"] as const;
@@ -175,122 +173,80 @@ export default function AllReviewEntries() {
 }
 
 function ReviewEntryActions({ row }: { row: ReviewEntry }) {
-  const [isOpen, setIsOpen] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [pendingActionType, setPendingActionType] = useState<
+    "approve" | "reject" | "comment" | null
+  >(null);
 
-  useEffect(() => {
-    function handlePointerDown(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handlePointerDown);
-    return () => document.removeEventListener("mousedown", handlePointerDown);
-  }, []);
+  const router = useRouter();
 
   const isPending = row.status === "Pending";
 
-  const directActions =
-    row.status === "Approved" || row.status === "Rejected"
-      ? [
-          {
-            label: "Edit",
-            icon: <FilePen className='h-4 w-4' strokeWidth={3} />,
-            tone: "#1850D8",
-            border: "#1850D8",
-            onClick: () => setShowEditModal(true),
-          },
-          {
-            label: "Comment",
-            icon: <MessageSquare className='h-4 w-4' strokeWidth={3} />,
-            tone: "#30A860",
-            border: "#30A860",
-            onClick: () => setShowCommentModal(true),
-          },
-        ]
-      : [
-          {
-            label: "Approve",
-            icon: <Flag className='h-4 w-4' strokeWidth={3} />,
-            tone: "#4FAF8F",
-            border: "#4FAF8F",
-            onClick: () => console.log("Approve:", row.id),
-          },
-          {
-            label: "Reject",
-            icon: <Flag className='h-4 w-4' strokeWidth={3} />,
-            tone: "#E5485D",
-            border: "#E5485D",
-            onClick: () => console.log("Reject:", row.id),
-          },
-        ];
+  function handleApprove() {
+    setPendingActionType("approve");
+    setShowCommentModal(true);
+  }
+
+  function handleReject() {
+    setPendingActionType("reject");
+    setShowCommentModal(true);
+  }
+
+  function handleComment() {
+    setPendingActionType("comment");
+    setShowCommentModal(true);
+  }
 
   return (
-    <div className='flex items-center justify-start gap-2' ref={menuRef}>
-      {directActions.map((action) => (
-        <button
-          key={action.label}
-          type='button'
-          onClick={action.onClick}
-          className='inline-flex h-10 w-10 items-center justify-center rounded-md border transition'
-          style={{
-            borderColor: action.border,
-            color: action.tone,
-          }}>
-          {action.icon}
-        </button>
-      ))}
-
+    <div className='flex items-center justify-start gap-2'>
       {isPending ? (
-        <div className='relative'>
+        <>
           <button
             type='button'
-            aria-label='More actions'
-            onClick={() => setIsOpen((current) => !current)}
-            className='inline-flex h-10 w-10 items-center justify-center rounded-md border border-transparent text-gray-500 transition hover:bg-gray-100 hover:text-gray-700'>
-            <MoreVertical className='h-4 w-4' />
+            onClick={handleApprove}
+            className='inline-flex h-10 w-10 items-center justify-center rounded-md border transition'
+            style={{ borderColor: "#4FAF8F", color: "#4FAF8F" }}>
+            <Flag className='h-4 w-4' strokeWidth={3} />
           </button>
 
-          {isOpen ? (
-            <div className='absolute right-0 top-full z-20 mt-2 w-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg'>
-              <button
-                type='button'
-                onClick={() => {
-                  setIsOpen(false);
-                  setShowEditModal(true);
-                }}
-                className='flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-gray-700 transition hover:bg-[#fbf4f7]'>
-                <FilePen className='h-4 w-4 text-gray-500' />
-                Edit
-              </button>
-              <button
-                type='button'
-                onClick={() => {
-                  setIsOpen(false);
-                  setShowCommentModal(true);
-                }}
-                className='flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-gray-700 transition hover:bg-[#fbf4f7]'>
-                <MessageCircle className='h-4 w-4 text-gray-500' />
-                Comment
-              </button>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
+          <button
+            type='button'
+            onClick={handleReject}
+            className='inline-flex h-10 w-10 items-center justify-center rounded-md border transition'
+            style={{ borderColor: "#E5485D", color: "#E5485D" }}>
+            <Flag className='h-4 w-4' strokeWidth={3} />
+          </button>
+        </>
+      ) : (
+        <button
+          type='button'
+          onClick={() => router.push(`/edit-entries/${row.id}`)}
+          className='inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-[#1850D8]'
+          style={{ borderColor: "#1850D8" }}>
+          <FilePen className='h-4 w-4' strokeWidth={3} />
+          <span>Edit</span>
+        </button>
+      )}
 
       <ManagerCommentModal
         open={showCommentModal}
-        onClose={() => setShowCommentModal(false)}
+        onClose={() => {
+          setShowCommentModal(false);
+          setPendingActionType(null);
+        }}
         entryId={row.id}
-      />
+        onSave={(comment) => {
+          if (pendingActionType === "approve") {
+            console.log("Approve with comment:", { id: row.id, comment });
+          } else if (pendingActionType === "reject") {
+            console.log("Reject with comment:", { id: row.id, comment });
+          } else {
+            console.log("Comment saved:", { id: row.id, comment });
+          }
 
-      <ManagerEditModal
-        open={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        row={row}
+          setShowCommentModal(false);
+          setPendingActionType(null);
+        }}
       />
     </div>
   );

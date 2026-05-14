@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,14 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
 
+type InitialData = {
+  employee?: string;
+  salon?: string;
+  amount?: number | string;
+  tip?: number | string;
+  notes?: string;
+};
+
 const braiders = [
   {
     id: 1,
@@ -23,16 +32,34 @@ const braiders = [
   },
   {
     id: 2,
-    name: "Sarah Jenkins",
+    name: "Emma Watson",
     service: "$120.00",
     tip: "$15.00",
   },
 ];
 
-export default function AddEntryForm() {
+export default function AddEntryForm({
+  initialData,
+}: {
+  initialData?: InitialData;
+}) {
+  const [employeeValue, setEmployeeValue] = useState<string | undefined>(
+    initialData?.employee,
+  );
+  const [salonValue, setSalonValue] = useState<string | undefined>(
+    initialData?.salon,
+  );
+  const [totalPrice, setTotalPrice] = useState<string>(
+    initialData?.amount ? String(initialData.amount) : "",
+  );
+  const [tipValue, setTipValue] = useState<string>(
+    initialData?.tip ? String(initialData.tip) : "",
+  );
+  const [notes, setNotes] = useState<string | undefined>(initialData?.notes);
+
   return (
     <div className='min-h-screen p-4'>
-      <Card className='mx-auto  rounded-2xl border border-gray-100 shadow-sm'>
+      <Card className='mx-auto rounded-2xl border border-gray-100 shadow-sm'>
         <CardHeader>
           <CardTitle className='text-2xl font-semibold text-gray-800'>
             Add New Entry
@@ -49,15 +76,18 @@ export default function AddEntryForm() {
                   Employee name
                 </label>
 
-                <Select>
+                <Select
+                  value={employeeValue}
+                  onValueChange={(v) => setEmployeeValue(v ?? undefined)}>
                   <SelectTrigger className='w-full h-11'>
-                    <SelectValue placeholder='Select a service' />
+                    <SelectValue
+                      placeholder={employeeValue || "Select an employee"}
+                    />
                   </SelectTrigger>
 
                   <SelectContent>
-                    <SelectItem value='service-1'>Service 1</SelectItem>
-
-                    <SelectItem value='service-2'>Service 2</SelectItem>
+                    <SelectItem value='Sarah Jenkins'>Sarah Jenkins</SelectItem>
+                    <SelectItem value='Emma Watson'>Emma Watson</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -68,14 +98,15 @@ export default function AddEntryForm() {
                   Salon Name
                 </label>
 
-                <Select>
+                <Select
+                  value={salonValue}
+                  onValueChange={(v) => setSalonValue(v ?? undefined)}>
                   <SelectTrigger className='w-full h-11'>
-                    <SelectValue placeholder='Select a salon' />
+                    <SelectValue placeholder={salonValue || "Select a salon"} />
                   </SelectTrigger>
 
                   <SelectContent>
                     <SelectItem value='salon-1'>Salon 1</SelectItem>
-
                     <SelectItem value='salon-2'>Salon 2</SelectItem>
                   </SelectContent>
                 </Select>
@@ -91,7 +122,12 @@ export default function AddEntryForm() {
                     Total price
                   </label>
 
-                  <Input placeholder='$ 0.00' className='h-11' />
+                  <Input
+                    value={totalPrice}
+                    onChange={(e) => setTotalPrice(e.target.value)}
+                    placeholder='$ 0.00'
+                    className='h-11'
+                  />
                 </div>
 
                 <div className='space-y-2'>
@@ -109,7 +145,12 @@ export default function AddEntryForm() {
                   Tip (Optional)
                 </label>
 
-                <Input placeholder='$ 0.00' className='h-11' />
+                <Input
+                  value={tipValue}
+                  onChange={(e) => setTipValue(e.target.value)}
+                  placeholder='$ 0.00'
+                  className='h-11'
+                />
               </div>
             </div>
 
@@ -119,7 +160,12 @@ export default function AddEntryForm() {
                 Notes (Optional)
               </label>
 
-              <Textarea placeholder='$ 0.00' className='min-h-[120px]' />
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder='Notes (Optional)'
+                className='min-h-30'
+              />
             </div>
 
             {/* Split Service Toggle */}
@@ -166,7 +212,6 @@ export default function AddEntryForm() {
                     <tr
                       key={braider.id}
                       className='border-t border-gray-100 transition-colors hover:bg-gray-50/70'>
-                      {/* Braider Select */}
                       <td className='px-6 py-4'>
                         <Select>
                           <SelectTrigger className='h-11 w-full border-gray-200 bg-white'>
@@ -175,27 +220,23 @@ export default function AddEntryForm() {
 
                           <SelectContent>
                             <SelectItem value='sarah'>Sarah Jenkins</SelectItem>
-
                             <SelectItem value='emma'>Emma Watson</SelectItem>
                           </SelectContent>
                         </Select>
                       </td>
 
-                      {/* Service */}
                       <td className='px-6 py-4 text-center'>
                         <span className='font-medium text-gray-700'>
                           {braider.service}
                         </span>
                       </td>
 
-                      {/* Tip */}
                       <td className='px-6 py-4 text-center'>
                         <span className='font-medium text-gray-700'>
                           {braider.tip}
                         </span>
                       </td>
 
-                      {/* Action */}
                       <td className='px-6 py-4 text-right'>
                         <Button
                           type='button'
