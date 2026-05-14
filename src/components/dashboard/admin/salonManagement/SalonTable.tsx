@@ -8,6 +8,10 @@ import { AddSalonModal } from "./AddSalonModal";
 import { Plus } from "lucide-react";
 import { SalonItem } from "@/lib/api/services/salon.service";
 
+type SalonTableRow = SalonItem & Record<string, unknown> & {
+  usersCount: number;
+};
+
 function EditIcon() {
   return (
     <svg className='h-[15px] w-[15px]' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth={1.8} strokeLinecap='round' strokeLinejoin='round'>
@@ -28,7 +32,7 @@ function TrashIcon() {
   );
 }
 
-const salonColumns: ColumnDef<SalonItem>[] = [
+const salonColumns: ColumnDef<SalonTableRow>[] = [
   {
     key: "name",
     header: "Salon Name",
@@ -88,7 +92,7 @@ export function SalonTable({
     await onDelete(salon.id);
   };
 
-  const salonActions: ActionDef<SalonItem>[] = [
+  const salonActions: ActionDef<SalonTableRow>[] = [
     {
       label: "Edit",
       icon: (
@@ -128,10 +132,10 @@ export function SalonTable({
         {isLoading ? (
           <div className='px-8 pb-8 text-sm text-[#9CA3AF]'>Loading salons...</div>
         ) : (
-          <UniversalTable<SalonItem>
-            data={data.map((item) => ({ ...item, usersCount: item._count?.users ?? 0 })) as any}
-            columns={salonColumns as any}
-            actions={salonActions as any}
+          <UniversalTable<SalonTableRow>
+            data={data.map((item) => ({ ...item, usersCount: item._count?.users ?? 0 }))}
+            columns={salonColumns}
+            actions={salonActions}
             pageSize={limit}
             showPagination={false}
             emptyMessage='No salons found.'
