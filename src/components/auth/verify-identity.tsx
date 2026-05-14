@@ -6,15 +6,32 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useVerifyResetCodeMutation } from "@/actions/auth/useAuth";
+import { useRouter } from "next/navigation";
 
 const CODE_LENGTH = 6;
 const RESEND_SECONDS = 60;
 
 export default function VerifyIdentityPage() {
+  const router = useRouter();
   const [code, setCode] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [timer, setTimer] = useState(RESEND_SECONDS);
-  const [isLoading, setIsLoading] = useState(false);
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
+
+  const {
+    mutate: verifyCode,
+    isPending: isLoading,
+  } = useVerifyResetCodeMutation();
+
+  useEffect(() => {
+    const storedEmail = sessionStorage.getItem("resetEmail");
+
+    if (!storedEmail) {
+      toast.error("Session expired. Please request a new verification code.");
+      router.replace("/forgot-password");
+      return;
+    }
+  }, [router]);
 
   // Countdown timer
   useEffect(() => {
@@ -67,15 +84,22 @@ export default function VerifyIdentityPage() {
   }
 
   function handleSubmit() {
+    if (isLoading) return;
+
+    const email = sessionStorage.getItem("resetEmail")?.trim().toLowerCase();
+
+    if (!email) {
+      toast.error("Session expired. Please request a new verification code.");
+      router.replace("/forgot-password");
+      return;
+    }
+
     if (fullCode.length < CODE_LENGTH) {
       toast.error("Please enter the full 6-digit code.");
       return;
     }
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Identity verified!");
-    }, 800);
+
+    verifyCode({ email, code: fullCode });
   }
 
   return (

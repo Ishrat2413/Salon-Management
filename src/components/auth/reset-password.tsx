@@ -13,10 +13,11 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, RotateCcw } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+import { useResetPasswordMutation } from "@/actions/auth/useAuth";
 
 const formSchema = z
   .object({
@@ -60,7 +61,18 @@ function PasswordRule({ met, label }: { met: boolean; label: string }) {
 export default function ResetPasswordPage() {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  const { mutate: resetPassword, isPending: isLoading } = useResetPasswordMutation();
+
+  useEffect(() => {
+    const storedToken = sessionStorage.getItem("resetToken");
+    if (storedToken) {
+      setToken(storedToken);
+    } else {
+      toast.error("Session expired. Please request a new code.");
+    }
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -78,13 +90,12 @@ export default function ResetPasswordPage() {
     { label: "One number", met: /[0-9]/.test(newPassword) },
   ];
 
-  function onSubmit() {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Password updated successfully!");
-      form.reset();
-    }, 800);
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!token) {
+      toast.error("No reset token found. Please verify your identity again.");
+      return;
+    }
+    resetPassword({ token, newPassword: values.newPassword });
   }
 
   return (
