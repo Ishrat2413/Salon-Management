@@ -1,55 +1,54 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { Flag, FilePen } from "lucide-react";
+import {
+  useSalonEntriesQuery,
+  useUpdateSalonEntryStatusMutation,
+} from "@/actions/salon-entry/useSalonEntry";
+import type { SalonEntry } from "@/actions/salon-entry/salon-entry.types";
 import { UniversalTable } from "@/components/univarsalTable/Universaltable";
 import type { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
-import {
-  Flag,
-  MoreVertical,
-  MessageCircle,
-  FilePen,
-  MessageSquare,
-} from "lucide-react";
-import { reviewEntriesData, ReviewEntry } from "./review-entries";
 import { ManagerCommentModal } from "./manager-comment-modal";
-import { ManagerEditModal } from "./manager-edit-modal";
+
+type ManagerReviewEntry = SalonEntry & {
+  percentage?: string;
+};
 
 export default function ManagerReviewEntries() {
   const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const limit = 5;
 
-  const filteredData = useMemo(() => {
-    return reviewEntriesData.filter((entry) => {
-      const matchesSearch =
-        entry.employee.toLowerCase().includes(search.toLowerCase()) ||
-        entry.service.toLowerCase().includes(search.toLowerCase());
+  const { data: response, isLoading } = useSalonEntriesQuery({
+    page: 1,
+    limit,
+  });
 
-      const matchesStatus = statusFilter
-        ? entry.status.toLowerCase() === statusFilter.toLowerCase()
-        : true;
+  function getSplitPercentage(row: SalonEntry) {
+    if (!row.isSplit) return "";
 
-      return matchesSearch && matchesStatus;
-    });
-  }, [search, statusFilter]);
+    const totalPrice = Number(row.totalPrice || 0);
+    const splitShare = Number(
+      row.loggedInUserTotalPrice || row.splits?.[0]?.totalPrice || 0,
+    );
 
-  const columns: ColumnDef<ReviewEntry>[] = [
+    if (!totalPrice) return "";
+
+    const percentage = (splitShare / totalPrice) * 100;
+
+    return `${percentage.toFixed(2)}%`;
+  }
+
+  const columns: ColumnDef<ManagerReviewEntry>[] = [
+    { key: "employeeName", header: "Employee", width: "15%", sortable: true },
+    { key: "serviceName", header: "Service", width: "20%", sortable: true },
+    { key: "salonName", header: "Salon", width: "15%", sortable: true },
     {
-      key: "employee",
-      header: "Employee",
-      width: "15%",
-      sortable: true,
-    },
-    {
-      key: "service",
-      header: "Service",
-      width: "20%",
-      sortable: true,
-    },
-    {
-      key: "amount",
+      key: "totalPrice",
       header: "Amount",
-      width: "12%",
+      width: "10%",
       sortable: true,
       render: (value) => `$${Number(value).toFixed(2)}`,
     },
@@ -58,45 +57,64 @@ export default function ManagerReviewEntries() {
       header: "Percentage",
       width: "12%",
       sortable: true,
-      render: (value) => (value ? `${value}` : ""),
+      render: (value, row) => {
+        const percentage =
+          (value as string | undefined) ||
+          row.percentage ||
+          getSplitPercentage(row);
+
+        if (!percentage) return "";
+
+        return (
+          <span className='inline-flex rounded-md bg-[#FFF2F8] px-3 py-1 text-sm font-medium text-[#B41F78]'>
+            {percentage}
+          </span>
+        );
+      },
     },
     {
-      key: "tip",
+      key: "tips",
       header: "Tip",
-      width: "10%",
+      width: "8%",
       sortable: true,
       render: (value) => `$${Number(value).toFixed(2)}`,
     },
     {
-      key: "date",
+      key: "createdAt",
       header: "Date",
       width: "12%",
       sortable: true,
+      render: (value) =>
+        value ? format(new Date(value as string), "yyyy-MM-dd") : "-",
     },
     {
       key: "time",
       header: "Time",
       width: "10%",
       sortable: true,
+      render: (_, row) =>
+        row.createdAt
+          ? format(new Date(row.createdAt as string), "hh:mm a")
+          : "-",
     },
     {
       key: "status",
       header: "Status",
-      width: "11%",
+      width: "10%",
       statusMap: {
-        approved: {
+        APPROVED: {
           label: "Approved",
           bg: "#e8f8f0",
           color: "#1a7a4a",
           className: "font-medium",
         },
-        pending: {
+        PENDING: {
           label: "Pending",
           bg: "#fff8e6",
           color: "#b07d00",
           className: "font-medium",
         },
-        rejected: {
+        REJECTED: {
           label: "Rejected",
           bg: "#fef0f0",
           color: "#c0392b",
@@ -107,157 +125,129 @@ export default function ManagerReviewEntries() {
     {
       key: "id",
       header: "Actions",
-      width: "13%",
+      width: "10%",
       align: "right",
-      render: (_, row) => <ReviewEntryActions row={row as ReviewEntry} />,
+      render: (_, row) => <SalonEntryActions row={row as SalonEntry} />,
     },
   ];
 
+  if (isLoading) return <div className='p-6 text-[#283E5C]'>Loading...</div>;
+
   return (
     <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6'>
-      {/* Header with View All Button */}
       <div className='flex items-center justify-between'>
         <h2 className='text-3xl font-medium text-[#283E5C]'>Review Entries</h2>
         <button
-          onClick={() => router.push("/review-entries")}
+          type='button'
+          onClick={() => router.push("/manager-review-entries")}
           className='px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition'>
           View All
         </button>
       </div>
 
-      {/* Table */}
-      <UniversalTable
-        data={filteredData.slice(0, 7)}
+      <UniversalTable<SalonEntry>
+        data={(response?.data || []) as ManagerReviewEntry[]}
         columns={columns}
-        pageSize={7}
         emptyMessage='No entries found.'
         showPagination={false}
         className='p-0!'
         rowStyle={(row) =>
-          (row as ReviewEntry).percentage ? { backgroundColor: "#FFF2F8" } : {}
+          (row as ManagerReviewEntry).isSplit
+            ? { backgroundColor: "#FFF2F8" }
+            : {}
         }
       />
     </div>
   );
 }
 
-function ReviewEntryActions({ row }: { row: ReviewEntry }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [showCommentModal, setShowCommentModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+function SalonEntryActions({ row }: { row: SalonEntry }) {
+  const router = useRouter();
+  const { mutateAsync: updateStatus, isPending: isUpdatingStatus } =
+    useUpdateSalonEntryStatusMutation();
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+  const [moderationAction, setModerationAction] = useState<
+    "APPROVE" | "REJECT" | null
+  >(null);
+  const isPending = row.status === "PENDING";
 
-  useEffect(() => {
-    function handlePointerDown(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
+  const moderationLabels = {
+    APPROVE: {
+      title: "Approve Entry",
+      submitLabel: "Approve",
+    },
+    REJECT: {
+      title: "Reject Entry",
+      submitLabel: "Reject",
+    },
+  } as const;
 
-    document.addEventListener("mousedown", handlePointerDown);
-    return () => document.removeEventListener("mousedown", handlePointerDown);
-  }, []);
+  function openModerationModal(action: "APPROVE" | "REJECT") {
+    setModerationAction(action);
+    setIsCommentModalOpen(true);
+  }
 
-  const isPending = row.status === "Pending";
+  function closeModerationModal() {
+    setIsCommentModalOpen(false);
+    setModerationAction(null);
+  }
 
-  const directActions =
-    row.status === "Approved" || row.status === "Rejected"
-      ? [
-          {
-            label: "Edit",
-            icon: <FilePen className='h-4 w-4' strokeWidth={3} />,
-            tone: "#1850D8",
-            border: "#1850D8",
-            onClick: () => setShowEditModal(true),
-          },
-          {
-            label: "Comment",
-            icon: <MessageSquare className='h-4 w-4' strokeWidth={3} />,
-            tone: "#30A860",
-            border: "#30A860",
-            onClick: () => setShowCommentModal(true),
-          },
-        ]
-      : [
-          {
-            label: "Approve",
-            icon: <Flag className='h-4 w-4' strokeWidth={3} />,
-            tone: "#4FAF8F",
-            border: "#4FAF8F",
-            onClick: () => console.log("Approve:", row.id),
-          },
-          {
-            label: "Reject",
-            icon: <Flag className='h-4 w-4' strokeWidth={3} />,
-            tone: "#E5485D",
-            border: "#E5485D",
-            onClick: () => console.log("Reject:", row.id),
-          },
-        ];
+  async function handleModerationSubmit(comment: string) {
+    if (!moderationAction) return;
+
+    await updateStatus({
+      id: row.id,
+      status: moderationAction === "APPROVE" ? "APPROVED" : "REJECTED",
+      statusComment: comment,
+    });
+  }
 
   return (
-    <div className='flex items-center justify-start gap-2' ref={menuRef}>
-      {directActions.map((action) => (
-        <button
-          key={action.label}
-          type='button'
-          onClick={action.onClick}
-          className='inline-flex h-10 w-10 items-center justify-center rounded-md border transition'
-          style={{
-            borderColor: action.border,
-            color: action.tone,
-          }}>
-          {action.icon}
-        </button>
-      ))}
-
+    <div className='flex items-center justify-start gap-2'>
       {isPending ? (
-        <div className='relative'>
+        <>
           <button
             type='button'
-            aria-label='More actions'
-            onClick={() => setIsOpen((current) => !current)}
-            className='inline-flex h-10 w-10 items-center justify-center rounded-md border border-transparent text-gray-500 transition hover:bg-gray-100 hover:text-gray-700'>
-            <MoreVertical className='h-4 w-4' />
+            onClick={() => openModerationModal("APPROVE")}
+            disabled={isUpdatingStatus}
+            className='inline-flex h-10 w-10 items-center justify-center rounded-md border border-[#4FAF8F] text-[#4FAF8F] transition hover:bg-[#4FAF8F]/10'>
+            <Flag className='h-4 w-4' strokeWidth={3} />
           </button>
 
-          {isOpen ? (
-            <div className='absolute right-0 top-full z-20 mt-2 w-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg'>
-              <button
-                type='button'
-                onClick={() => {
-                  setIsOpen(false);
-                  setShowEditModal(true);
-                }}
-                className='flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-gray-700 transition hover:bg-[#fbf4f7]'>
-                <FilePen className='h-4 w-4 text-gray-500' />
-                Edit
-              </button>
-              <button
-                type='button'
-                onClick={() => {
-                  setIsOpen(false);
-                  setShowCommentModal(true);
-                }}
-                className='flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-gray-700 transition hover:bg-[#fbf4f7]'>
-                <MessageCircle className='h-4 w-4 text-gray-500' />
-                Comment
-              </button>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
+          <button
+            type='button'
+            onClick={() => openModerationModal("REJECT")}
+            disabled={isUpdatingStatus}
+            className='inline-flex h-10 w-10 items-center justify-center rounded-md border border-[#E5485D] text-[#E5485D] transition hover:bg-[#E5485D]/10'>
+            <Flag className='h-4 w-4' strokeWidth={3} />
+          </button>
+        </>
+      ) : (
+        <button
+          type='button'
+          onClick={() => router.push(`/edit-entry/${row.id}`)}
+          className='inline-flex items-center gap-2 rounded-md border border-[#1850D8] px-3 py-1.5 text-sm text-[#1850D8] hover:bg-[#1850D8]/10'>
+          <FilePen className='h-4 w-4' strokeWidth={3} />
+          <span>Edit</span>
+        </button>
+      )}
 
       <ManagerCommentModal
-        open={showCommentModal}
-        onClose={() => setShowCommentModal(false)}
+        open={isCommentModalOpen}
+        onClose={closeModerationModal}
         entryId={row.id}
-      />
-
-      <ManagerEditModal
-        open={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        row={row}
+        title={
+          moderationAction
+            ? moderationLabels[moderationAction].title
+            : "Add Comment"
+        }
+        submitLabel={
+          moderationAction
+            ? moderationLabels[moderationAction].submitLabel
+            : "Submit"
+        }
+        isSubmitting={isUpdatingStatus}
+        onSave={handleModerationSubmit}
       />
     </div>
   );
