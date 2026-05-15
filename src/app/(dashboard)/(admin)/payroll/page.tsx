@@ -1,10 +1,11 @@
 import PayrollPage from "@/components/dashboard/admin/payroll/PayrollPage";
+import RoleGuard from "@/components/layout/role-guard";
 
 const page = () => {
   return (
-    <div>
+    <RoleGuard allowed={["admin"]}>
       <PayrollPage />
-    </div>
+    </RoleGuard>
   );
 };
 
