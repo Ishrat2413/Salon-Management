@@ -12,9 +12,9 @@ export default function HomePage() {
 
   return (
     <div>
-      {user.role === "admin" ? <AdminDashboard /> : null}
-      {user.role === "manager" ? <ManagerDashboard /> : null}
-      {user.role === "employee" ? <EmployeeDashboard /> : null}
+      {user.role.toLowerCase() === "admin" ? <AdminDashboard /> : null}
+      {user.role.toLowerCase() === "manager" ? <ManagerDashboard /> : null}
+      {user.role.toLowerCase() === "employee" ? <EmployeeDashboard /> : null}
     </div>
   );
 }
