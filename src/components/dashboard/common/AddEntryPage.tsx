@@ -434,7 +434,7 @@ export default function AddEntryForm({
                                 value={split.employeeId}
                                 onValueChange={(val) => {
                                   const newSplits = [...splits];
-                                  newSplits[index].employeeId = val;
+                                  newSplits[index].employeeId = val ?? "";
                                   setSplits(newSplits);
                                   setErrors((prev) => ({
                                     ...prev,
