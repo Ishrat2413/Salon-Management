@@ -24,6 +24,9 @@ function replaceEntryInCache(
 export const useSalonEntriesQuery = (params: {
   page: number;
   limit: number;
+  employeeId?: string;
+  status?: string;
+  salonId?: string;
 }) => {
   return useQuery({
     queryKey: ["salon-entries", params],
