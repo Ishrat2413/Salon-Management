@@ -3,3 +3,5 @@ import { ForgotPasswordPage as ForgotPasswordPageContent } from "@/components/au
 export default function Page() {
   return <ForgotPasswordPageContent />;
 }
+
+// testing
