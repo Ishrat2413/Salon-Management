@@ -138,7 +138,7 @@ export function UniversalTable<T extends Record<string, unknown>>({
 
   return (
     <div
-      className={`ut-wrapper ${className} bg-white p-8 rounded-xl`}
+      className={`ut-wrapper ${className} bg-white p-4 md:p-8 rounded-xl`}
       style={{ fontFamily: "inherit" }}>
       {title && (
         <h2
