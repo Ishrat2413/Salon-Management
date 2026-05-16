@@ -22,14 +22,15 @@ export function RoleGuard({
       return;
     }
 
-    if (!allowed.some(a => a.toLowerCase() === user.role.toLowerCase())) {
+    if (!allowed.some((a) => a.toLowerCase() === user.role.toLowerCase())) {
       router.replace("/");
     }
   }, [user, isHydrated, allowed, router]);
 
   if (!isHydrated) return null;
   if (!user) return null;
-  if (!allowed.some(a => a.toLowerCase() === user.role.toLowerCase())) return null;
+  if (!allowed.some((a) => a.toLowerCase() === user.role.toLowerCase()))
+    return null;
 
   return <>{children}</>;
 }
