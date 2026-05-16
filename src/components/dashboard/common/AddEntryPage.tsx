@@ -108,12 +108,26 @@ export default function AddEntryForm({
 
     const basePrice = Number(totalPrice) || 0;
     const hairPrice = Number(addHair) || 0;
+    const mainTip = Number(tipValue) || 0;
     const finalTotalPrice = basePrice + hairPrice;
 
     if (splitService) {
       const invalidSplit = splits.find(s => !s.employeeId || !s.totalPrice);
       if (invalidSplit) {
         toast.error("Please fill in Employee and Service $ for all split entries.");
+        return;
+      }
+
+      const totalSplitsPrice = splits.reduce((sum, s) => sum + (Number(s.totalPrice) || 0), 0);
+      const totalSplitsTips = splits.reduce((sum, s) => sum + (Number(s.tips) || 0), 0);
+
+      if (totalSplitsPrice > finalTotalPrice) {
+        toast.error(`The sum of split prices ($${totalSplitsPrice}) exceeds the total price ($${finalTotalPrice}).`);
+        return;
+      }
+
+      if (totalSplitsTips > mainTip) {
+        toast.error(`The sum of split tips ($${totalSplitsTips}) exceeds the main tip amount ($${mainTip}).`);
         return;
       }
     }
@@ -130,7 +144,7 @@ export default function AddEntryForm({
       serviceId: serviceNameValue,
       clientName: clientName || undefined,
       totalPrice: finalTotalPrice,
-      tips: tipValue ? Number(tipValue) : undefined,
+      tips: mainTip || undefined,
       addHair: hairPrice || undefined,
       notes: notes || undefined,
       isSplit: splitService,
