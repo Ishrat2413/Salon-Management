@@ -309,26 +309,6 @@ export default function AllReviewEntries() {
       render: (value) => `$${Number(value).toFixed(2)}`,
     },
     {
-      key: "percentage",
-      header: "Percentage",
-      width: "12%",
-      sortable: true,
-      render: (value, row) => {
-        const percentage =
-          (value as string | undefined) ||
-          row.percentage ||
-          getSplitPercentage(row);
-
-        if (!percentage) return "";
-
-        return (
-          <span className='inline-flex rounded-md bg-[#FFF2F8] px-3 py-1 text-sm font-medium text-[#B41F78]'>
-            {percentage}
-          </span>
-        );
-      },
-    },
-    {
       key: "tips",
       header: "Tip",
       width: "8%",
@@ -405,9 +385,7 @@ export default function AllReviewEntries() {
         pageSize={10}
         className='p-0!'
         rowStyle={(row) =>
-          (row as ManagerReviewEntry).isSplit
-            ? { backgroundColor: "#FFF2F8" }
-            : {}
+          (row as ManagerReviewEntry) ? { backgroundColor: "#FFFFFF" } : {}
         }
       />
     </div>

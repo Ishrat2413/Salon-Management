@@ -4,6 +4,7 @@ import { useState } from "react";
 import { UsersTable } from "./UsersTable";
 import FilterBar from "./FilterBar";
 import { useUsersQuery } from "@/actions/admin/useUsers";
+import { useSalonsQuery } from "@/actions/admin/useSalons";
 
 const ManageUsersPage = () => {
   const [search, setSearch] = useState("");
@@ -12,19 +13,25 @@ const ManageUsersPage = () => {
     limit: 10,
     searchTerm: search,
   });
+  const { data: salonsData } = useSalonsQuery({
+    page: 1,
+    limit: 100,
+    searchTerm: "",
+  });
 
   const roles = [
     { value: "", label: "All Roles" },
-    { value: "admin", label: "Admin" },
-    { value: "manager", label: "Manager" },
-    { value: "employee", label: "Employee" },
+    { value: "ADMIN", label: "Admin" },
+    { value: "MANAGER", label: "Manager" },
+    { value: "EMPLOYEE", label: "Employee" },
   ];
 
   const salons = [
     { value: "", label: "All Salons" },
-    { value: "glam studio", label: "Glam Studio" },
-    { value: "style lounge", label: "Style Lounge" },
-    { value: "beauty bar", label: "Beauty Bar" },
+    ...(salonsData?.data?.map((salon: any) => ({
+      value: salon.id,
+      label: salon.name,
+    })) || []),
   ];
 
   if (isLoading) return <div>Loading...</div>;

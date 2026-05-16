@@ -65,10 +65,11 @@ export const useUpdateSalonMutation = () => {
       payload,
     }: {
       salonId: string;
-      payload: { name?: string; address?: string };
+      payload: { name?: string; address?: string; managerId?: string };
     }) => salonService.updateSalon(salonId, payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: salonKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       toast.success(data?.message || "Salon updated successfully.");
     },
     onError: (error: any) => {

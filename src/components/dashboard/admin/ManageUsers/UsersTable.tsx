@@ -7,10 +7,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 
 export type User = {
-  id: number;
+  id: string | number;
   fullName: string;
-  role: "Admin" | "Manager" | "Employee";
-  salonId: string;
+  role: "ADMIN" | "MANAGER" | "EMPLOYEE" | string;
+  salonId: string | null;
   salonName: string;
   email: string;
   status: "PENDING" | "ACTIVE" | "SUSPEND" | "REJECTED";
@@ -18,7 +18,7 @@ export type User = {
 
 // Role badge color custom define for each role
 const roleBadgeStyle: Record<string, CSSProperties> = {
-  Admin: {
+  ADMIN: {
     background: "#ffe8f5",
     color: "#c0186b",
     borderRadius: 6,
@@ -26,7 +26,7 @@ const roleBadgeStyle: Record<string, CSSProperties> = {
     fontSize: 12,
     fontWeight: 600,
   },
-  Manager: {
+  MANAGER: {
     background: "#e8f0ff",
     color: "#2655c0",
     borderRadius: 6,
@@ -34,7 +34,7 @@ const roleBadgeStyle: Record<string, CSSProperties> = {
     fontSize: 12,
     fontWeight: 600,
   },
-  Employee: {
+  EMPLOYEE: {
     background: "#f2f2f2",
     color: "#555",
     borderRadius: 6,
@@ -103,9 +103,9 @@ const getStatusOptions = (status: User["status"]): StatusOption[] => {
 };
 
 type StatusDropdownProps = {
-  userId: number;
+  userId: string | number;
   status: User["status"];
-  onStatusChange: (userId: number, newStatus: User["status"]) => Promise<void>;
+  onStatusChange: (userId: string | number, newStatus: User["status"]) => Promise<void>;
 };
 
 function StatusDropdown({
@@ -197,7 +197,7 @@ export function UsersTable({ data }: UsersTableProps) {
   const { mutateAsync: updateStatus } = useUpdateUserStatusMutation();
 
   const handleStatusChange = useCallback(
-    async (userId: number, newStatus: User["status"]) => {
+    async (userId: string | number, newStatus: User["status"]) => {
       try {
         await updateStatus({ userId: String(userId), status: newStatus });
       } catch (error) {
