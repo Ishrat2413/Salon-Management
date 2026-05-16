@@ -49,9 +49,11 @@ export const useLoginMutation = () => {
       const { user } = data.data;
       localStorage.setItem("accessToken", data.data.accessToken);
       login({
+        id: user.id,
         email: user.email,
         role: normalizeRole(user.role),
         name: user.fullName,
+        salonId: user.salonId,
       });
       toast.success("Successfully logged in");
       router.push("/");
