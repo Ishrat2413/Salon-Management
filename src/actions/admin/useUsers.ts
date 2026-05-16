@@ -21,6 +21,13 @@ export const useUsersQuery = (params: {
   });
 };
 
+export const useManagersQuery = () => {
+  return useQuery({
+    queryKey: ["users", "managers"],
+    queryFn: () => userService.getUsers({ page: 1, limit: 100, role: "MANAGER" }),
+  });
+};
+
 export const useUpdateUserStatusMutation = () => {
   const queryClient = useQueryClient();
 

@@ -17,6 +17,7 @@ export interface User {
   role: UserRole;
   title?: string;
   phone?: string;
+  salonId?: string;
   salonName?: string;
   salonLocation?: string;
 }

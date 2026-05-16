@@ -6,8 +6,8 @@ import { AddSalonModal } from "./AddSalonModal";
 interface EditSalonModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialData: { name: string; address: string };
-  onSave: (payload: { name: string; address: string }) => Promise<void> | void;
+  initialData: { name: string; address: string; managerId?: string; managerIds?: string[] };
+  onSave: (payload: { name: string; address: string; managerId?: string; managerIds?: string[] }) => Promise<void> | void;
   isSubmitting?: boolean;
 }
 

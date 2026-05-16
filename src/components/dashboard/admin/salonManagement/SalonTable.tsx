@@ -46,6 +46,38 @@ const salonColumns: ColumnDef<SalonTableRow>[] = [
     render: (value) => <span className='text-[12px] text-[#9CA3AF] leading-[1.5]'>{value as string}</span>,
   },
   {
+    key: "manager",
+    header: "Assigned Manager",
+    render: (_value, row) => {
+      // Prioritize the explicit 'manager' field (SalonManager relation)
+      // Fallback to showing all users with MANAGER role assigned to this salon
+      const managers = row.users || [];
+      const primaryManager = row.manager;
+
+      if (primaryManager) {
+        return (
+          <span className='text-[13px] text-[#4B5563] font-semibold'>
+            {primaryManager.fullName} ({primaryManager.email})
+          </span>
+        );
+      }
+
+      if (managers.length > 0) {
+        return (
+          <div className="flex flex-col gap-0.5">
+            {managers.map(m => (
+              <span key={m.id} className='text-[12px] text-[#4B5563] font-normal'>
+                {m.fullName} ({m.email})
+              </span>
+            ))}
+          </div>
+        );
+      }
+
+      return <span className='text-[13px] text-gray-400 italic'>Unassigned</span>;
+    },
+  },
+  {
     key: "usersCount",
     header: "Employees/Managers",
     width: "170px",
@@ -62,8 +94,8 @@ interface SalonTableProps {
   limit: number;
   isLoading: boolean;
   isMutating: boolean;
-  onCreate: (payload: { name: string; address: string }) => Promise<void>;
-  onUpdate: (salonId: string, payload: { name: string; address: string }) => Promise<void>;
+  onCreate: (payload: { name: string; address: string; managerId?: string }) => Promise<void>;
+  onUpdate: (salonId: string, payload: { name: string; address: string; managerId?: string }) => Promise<void>;
   onDelete: (salonId: string) => Promise<void>;
   onPageChange: (nextPage: number) => void;
 }
@@ -184,6 +216,8 @@ export function SalonTable({
         initialData={{
           name: selectedSalon?.name ?? "",
           address: selectedSalon?.address ?? "",
+          managerId: selectedSalon?.managerId ?? "",
+          managerIds: selectedSalon?.users?.map(u => u.id) || [],
         }}
         onSave={async (payload) => {
           if (!selectedSalon) return;

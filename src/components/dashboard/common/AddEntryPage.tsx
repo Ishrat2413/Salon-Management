@@ -1,5 +1,10 @@
 "use client";
 
+import { useSalonsQuery } from "@/actions/admin/useSalons";
+import { useServicesQuery } from "@/actions/admin/useServices";
+import { useUsersQuery } from "@/actions/admin/useUsers";
+import { useCreateSalonEntryMutation } from "@/actions/salon-entry/useSalonEntry";
+import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,11 +18,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
-import { useSalonsQuery } from "@/actions/admin/useSalons";
-import { useServicesQuery } from "@/actions/admin/useServices";
-import { useUsersQuery } from "@/actions/admin/useUsers";
-import { useCreateSalonEntryMutation } from "@/actions/salon-entry/useSalonEntry";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type InitialData = {
@@ -42,6 +43,8 @@ export default function AddEntryForm({
 }: {
   initialData?: InitialData;
 }) {
+  const { user } = useAuth();
+
   const [employeeValue, setEmployeeValue] = useState<string | undefined>(
     initialData?.employee,
   );
@@ -67,6 +70,24 @@ export default function AddEntryForm({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const isManager = user?.role === "manager";
+  const isEmployee = user?.role === "employee";
+  const isManagerOrEmployee = isManager || isEmployee;
+
+  useEffect(() => {
+    if (isManagerOrEmployee) {
+      if (user?.salonId && !salonValue) {
+        setSalonValue(user.salonId);
+      }
+    }
+
+    if (isEmployee) {
+      if (user?.id && !employeeValue) {
+        setEmployeeValue(user.id);
+      }
+    }
+  }, [user, salonValue, employeeValue, isManagerOrEmployee, isEmployee]);
+
   const { data: salonsData, isLoading: isLoadingSalons } = useSalonsQuery({
     page: 1,
     limit: 100,
@@ -81,13 +102,19 @@ export default function AddEntryForm({
     },
   );
 
-  const { data: usersData, isLoading: isLoadingUsers } = useUsersQuery({
+  const {
+    data: usersData,
+    isLoading: isLoadingUsers,
+    isFetching: isFetchingUsers,
+  } = useUsersQuery({
     page: 1,
     limit: 100,
     searchTerm: "",
     salonId: salonValue,
     enabled: !!salonValue,
   });
+
+  const loadingEmployees = isLoadingUsers || isFetchingUsers;
 
   const { mutate: createEntry, isPending } = useCreateSalonEntryMutation();
 
@@ -207,8 +234,10 @@ export default function AddEntryForm({
                     onValueChange={(v) => {
                       setSalonValue(v ?? undefined);
                       setEmployeeValue(undefined);
+                      setSplits([]); // Clear splits when salon changes
                       setErrors((prev) => ({ ...prev, salon: "" }));
-                    }}>
+                    }}
+                    disabled={isManagerOrEmployee && !!user?.salonId}>
                     <SelectTrigger className={inputClasses + " w-full px-3"}>
                       <SelectValue
                         placeholder={
@@ -241,13 +270,13 @@ export default function AddEntryForm({
                       setEmployeeValue(v ?? undefined);
                       setErrors((prev) => ({ ...prev, employee: "" }));
                     }}
-                    disabled={!salonValue}>
+                    disabled={!salonValue || (isEmployee && !!user?.id)}>
                     <SelectTrigger className={inputClasses + " w-full px-3"}>
                       <SelectValue
                         placeholder={
                           !salonValue
                             ? "Select a salon first"
-                            : isLoadingUsers
+                            : loadingEmployees
                               ? "Loading employees..."
                               : "Select an employee"
                         }>
@@ -268,9 +297,13 @@ export default function AddEntryForm({
                   {errors.employee && (
                     <p className={errorClasses}>{errors.employee}</p>
                   )}
-                  {salonValue && !isLoadingUsers && employees.length === 0 && (
-                    <p className={errorClasses}>No employee found this salon</p>
-                  )}
+                  {salonValue &&
+                    !loadingEmployees &&
+                    employees.length === 0 && (
+                      <p className={errorClasses}>
+                        No employee found this salon
+                      </p>
+                    )}
                 </div>
               </div>
 
@@ -442,7 +475,9 @@ export default function AddEntryForm({
                                   }));
                                 }}>
                                 <SelectTrigger
-                                  className={inputClasses + " w-full bg-white"}>
+                                  className={
+                                    inputClasses + " w-full bg-white px-3"
+                                  }>
                                   <SelectValue placeholder='Select Employee'>
                                     {
                                       employees.find(
