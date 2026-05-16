@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { useManagersQuery } from "@/actions/admin/useUsers";
+import { X } from "lucide-react";
 
 interface AddSalonModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (payload: { name: string; address: string }) => Promise<void> | void;
+  onSubmit: (payload: { name: string; address: string; managerId?: string; managerIds?: string[] }) => Promise<void> | void;
   mode: "create" | "edit";
-  initialData?: { name: string; address: string };
+  initialData?: { name: string; address: string; managerId?: string; managerIds?: string[] };
   isSubmitting?: boolean;
 }
 
@@ -38,8 +40,24 @@ export function AddSalonModal({
 }: AddSalonModalProps) {
   const [name, setName] = useState(initialData?.name ?? "");
   const [address, setAddress] = useState(initialData?.address ?? "");
+  
+  // For multi-manager management
+  const [selectedManagerIds, setSelectedManagerIds] = useState<string[]>(initialData?.managerIds ?? []);
+  
+  const { data: managersData, isLoading: isLoadingManagers } = useManagersQuery();
+
+  const managersList = useMemo(() => managersData?.data ?? [], [managersData]);
 
   if (!isOpen) return null;
+
+  const handleAddManager = (id: string) => {
+    if (!id || selectedManagerIds.includes(id)) return;
+    setSelectedManagerIds(prev => [...prev, id]);
+  };
+
+  const handleRemoveManager = (id: string) => {
+    setSelectedManagerIds(prev => prev.filter(mid => mid !== id));
+  };
 
   const handleSubmit = async () => {
     const trimmedName = name.trim();
@@ -49,7 +67,11 @@ export function AddSalonModal({
       return;
     }
 
-    await onSubmit({ name: trimmedName, address: trimmedAddress });
+    await onSubmit({ 
+      name: trimmedName, 
+      address: trimmedAddress,
+      managerIds: mode === "edit" ? selectedManagerIds : undefined
+    });
   };
 
   const title = mode === "create" ? "Add New Salon" : "Update Salon";
@@ -102,6 +124,49 @@ export function AddSalonModal({
                   className={inputBase}
                 />
               </Field>
+
+              {mode === "edit" && (
+                <div className="md:col-span-2 space-y-4">
+                  <Field label='Manage Managers'>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {selectedManagerIds.length > 0 ? (
+                        selectedManagerIds.map(id => {
+                          const manager = managersList.find((m: any) => m.id === id);
+                          return (
+                            <div key={id} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FDF2F8] text-[#D83B8F] text-[12px] font-medium rounded-full border border-[#F9A8D4]/30 shadow-sm">
+                              <span>{manager ? `${manager.fullName} (${manager.email})` : "Loading..."}</span>
+                              <button 
+                                onClick={() => handleRemoveManager(id)}
+                                className="p-0.5 hover:bg-[#D83B8F]/10 rounded-full transition-colors"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <p className="text-[12px] text-gray-400 italic">No managers assigned yet.</p>
+                      )}
+                    </div>
+                    
+                    <select
+                      value=""
+                      onChange={(e) => handleAddManager(e.target.value)}
+                      className={inputBase}
+                      disabled={isLoadingManagers}
+                    >
+                      <option value="">Add a Manager...</option>
+                      {managersList
+                        .filter((m: any) => !selectedManagerIds.includes(m.id))
+                        .map((manager: any) => (
+                          <option key={manager.id} value={manager.id}>
+                            {manager.fullName} ({manager.email})
+                          </option>
+                        ))}
+                    </select>
+                  </Field>
+                </div>
+              )}
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 import { apiClient } from "../client";
 
 export const userService = {
-  getUsers: async (params?: { page?: number; limit?: number; searchTerm?: string }) => {
+  getUsers: async (params?: { page?: number; limit?: number; searchTerm?: string; role?: string }) => {
     const response = await apiClient.get("/api/v1/users", { params });
     return response.data;
   },

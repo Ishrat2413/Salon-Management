@@ -4,6 +4,17 @@ export interface SalonItem {
   id: string;
   name: string;
   address: string;
+  managerId?: string | null;
+  manager?: {
+    id: string;
+    fullName: string;
+    email: string;
+  } | null;
+  users?: Array<{
+    id: string;
+    fullName: string;
+    email: string;
+  }>;
   _count?: {
     users: number;
   };
@@ -46,6 +57,7 @@ export const salonService = {
   createSalon: async (payload: {
     name: string;
     address: string;
+    managerId?: string;
   }): Promise<SalonSingleResponse> => {
     const response = await apiClient.post("/api/v1/salons", payload);
     return response.data;
@@ -53,7 +65,7 @@ export const salonService = {
 
   updateSalon: async (
     salonId: string,
-    payload: { name?: string; address?: string },
+    payload: { name?: string; address?: string; managerId?: string },
   ): Promise<SalonSingleResponse> => {
     const response = await apiClient.patch(`/api/v1/salons/${salonId}`, payload);
     return response.data;
