@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,9 +13,15 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
+import { useState } from "react";
+import { useSalonsQuery } from "@/actions/admin/useSalons";
+import { useServicesQuery } from "@/actions/admin/useServices";
+import { useUsersQuery } from "@/actions/admin/useUsers";
 
 type InitialData = {
   employee?: string;
+  clientName?: string;
+  serviceName?: string;
   salon?: string;
   amount?: number | string;
   tip?: number | string;
@@ -46,6 +51,12 @@ export default function AddEntryForm({
   const [employeeValue, setEmployeeValue] = useState<string | undefined>(
     initialData?.employee,
   );
+  const [clientName, setClientName] = useState<string>(
+    initialData?.clientName ?? "",
+  );
+  const [serviceNameValue, setServiceNameValue] = useState<string | undefined>(
+    initialData?.serviceName,
+  );
   const [salonValue, setSalonValue] = useState<string | undefined>(
     initialData?.salon,
   );
@@ -56,6 +67,48 @@ export default function AddEntryForm({
     initialData?.tip ? String(initialData.tip) : "",
   );
   const [notes, setNotes] = useState<string | undefined>(initialData?.notes);
+  const [addHair, setAddHair] = useState<string>("");
+  const [splitService, setSplitService] = useState<boolean>(false);
+
+  const { data: salonsData, isLoading: isLoadingSalons } = useSalonsQuery({
+    page: 1,
+    limit: 100,
+    searchTerm: "",
+  });
+
+  const { data: servicesData, isLoading: isLoadingServices } = useServicesQuery({
+    page: 1,
+    limit: 100,
+    searchTerm: "",
+  });
+
+  const { data: usersData, isLoading: isLoadingUsers } = useUsersQuery({
+    page: 1,
+    limit: 100,
+    searchTerm: "",
+    salonId: salonValue,
+    enabled: !!salonValue,
+  });
+
+  const salons = salonsData?.data || [];
+  const services = servicesData?.data || [];
+  const employees = usersData?.data || [];
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = {
+      salonId: salonValue,
+      employeeId: employeeValue,
+      clientName,
+      serviceId: serviceNameValue,
+      totalPrice,
+      addHair,
+      tip: tipValue,
+      notes,
+      splitService,
+    };
+    console.log("Form Data Submitted:", formData);
+  };
 
   return (
     <div className='min-h-screen p-4'>
@@ -67,31 +120,9 @@ export default function AddEntryForm({
         </CardHeader>
 
         <CardContent>
-          <form className='space-y-8 overflow-x-auto'>
-            {/* Primary Info */}
+          <form onSubmit={handleSubmit} className='space-y-8 overflow-x-auto'>
+            {/* Row 1: Salon Name + Client Name */}
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6 w-full'>
-              {/* Employee Name */}
-              <div className='w-full space-y-2'>
-                <label className='text-sm font-medium text-gray-700'>
-                  Employee name
-                </label>
-
-                <Select
-                  value={employeeValue}
-                  onValueChange={(v) => setEmployeeValue(v ?? undefined)}>
-                  <SelectTrigger className='w-full h-11'>
-                    <SelectValue
-                      placeholder={employeeValue || "Select an employee"}
-                    />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    <SelectItem value='Sarah Jenkins'>Sarah Jenkins</SelectItem>
-                    <SelectItem value='Emma Watson'>Emma Watson</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Salon Name */}
               <div className='w-full space-y-2'>
                 <label className='text-sm font-medium text-gray-700'>
@@ -100,14 +131,100 @@ export default function AddEntryForm({
 
                 <Select
                   value={salonValue}
-                  onValueChange={(v) => setSalonValue(v ?? undefined)}>
+                  onValueChange={(v) => {
+                    setSalonValue(v ?? undefined);
+                    setEmployeeValue(undefined); // Reset employee when salon changes
+                  }}>
                   <SelectTrigger className='w-full h-11'>
-                    <SelectValue placeholder={salonValue || "Select a salon"} />
+                    <SelectValue
+                      placeholder={isLoadingSalons ? "Loading salons..." : "Select a salon"}
+                    >
+                      {salons.find((s: any) => s.id === salonValue)?.name}
+                    </SelectValue>
                   </SelectTrigger>
 
                   <SelectContent>
-                    <SelectItem value='salon-1'>Salon 1</SelectItem>
-                    <SelectItem value='salon-2'>Salon 2</SelectItem>
+                    {salons.map((salon: any) => (
+                      <SelectItem key={salon.id} value={salon.id}>
+                        {salon.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Client Name */}
+              <div className='w-full space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>
+                  Client Name
+                </label>
+
+                <Input
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder='Enter client name'
+                  className='h-11'
+                />
+              </div>
+            </div>
+
+            {/* Row 2: Service Name + Employee Name */}
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-6 w-full'>
+              {/* Service Name */}
+              <div className='w-full space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>
+                  Service name
+                </label>
+
+                <Select
+                  value={serviceNameValue}
+                  onValueChange={(v) => setServiceNameValue(v ?? undefined)}>
+                  <SelectTrigger className='w-full h-11'>
+                    <SelectValue placeholder={isLoadingServices ? "Loading services..." : "Select a service"}>
+                      {services.find((s: any) => s.id === serviceNameValue)?.name}
+                    </SelectValue>
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {services.map((service: any) => (
+                      <SelectItem key={service.id} value={service.id}>
+                        {service.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Employee Name */}
+              <div className='w-full space-y-2'>
+                <label className='text-sm font-medium text-gray-700'>
+                  Employee name
+                </label>
+
+                <Select
+                  value={employeeValue}
+                  onValueChange={(v) => setEmployeeValue(v ?? undefined)}
+                  disabled={!salonValue}>
+                  <SelectTrigger className='w-full h-11'>
+                    <SelectValue
+                      placeholder={
+                        !salonValue
+                          ? "Select a salon first"
+                          : isLoadingUsers
+                          ? "Loading employees..."
+                          : "Select an employee"
+                      }
+                    >
+                      {employees.find((e: any) => e.id === employeeValue)?.fullName}
+                    </SelectValue>
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {employees.map((employee: any) => (
+                      <SelectItem key={employee.id} value={employee.id}>
+                        {employee.fullName}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -135,7 +252,12 @@ export default function AddEntryForm({
                     Add Hair?
                   </label>
 
-                  <Input placeholder='$ 0.00' className='h-11' />
+                  <Input
+                    value={addHair}
+                    onChange={(e) => setAddHair(e.target.value)}
+                    placeholder='$ 0.00'
+                    className='h-11'
+                  />
                 </div>
               </div>
 
@@ -181,7 +303,10 @@ export default function AddEntryForm({
                 </p>
               </div>
 
-              <Switch />
+              <Switch
+                checked={splitService}
+                onCheckedChange={setSplitService}
+              />
             </div>
 
             {/* Braider Table */}
