@@ -268,6 +268,9 @@ export default function AddEntryForm({
                   {errors.employee && (
                     <p className={errorClasses}>{errors.employee}</p>
                   )}
+                  {salonValue && !isLoadingUsers && employees.length === 0 && (
+                    <p className={errorClasses}>No employee found this salon</p>
+                  )}
                 </div>
               </div>
 
