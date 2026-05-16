@@ -5,6 +5,7 @@ import { PayrollTable } from "./PayrollTable";
 import { useSalonsQuery } from "@/actions/admin/useSalons";
 import { usePayrollQuery } from "@/actions/payroll/usePayroll";
 import type { PayrollQueryParams } from "@/actions/payroll/payroll.types";
+import PayrollCard from "./PayrollCard";
 
 const PayrollPage = () => {
   const [searchInput, setSearchInput] = useState("");
@@ -132,6 +133,13 @@ const PayrollPage = () => {
           }
         />
       )}
+
+      <div>
+        <PayrollCard
+          summary={payrollSummary}
+          isLoading={isLoading || salonsQuery.isLoading}
+        />
+      </div>
     </div>
   );
 };

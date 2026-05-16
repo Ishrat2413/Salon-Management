@@ -41,8 +41,11 @@ const ServicePage = () => {
   const total = data?.meta?.total ?? 0;
 
   return (
-    <div className='p-8 min-h-screen bg-[#FDF9F9]'>
-      <ServiceFilter searchValue={searchInput} onSearchChange={setSearchInput} />
+    <div className='p-4 md:p-8 min-h-screen bg-[#FDF9F9]'>
+      <ServiceFilter
+        searchValue={searchInput}
+        onSearchChange={setSearchInput}
+      />
 
       <AllServices
         services={services}
@@ -51,7 +54,9 @@ const ServicePage = () => {
         limit={LIMIT}
         isLoading={isLoading || isFetching}
         isMutating={
-          createMutation.isPending || updateMutation.isPending || deleteMutation.isPending
+          createMutation.isPending ||
+          updateMutation.isPending ||
+          deleteMutation.isPending
         }
         onCreate={async (payload) => {
           await createMutation.mutateAsync(payload);

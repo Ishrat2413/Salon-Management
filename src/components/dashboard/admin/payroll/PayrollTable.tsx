@@ -25,21 +25,21 @@ const payrollColumns: ColumnDef<PayrollRow>[] = [
     sortable: true,
   },
   {
-    key: "totalIncome",
-    header: "Service Earning",
-    sortable: true,
-    render: (value) => (
-      <span style={{ color: "#d0166e", fontWeight: 700, fontSize: 15 }}>
-        {formatCurrency(Number(value))}
-      </span>
-    ),
-  },
-  {
     key: "totalTips",
     header: "Total Tips",
     sortable: true,
     render: (value) => (
       <span style={{ color: "#2da86a", fontWeight: 500 }}>
+        {formatCurrency(Number(value))}
+      </span>
+    ),
+  },
+  {
+    key: "totalIncome",
+    header: "Service Earning",
+    sortable: true,
+    render: (value) => (
+      <span style={{ color: "#d0166e", fontWeight: 700, fontSize: 15 }}>
         {formatCurrency(Number(value))}
       </span>
     ),
