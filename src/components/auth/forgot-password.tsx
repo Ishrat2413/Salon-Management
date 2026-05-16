@@ -14,40 +14,29 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Lock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import * as z from "zod";
+import { useForgotPasswordMutation } from "@/actions/auth/useAuth";
 
 const formSchema = z.object({
-  emailOrPhone: z
+  email: z
     .string()
     .min(1, { message: "This field is required." })
-    .refine(
-      (val) =>
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) ||
-        /^\+?[\d\s\-()]{7,}$/.test(val),
-      { message: "Enter a valid email or phone number." },
-    ),
+    .email({ message: "Enter a valid email address." }),
 });
 
 export function ForgotPasswordPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { mutate: forgotPassword, isPending: isLoading } = useForgotPasswordMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      emailOrPhone: "",
+      email: "",
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success(`Verification code sent to ${values.emailOrPhone}`);
-      form.reset({ emailOrPhone: "" });
-    }, 500);
+    forgotPassword(values);
   }
 
   return (
@@ -78,7 +67,7 @@ export function ForgotPasswordPage() {
             Forgot Password?
           </h1>
           <p className='text-sm text-[#494551] text-center mb-8 '>
-            Enter your email or phone number to receive a verification code.
+            Enter your email address to receive a verification code.
           </p>
 
           {/* Form */}
@@ -88,15 +77,15 @@ export function ForgotPasswordPage() {
               className='w-full space-y-4 max-w-lg'>
               <FormField
                 control={form.control}
-                name='emailOrPhone'
+                name='email'
                 render={({ field }) => (
                   <FormItem className='space-y-1.5'>
                     <FormLabel className='text-sm font-medium text-slate-700'>
-                      Email or Phone
+                      Email Address
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder='Enter your email or phone'
+                        placeholder='Enter your email address'
                         className='rounded-lg border border-gray-200 bg-white px-4 py-5 text-sm text-slate-800 placeholder:text-slate-400 focus-visible:ring-[#D6449A] focus-visible:border-[#D6449A]'
                         {...field}
                       />

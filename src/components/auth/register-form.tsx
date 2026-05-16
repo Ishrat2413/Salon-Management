@@ -54,7 +54,7 @@ export function RegisterForm() {
   useEffect(() => {
     async function fetchSalons() {
       try {
-        const result = await salonService.getAllSalons({ limit: 100 });
+        const result = await salonService.getSalons({ limit: 100 });
         console.log("Salons fetched:", result);
         if (result.success) {
           setSalons(result.data);
