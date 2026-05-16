@@ -81,13 +81,15 @@ export default function AddEntryForm({
     },
   );
 
-  const { data: usersData, isLoading: isLoadingUsers } = useUsersQuery({
+  const { data: usersData, isLoading: isLoadingUsers, isFetching: isFetchingUsers } = useUsersQuery({
     page: 1,
     limit: 100,
     searchTerm: "",
     salonId: salonValue,
     enabled: !!salonValue,
   });
+
+  const loadingEmployees = isLoadingUsers || isFetchingUsers;
 
   const { mutate: createEntry, isPending } = useCreateSalonEntryMutation();
 
@@ -207,6 +209,7 @@ export default function AddEntryForm({
                     onValueChange={(v) => {
                       setSalonValue(v ?? undefined);
                       setEmployeeValue(undefined);
+                      setSplits([]); // Clear splits when salon changes
                       setErrors((prev) => ({ ...prev, salon: "" }));
                     }}>
                     <SelectTrigger className={inputClasses + " w-full px-3"}>
@@ -247,7 +250,7 @@ export default function AddEntryForm({
                         placeholder={
                           !salonValue
                             ? "Select a salon first"
-                            : isLoadingUsers
+                            : loadingEmployees
                               ? "Loading employees..."
                               : "Select an employee"
                         }>
@@ -268,7 +271,7 @@ export default function AddEntryForm({
                   {errors.employee && (
                     <p className={errorClasses}>{errors.employee}</p>
                   )}
-                  {salonValue && !isLoadingUsers && employees.length === 0 && (
+                  {salonValue && !loadingEmployees && employees.length === 0 && (
                     <p className={errorClasses}>No employee found this salon</p>
                   )}
                 </div>
@@ -442,7 +445,7 @@ export default function AddEntryForm({
                                   }));
                                 }}>
                                 <SelectTrigger
-                                  className={inputClasses + " w-full bg-white"}>
+                                  className={inputClasses + " w-full bg-white px-3"}>
                                   <SelectValue placeholder='Select Employee'>
                                     {
                                       employees.find(
