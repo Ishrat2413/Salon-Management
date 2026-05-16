@@ -178,13 +178,13 @@ export default function AddEntryForm({
   };
 
   const inputClasses =
-    "h-11 rounded-lg border-gray-200 focus:ring-pink-500 focus:border-pink-500";
+    "h-11 rounded-lg border-gray-200 focus:ring-pink-500 focus:border-pink-500 px-3";
   const labelClasses = "text-sm font-semibold text-gray-700 mb-1 block";
   const errorClasses = "text-xs text-red-500 mt-1";
 
   return (
     <div className='min-h-screen p-4 bg-gray-50/30'>
-      <Card className='mx-auto rounded-3xl p-8 border-0 shadow-xl shadow-gray-200/50 bg-white'>
+      <Card className='mx-auto p-8 rounded-3xl border-0 shadow-xl shadow-gray-200/50 bg-white'>
         <CardHeader className='pb-2'>
           <CardTitle className='text-3xl font-bold text-gray-900'>
             Add New Entry
@@ -209,7 +209,7 @@ export default function AddEntryForm({
                       setEmployeeValue(undefined);
                       setErrors((prev) => ({ ...prev, salon: "" }));
                     }}>
-                    <SelectTrigger className={inputClasses + " w-full"}>
+                    <SelectTrigger className={inputClasses + " w-full px-3"}>
                       <SelectValue
                         placeholder={
                           isLoadingSalons
@@ -242,7 +242,7 @@ export default function AddEntryForm({
                       setErrors((prev) => ({ ...prev, employee: "" }));
                     }}
                     disabled={!salonValue}>
-                    <SelectTrigger className={inputClasses + " w-full"}>
+                    <SelectTrigger className={inputClasses + " w-full px-3"}>
                       <SelectValue
                         placeholder={
                           !salonValue
@@ -281,7 +281,7 @@ export default function AddEntryForm({
                       setServiceNameValue(v ?? undefined);
                       setErrors((prev) => ({ ...prev, service: "" }));
                     }}>
-                    <SelectTrigger className={inputClasses + " w-full"}>
+                    <SelectTrigger className={inputClasses + " w-full px-3"}>
                       <SelectValue
                         placeholder={
                           isLoadingServices
@@ -322,7 +322,7 @@ export default function AddEntryForm({
 
             {/* Section 2: Pricing */}
             <div className='space-y-6'>
-              <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 {/* Total Price */}
                 <div className='space-y-2'>
                   <label className={labelClasses}>Total price</label>
@@ -379,7 +379,7 @@ export default function AddEntryForm({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder='Add any additional notes here...'
-                className='min-h-24 rounded-xl border-gray-200 focus:ring-pink-500 focus:border-pink-500'
+                className='min-h-24 rounded-xl border-gray-200 focus:ring-pink-500 focus:border-pink-500 px-3 py-2'
               />
             </div>
 
