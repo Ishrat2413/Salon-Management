@@ -34,33 +34,6 @@ export default function LoginPage() {
             </p>
           </div>
           <LoginForm />
-
-          {/* Demo Credentials */}
-          <div className='mt-8 pt-6 border-t border-gray-200'>
-            <p className='text-sm font-semibold text-gray-700 mb-3'>
-              Demo Credentials:
-            </p>
-            <div className='flex flex-col gap-2 text-sm text-gray-600 bg-white/60 p-4 rounded-md border border-gray-100 shadow-sm'>
-              <div className='flex justify-between items-center'>
-                <span className='font-medium text-gray-800'>Employee:</span>{" "}
-                <span className='font-mono bg-white px-2 py-1 rounded text-xs'>
-                  employee@gmail.com / employee@123
-                </span>
-              </div>
-              <div className='flex justify-between items-center'>
-                <span className='font-medium text-gray-800'>Manager:</span>{" "}
-                <span className='font-mono bg-white px-2 py-1 rounded text-xs'>
-                  manager@gmail.com / manager@123
-                </span>
-              </div>
-              <div className='flex justify-between items-center'>
-                <span className='font-medium text-gray-800'>Admin:</span>{" "}
-                <span className='font-mono bg-white px-2 py-1 rounded text-xs'>
-                  admin@gmail.com / admin@123
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
