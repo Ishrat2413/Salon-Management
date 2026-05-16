@@ -31,7 +31,9 @@ export function AllServices({
   onPageChange,
 }: AllServicesProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingService, setEditingService] = useState<ServiceItem | null>(null);
+  const [editingService, setEditingService] = useState<ServiceItem | null>(
+    null,
+  );
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
 
@@ -43,36 +45,50 @@ export function AllServices({
   };
 
   return (
-    <div className='w-full bg-white rounded-[24px] border border-white shadow-sm px-8 py-10' style={{ background: "#fff" }}>
+    <div
+      className='w-full bg-white rounded-[24px] border border-white shadow-sm p-4 md:px-8 md:py-10'
+      style={{ background: "#fff" }}>
       <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8'>
-        <h1 className='text-[22px] font-semibold text-[#334c6e] leading-none'>All Services ({total})</h1>
+        <h1 className='text-[22px] font-semibold text-[#334c6e] leading-none'>
+          All Services ({total})
+        </h1>
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className='flex items-center justify-center gap-2 h-[40px] px-5 bg-[#D83B8F] text-white text-[13px] font-medium rounded-[8px] hover:bg-[#C23580] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#D83B8F]/20'>
+          className='flex items-center justify-center gap-2 h-10 px-5 bg-[#D83B8F] text-white text-[13px] font-medium rounded-[8px] hover:bg-[#C23580] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#D83B8F]/20'>
           <Plus className='w-4 h-4' />
           Add Service
         </button>
       </div>
 
       <div className='border border-[#f0f2f5] rounded-[12px] overflow-hidden bg-white'>
-        <div className='px-6 py-[18px] border-b border-[#f0f2f5] bg-white grid grid-cols-[1fr_auto] gap-3'>
-          <span className='text-[13px] font-semibold text-[#1f2937] tracking-wide'>Service Name</span>
-          <span className='text-[13px] font-semibold text-[#1f2937] tracking-wide text-right'>Actions</span>
+        <div className='px-6 py-4.5 border-b border-[#f0f2f5] bg-white grid grid-cols-[1fr_auto] gap-3'>
+          <span className='text-[13px] font-semibold text-[#1f2937] tracking-wide'>
+            Service Name
+          </span>
+          <span className='text-[13px] font-semibold text-[#1f2937] tracking-wide text-right'>
+            Actions
+          </span>
         </div>
 
         <div className='flex flex-col'>
           {isLoading ? (
-            <div className='px-6 py-10 text-center text-[#9CA3AF] text-sm'>Loading services...</div>
+            <div className='px-6 py-10 text-center text-[#9CA3AF] text-sm'>
+              Loading services...
+            </div>
           ) : services.length === 0 ? (
-            <div className='px-6 py-10 text-center text-[#9CA3AF] text-sm'>No services found.</div>
+            <div className='px-6 py-10 text-center text-[#9CA3AF] text-sm'>
+              No services found.
+            </div>
           ) : (
             services.map((item, index) => {
               const isLast = index === services.length - 1;
               return (
                 <div
                   key={item.id}
-                  className={`px-6 py-[14px] bg-white grid grid-cols-[1fr_auto] gap-3 items-center ${!isLast ? "border-b border-[#f0f2f5]" : ""}`}>
-                  <p className='text-[13px] font-medium text-[#5a6872] leading-none'>{item.name}</p>
+                  className={`px-6 py-3.5 bg-white grid grid-cols-[1fr_auto] gap-3 items-center ${!isLast ? "border-b border-[#f0f2f5]" : ""}`}>
+                  <p className='text-[13px] font-medium text-[#5a6872] leading-none'>
+                    {item.name}
+                  </p>
 
                   <div className='flex items-center justify-end gap-2'>
                     <button
