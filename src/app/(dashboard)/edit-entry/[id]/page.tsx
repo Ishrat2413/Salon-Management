@@ -23,6 +23,8 @@ export default function EditEntryPage() {
   const initialData = {
     employeeId: entry.employeeId,
     salonId: entry.salonId,
+    serviceId: entry.serviceId,
+    clientName: entry.clientName || "",
     totalPrice: entry.totalPrice,
     tips: entry.tips,
     addHair: entry.addHair,
@@ -38,6 +40,7 @@ export default function EditEntryPage() {
   const initialDisplayData = {
     employeeName: entry.employeeName,
     salonName: entry.salonName,
+    serviceName: entry.serviceName,
     splits: entry.splits?.map((s: any) => ({
       employeeId: s.employeeId,
       employeeName: s.employeeName,
