@@ -27,11 +27,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { salonService } from "@/lib/api/services/salon.service";
+import { serviceService } from "@/lib/api/services/service.service";
 import { userService } from "@/lib/api/services/user.service";
 
 const salonEntrySchema = z.object({
   employeeId: z.string().min(1, "Employee is required"),
   salonId: z.string().min(1, "Salon is required"),
+  serviceId: z.string().min(1, "Service is required"),
+  clientName: z.string().optional(),
   totalPrice: z.coerce.number().min(0, "Price must be positive"),
   tips: z.coerce.number().min(0, "Tips must be positive"),
   addHair: z.coerce.number().min(0, "Add hair must be positive"),
@@ -56,6 +59,7 @@ interface SalonEntryFormProps {
   initialDisplayData?: {
     employeeName?: string;
     salonName?: string;
+    serviceName?: string;
     splits?: Array<{
       employeeId: string;
       employeeName?: string;
@@ -76,6 +80,7 @@ export function EditEntryForm({
   title,
 }: SalonEntryFormProps) {
   const [salons, setSalons] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
   const [employees, setEmployees] = useState<any[]>([]);
 
   const form = useForm<SalonEntryFormInput, undefined, SalonEntryFormValues>({
@@ -83,6 +88,8 @@ export function EditEntryForm({
     defaultValues: {
       employeeId: initialData?.employeeId || "",
       salonId: initialData?.salonId || "",
+      serviceId: initialData?.serviceId || "",
+      clientName: initialData?.clientName || "",
       totalPrice: initialData?.totalPrice || 0,
       tips: initialData?.tips || 0,
       addHair: initialData?.addHair || 0,
@@ -96,6 +103,8 @@ export function EditEntryForm({
     form.reset({
       employeeId: initialData?.employeeId || "",
       salonId: initialData?.salonId || "",
+      serviceId: initialData?.serviceId || "",
+      clientName: initialData?.clientName || "",
       totalPrice: initialData?.totalPrice || 0,
       tips: initialData?.tips || 0,
       addHair: initialData?.addHair || 0,
@@ -125,6 +134,10 @@ export function EditEntryForm({
     name: "employeeId",
   });
   const selectedSalonId = useWatch({ control: form.control, name: "salonId" });
+  const selectedServiceId = useWatch({
+    control: form.control,
+    name: "serviceId",
+  });
 
   const employeeNameById = useMemo(() => {
     return new Map(
@@ -141,6 +154,12 @@ export function EditEntryForm({
     );
   }, [salons]);
 
+  const serviceNameById = useMemo(() => {
+    return new Map(
+      services.map((service) => [String(service.id), service.name as string]),
+    );
+  }, [services]);
+
   const selectedEmployeeLabel =
     employeeNameById.get(String(selectedEmployeeId)) ||
     initialDisplayData?.employeeName ||
@@ -151,6 +170,11 @@ export function EditEntryForm({
     initialDisplayData?.salonName ||
     "Select a salon";
 
+  const selectedServiceLabel =
+    serviceNameById.get(String(selectedServiceId)) ||
+    initialDisplayData?.serviceName ||
+    "Select a service";
+
   const splitRows = (watchedSplits || []) as Array<{
     employeeId: string;
     totalPrice: number;
@@ -159,12 +183,14 @@ export function EditEntryForm({
 
   useEffect(() => {
     async function fetchData() {
-      const [salonRes, userRes] = await Promise.all([
+      const [salonRes, userRes, serviceRes] = await Promise.all([
         salonService.getSalons({ limit: 100 }),
         userService.getUsers({ limit: 100 }),
+        serviceService.getServices({ limit: 100 }),
       ]);
       if (salonRes.success) setSalons(salonRes.data);
       if (userRes.success) setEmployees(userRes.data);
+      if (serviceRes.success) setServices(serviceRes.data);
     }
     fetchData();
   }, []);
@@ -182,35 +208,6 @@ export function EditEntryForm({
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                <FormField
-                  control={form.control}
-                  name='employeeId'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Employee Name</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className='h-11'>
-                            <span className='flex-1 text-left text-sm text-foreground'>
-                              {selectedEmployeeLabel}
-                            </span>
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {employees.map((emp) => (
-                            <SelectItem key={emp.id} value={emp.id}>
-                              {emp.fullName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={form.control}
                   name='salonId'
@@ -235,6 +232,85 @@ export function EditEntryForm({
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='employeeId'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Employee Name</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        disabled={!selectedSalonId}>
+                        <FormControl>
+                          <SelectTrigger className='h-11'>
+                            <span className='flex-1 text-left text-sm text-foreground'>
+                              {selectedEmployeeLabel}
+                            </span>
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {employees
+                            .filter((e) => e.salonId === selectedSalonId)
+                            .map((emp) => (
+                              <SelectItem key={emp.id} value={emp.id}>
+                                {emp.fullName}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='serviceId'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Service Name</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className='h-11'>
+                            <span className='flex-1 text-left text-sm text-foreground'>
+                              {selectedServiceLabel}
+                            </span>
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {services.map((service) => (
+                            <SelectItem key={service.id} value={service.id}>
+                              {service.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name='clientName'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Client Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder='Enter client name'
+                          className='h-11'
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
