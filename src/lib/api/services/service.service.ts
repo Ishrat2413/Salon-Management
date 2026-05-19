@@ -30,12 +30,12 @@ export const serviceService = {
     limit?: number;
     searchTerm?: string;
   }): Promise<ServiceListResponse> => {
-    const response = await apiClient.get("/api/v1/services", { params });
+    const response = await apiClient.get("/services", { params });
     return response.data;
   },
 
   createService: async (payload: { name: string }): Promise<ServiceSingleResponse> => {
-    const response = await apiClient.post("/api/v1/services", payload);
+    const response = await apiClient.post("/services", payload);
     return response.data;
   },
 
@@ -43,12 +43,12 @@ export const serviceService = {
     serviceId: string,
     payload: { name?: string },
   ): Promise<ServiceSingleResponse> => {
-    const response = await apiClient.patch(`/api/v1/services/${serviceId}`, payload);
+    const response = await apiClient.patch(`/services/${serviceId}`, payload);
     return response.data;
   },
 
   deleteService: async (serviceId: string): Promise<ServiceSingleResponse> => {
-    const response = await apiClient.delete(`/api/v1/services/${serviceId}`);
+    const response = await apiClient.delete(`/services/${serviceId}`);
     return response.data;
   },
 };

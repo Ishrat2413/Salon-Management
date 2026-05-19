@@ -32,7 +32,7 @@ export const useSalonEntriesQuery = (params: {
     queryKey: ["salon-entries", params],
     queryFn: () =>
       apiClient
-        .get<SalonEntriesResponse>("/api/v1/salon-entries", { params })
+        .get<SalonEntriesResponse>("/salon-entries", { params })
         .then((res) => res.data),
   });
 };
@@ -42,7 +42,7 @@ export const useSalonEntryQuery = (id: string) => {
     queryKey: ["salon-entry", id],
     queryFn: () =>
       apiClient
-        .get<{ data: SalonEntry }>(`/api/v1/salon-entries/${id}`)
+        .get<{ data: SalonEntry }>(`/salon-entries/${id}`)
         .then((res) => res.data.data),
     enabled: !!id,
   });
@@ -55,7 +55,7 @@ export const useUpdateSalonEntryMutation = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       apiClient
-        .patch<{ data: SalonEntry }>(`/api/v1/salon-entries/${id}`, data)
+        .patch<{ data: SalonEntry }>(`/salon-entries/${id}`, data)
         .then((res) => res.data.data),
     onSuccess: (updatedEntry, variables) => {
       queryClient.setQueriesData<SalonEntriesResponse>(
@@ -92,7 +92,7 @@ export const useUpdateSalonEntryStatusMutation = () => {
       apiClient
         .patch<{
           data: SalonEntry;
-        }>(`/api/v1/salon-entries/${id}/status`, { status, statusComment })
+        }>(`/salon-entries/${id}/status`, { status, statusComment })
         .then((res) => res.data.data),
     onSuccess: (updatedEntry) => {
       queryClient.setQueriesData<SalonEntriesResponse>(
@@ -120,7 +120,7 @@ export const useCreateSalonEntryMutation = () => {
 
   return useMutation({
     mutationFn: (data: any) =>
-      apiClient.post(`/api/v1/salon-entries`, data).then((res) => res.data),
+      apiClient.post(`/salon-entries`, data).then((res) => res.data),
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ["salon-entries"] });
       toast.success("Entry created successfully.");

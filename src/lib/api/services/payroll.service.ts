@@ -6,7 +6,7 @@ import type {
 
 export const payrollService = {
   getPayroll: async (params?: PayrollQueryParams): Promise<PayrollResponse> => {
-    const response = await apiClient.get("/api/v1/payroll", { params });
+    const response = await apiClient.get("/payroll", { params });
     return response.data;
   },
 };
