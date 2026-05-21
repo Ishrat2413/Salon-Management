@@ -10,6 +10,7 @@ import UniversalTable from "@/components/univarsalTable/Universaltable";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { CSSProperties } from "react";
 
 export type User = {
@@ -120,29 +121,64 @@ function StatusDropdown({
   onStatusChange,
 }: StatusDropdownProps) {
   const [open, setOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+  const wrapperRef = useRef<HTMLButtonElement | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
   const options = getStatusOptions(status);
   const currentStyle = statusStyleMap[status];
 
+  const handleToggle = () => {
+    if (!open && wrapperRef.current) {
+      const rect = wrapperRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+    setOpen((prev) => !prev);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
       if (
         wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node)
+        !wrapperRef.current.contains(target) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target)
       ) {
         setOpen(false);
       }
     };
 
+    const handleScroll = (e: Event) => {
+      // Don't close if scrolling inside the dropdown itself
+      if (dropdownRef.current && dropdownRef.current.contains(e.target as Node)) {
+        return;
+      }
+      if (open) setOpen(false);
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    if (open) {
+      window.addEventListener("scroll", handleScroll, true);
+      window.addEventListener("resize", () => setOpen(false));
+    }
+    
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", () => setOpen(false));
+    };
+  }, [open]);
 
   return (
-    <div ref={wrapperRef} className='relative inline-block'>
+    <>
       <button
+        ref={wrapperRef}
         type='button'
-        onClick={() => setOpen((current) => !current)}
+        onClick={handleToggle}
         className='inline-flex items-center justify-between gap-2 rounded-md border border-gray-300 bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-800 shadow-sm transition hover:bg-gray-200'
         style={{ minWidth: 118 }}>
         <span className='inline-flex items-center gap-2'>
@@ -163,35 +199,45 @@ function StatusDropdown({
         </span>
       </button>
 
-      {open ? (
-        <div className='absolute left-0 top-full z-30 mt-1 w-40 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg'>
-          {options.map((option) => {
-            const optionStyle = statusStyleMap[option.value];
-            return (
-              <button
-                key={option.value}
-                type='button'
-                onClick={async () => {
-                  setOpen(false);
-                  await onStatusChange(userId, option.value);
-                }}
-                className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-gray-50'
-                style={{ color: optionStyle.color }}>
-                <span
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 999,
-                    background: optionStyle.dot,
-                  }}
-                />
-                <span>{option.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      ) : null}
-    </div>
+      {open && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              ref={dropdownRef}
+              className='absolute z-[9999] overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg'
+              style={{
+                top: coords.top,
+                left: coords.left,
+                minWidth: Math.max(160, coords.width),
+              }}>
+              {options.map((option) => {
+                const optionStyle = statusStyleMap[option.value];
+                return (
+                  <button
+                    key={option.value}
+                    type='button'
+                    onClick={async () => {
+                      setOpen(false);
+                      await onStatusChange(userId, option.value);
+                    }}
+                    className='flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-gray-50'
+                    style={{ color: optionStyle.color }}>
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: 999,
+                        background: optionStyle.dot,
+                      }}
+                    />
+                    <span>{option.label}</span>
+                  </button>
+                );
+              })}
+            </div>,
+            document.body
+          )
+        : null}
+    </>
   );
 }
 
@@ -203,7 +249,9 @@ type RoleDropdownProps = {
 
 function RoleDropdown({ userId, role, onRoleChange }: RoleDropdownProps) {
   const [open, setOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+  const wrapperRef = useRef<HTMLButtonElement | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const roles = [
     { label: "ADMIN", value: "ADMIN" },
@@ -211,24 +259,57 @@ function RoleDropdown({ userId, role, onRoleChange }: RoleDropdownProps) {
     { label: "EMPLOYEE", value: "EMPLOYEE" },
   ];
 
+  const handleToggle = () => {
+    if (!open && wrapperRef.current) {
+      const rect = wrapperRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+    setOpen((prev) => !prev);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
       if (
         wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node)
+        !wrapperRef.current.contains(target) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target)
       ) {
         setOpen(false);
       }
     };
+
+    const handleScroll = (e: Event) => {
+      if (dropdownRef.current && dropdownRef.current.contains(e.target as Node)) {
+        return;
+      }
+      if (open) setOpen(false);
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    if (open) {
+      window.addEventListener("scroll", handleScroll, true);
+      window.addEventListener("resize", () => setOpen(false));
+    }
+    
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", () => setOpen(false));
+    };
+  }, [open]);
 
   return (
-    <div ref={wrapperRef} className='relative inline-block'>
+    <>
       <button
+        ref={wrapperRef}
         type='button'
-        onClick={() => setOpen((current) => !current)}
+        onClick={handleToggle}
         className='inline-flex items-center justify-between gap-1 transition hover:opacity-80'
         style={{
           ...roleBadgeStyle[role as keyof typeof roleBadgeStyle],
@@ -241,30 +322,40 @@ function RoleDropdown({ userId, role, onRoleChange }: RoleDropdownProps) {
         </span>
       </button>
 
-      {open ? (
-        <div className='absolute left-0 top-full z-30 mt-1 w-32 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg p-1 flex flex-col gap-1'>
-          {roles.map((option) => (
-            <button
-              key={option.value}
-              type='button'
-              onClick={async () => {
-                setOpen(false);
-                if (option.value !== role) {
-                  await onRoleChange(userId, option.value);
-                }
-              }}
-              className='w-full text-left transition hover:opacity-80'
+      {open && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              ref={dropdownRef}
+              className='absolute z-[9999] overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg p-1 flex flex-col gap-1'
               style={{
-                ...roleBadgeStyle[option.value as keyof typeof roleBadgeStyle],
-                display: "block",
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      ) : null}
-    </div>
+                top: coords.top,
+                left: coords.left,
+                minWidth: Math.max(128, coords.width),
+              }}>
+              {roles.map((option) => (
+                <button
+                  key={option.value}
+                  type='button'
+                  onClick={async () => {
+                    setOpen(false);
+                    if (option.value !== role) {
+                      await onRoleChange(userId, option.value);
+                    }
+                  }}
+                  className='w-full text-left transition hover:opacity-80'
+                  style={{
+                    ...roleBadgeStyle[option.value as keyof typeof roleBadgeStyle],
+                    display: "block",
+                  }}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>,
+            document.body
+          )
+        : null}
+    </>
   );
 }
 
