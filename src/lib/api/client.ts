@@ -25,7 +25,10 @@ apiClient.interceptors.response.use(
         localStorage.removeItem('accessToken');
         localStorage.removeItem('demo_user');
         window.dispatchEvent(new Event('demo-user-change'));
-        window.location.href = '/login';
+        
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);
