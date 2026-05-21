@@ -45,7 +45,7 @@ export default function AddEntryForm({
 }) {
   const { user } = useAuth();
 
-  const [employeeValue, setEmployeeValue] = useState<string | undefined>(
+  const [employeeValueState, setEmployeeValue] = useState<string | undefined>(
     initialData?.employee,
   );
   const [clientName, setClientName] = useState<string>(
@@ -70,23 +70,8 @@ export default function AddEntryForm({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const isManager = user?.role === "manager";
   const isEmployee = user?.role === "employee";
-  const isManagerOrEmployee = isManager || isEmployee;
-
-  useEffect(() => {
-    if (isManagerOrEmployee) {
-      if (user?.salonId && !salonValue) {
-        setSalonValue(user.salonId);
-      }
-    }
-
-    if (isEmployee) {
-      if (user?.id && !employeeValue) {
-        setEmployeeValue(user.id);
-      }
-    }
-  }, [user, salonValue, employeeValue, isManagerOrEmployee, isEmployee]);
+  const employeeValue = (isEmployee && user?.id) ? user.id : employeeValueState;
 
   const { data: salonsData, isLoading: isLoadingSalons } = useSalonsQuery({
     page: 1,
@@ -110,8 +95,8 @@ export default function AddEntryForm({
     page: 1,
     limit: 100,
     searchTerm: "",
-    salonId: salonValue,
-    enabled: !!salonValue,
+    role: "EMPLOYEE,MANAGER",
+    enabled: true,
   });
 
   const loadingEmployees = isLoadingUsers || isFetchingUsers;
@@ -136,10 +121,7 @@ export default function AddEntryForm({
     if (!serviceNameValue) newErrors.service = "Service is required";
     if (!totalPrice) newErrors.totalPrice = "Total price is required";
 
-    const basePrice = Number(totalPrice) || 0;
-    const hairPrice = Number(addHair) || 0;
     const mainTip = Number(tipValue) || 0;
-    const finalTotalPrice = basePrice + hairPrice;
 
     if (splitService) {
       const totalSplitsPrice = splits.reduce(
@@ -151,8 +133,8 @@ export default function AddEntryForm({
         0,
       );
 
-      if (totalSplitsPrice > finalTotalPrice) {
-        newErrors.splitsPrice = `Sum of splits ($${totalSplitsPrice}) exceeds total ($${finalTotalPrice})`;
+      if (totalSplitsPrice > Number(totalPrice)) {
+        newErrors.splitsPrice = `Sum of splits ($${totalSplitsPrice}) exceeds total ($${totalPrice})`;
       }
 
       if (totalSplitsTips > mainTip) {
@@ -180,7 +162,6 @@ export default function AddEntryForm({
     const basePrice = Number(totalPrice) || 0;
     const hairPrice = Number(addHair) || 0;
     const mainTip = Number(tipValue) || 0;
-    const finalTotalPrice = basePrice + hairPrice;
 
     const formattedSplits = splits.map((s) => ({
       employeeId: s.employeeId,
@@ -193,7 +174,7 @@ export default function AddEntryForm({
       employeeId: employeeValue,
       serviceId: serviceNameValue,
       clientName: clientName || undefined,
-      totalPrice: finalTotalPrice,
+      totalPrice: Number(totalPrice),
       tips: mainTip || undefined,
       addHair: hairPrice || undefined,
       notes: notes || undefined,
@@ -233,11 +214,8 @@ export default function AddEntryForm({
                     value={salonValue}
                     onValueChange={(v) => {
                       setSalonValue(v ?? undefined);
-                      setEmployeeValue(undefined);
-                      setSplits([]); // Clear splits when salon changes
                       setErrors((prev) => ({ ...prev, salon: "" }));
-                    }}
-                    disabled={isManagerOrEmployee && !!user?.salonId}>
+                    }}>
                     <SelectTrigger className={inputClasses + " w-full px-3"}>
                       <SelectValue
                         placeholder={
@@ -270,19 +248,17 @@ export default function AddEntryForm({
                       setEmployeeValue(v ?? undefined);
                       setErrors((prev) => ({ ...prev, employee: "" }));
                     }}
-                    disabled={!salonValue || (isEmployee && !!user?.id)}>
+                    disabled={isEmployee && !!user?.id}>
                     <SelectTrigger className={inputClasses + " w-full px-3"}>
                       <SelectValue
                         placeholder={
-                          !salonValue
-                            ? "Select a salon first"
-                            : loadingEmployees
-                              ? "Loading employees..."
-                              : "Select an employee"
+                          loadingEmployees
+                            ? "Loading employees..."
+                            : "Select an employee"
                         }>
-                        {
-                          employees.find((e: any) => e.id === employeeValue)
-                            ?.fullName
+                        {employeeValue
+                          ? employees.find((e: any) => e.id === employeeValue)?.fullName || "Loading..."
+                          : undefined
                         }
                       </SelectValue>
                     </SelectTrigger>
@@ -297,11 +273,10 @@ export default function AddEntryForm({
                   {errors.employee && (
                     <p className={errorClasses}>{errors.employee}</p>
                   )}
-                  {salonValue &&
-                    !loadingEmployees &&
+                  {!loadingEmployees &&
                     employees.length === 0 && (
                       <p className={errorClasses}>
-                        No employee found this salon
+                        No employees found
                       </p>
                     )}
                 </div>
@@ -381,7 +356,7 @@ export default function AddEntryForm({
                 {/* Add Hair */}
                 <div className='space-y-2'>
                   <label className={labelClasses + " text-pink-600"}>
-                    Add Hair?
+                    Hair
                   </label>
                   <Input
                     value={addHair}
