@@ -19,4 +19,16 @@ export const userService = {
     });
     return response.data;
   },
+
+  updateRole: async (userId: string, role: string) => {
+    const response = await apiClient.patch(`/users/${userId}/role`, {
+      role,
+    });
+    return response.data;
+  },
+
+  deleteUser: async (userId: string) => {
+    const response = await apiClient.delete(`/users/${userId}`);
+    return response.data;
+  },
 };

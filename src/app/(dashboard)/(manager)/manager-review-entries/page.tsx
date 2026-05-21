@@ -3,7 +3,7 @@ import AllReviewEntries from "@/components/dashboard/manager/manager-dashboard-p
 
 export default function ReviewEntriesPage() {
   return (
-    <RoleGuard allowed={["manager"]}>
+    <RoleGuard allowed={["manager", "admin"]}>
       <AllReviewEntries />
     </RoleGuard>
   );
