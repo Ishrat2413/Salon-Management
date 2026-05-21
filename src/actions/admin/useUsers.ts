@@ -81,3 +81,86 @@ export const useUpdateUserStatusMutation = () => {
     },
   });
 };
+
+export const useUpdateUserRoleMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: string }) =>
+      userService.updateRole(userId, role),
+    onMutate: async ({ userId, role }) => {
+      await queryClient.cancelQueries({ queryKey: ["users"] });
+
+      const previousQueries = queryClient.getQueriesData({
+        queryKey: ["users"],
+      });
+
+      queryClient.setQueriesData({ queryKey: ["users"] }, (oldData: any) => {
+        if (!oldData?.data) {
+          return oldData;
+        }
+
+        return {
+          ...oldData,
+          data: oldData.data.map((user: any) =>
+            String(user.id) === userId ? { ...user, role } : user
+          ),
+        };
+      });
+
+      return { previousQueries };
+    },
+    onError: (_error, _variables, context) => {
+      context?.previousQueries?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+
+      toast.error("Failed to update role.");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success("User role updated successfully.");
+    },
+  });
+};
+
+export const useDeleteUserMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: string) => userService.deleteUser(userId),
+    onMutate: async (userId) => {
+      await queryClient.cancelQueries({ queryKey: ["users"] });
+
+      const previousQueries = queryClient.getQueriesData({
+        queryKey: ["users"],
+      });
+
+      queryClient.setQueriesData({ queryKey: ["users"] }, (oldData: any) => {
+        if (!oldData?.data) {
+          return oldData;
+        }
+
+        return {
+          ...oldData,
+          data: oldData.data.filter((user: any) => String(user.id) !== userId),
+        };
+      });
+
+      return { previousQueries };
+    },
+    onError: (error: any, _variables, context) => {
+      context?.previousQueries?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+
+      // Display backend error if present (e.g., associated entries error)
+      const message = error.response?.data?.message || "Failed to delete user.";
+      toast.error(message);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success("User deleted successfully.");
+    },
+  });
+};

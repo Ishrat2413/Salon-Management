@@ -37,4 +37,8 @@ export const salonEntryService = {
     );
     return response.data;
   },
+  deleteEntry: async (id: string) => {
+    const response = await apiClient.delete(`/salon-entries/${id}`);
+    return response.data;
+  },
 };
