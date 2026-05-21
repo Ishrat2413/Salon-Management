@@ -7,15 +7,17 @@ export const useUsersQuery = (params: {
   limit: number;
   searchTerm: string;
   salonId?: string;
+  role?: string;
   enabled?: boolean;
 }) => {
   return useQuery({
-    queryKey: ["users", params.page, params.limit, params.searchTerm, params.salonId],
+    queryKey: ["users", params.page, params.limit, params.searchTerm, params.salonId, params.role],
     queryFn: () => userService.getUsers({
       page: params.page,
       limit: params.limit,
       searchTerm: params.searchTerm,
       salonId: params.salonId,
+      role: params.role as any,
     }),
     enabled: params.enabled !== undefined ? params.enabled : true,
   });
