@@ -23,7 +23,8 @@ apiClient.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('accessToken');
-        localStorage.removeItem('user');
+        localStorage.removeItem('demo_user');
+        window.dispatchEvent(new Event('demo-user-change'));
         window.location.href = '/login';
       }
     }
