@@ -21,6 +21,18 @@ function replaceEntryInCache(
   };
 }
 
+function removeEntryFromCache(
+  current: SalonEntriesResponse | undefined,
+  deletedId: string,
+): SalonEntriesResponse | undefined {
+  if (!current) return current;
+
+  return {
+    ...current,
+    data: current.data.filter((entry) => entry.id !== deletedId),
+  };
+}
+
 export const useSalonEntriesQuery = (params: {
   page: number;
   limit: number;
@@ -128,6 +140,35 @@ export const useCreateSalonEntryMutation = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to create entry.");
+    },
+  });
+};
+
+export const useDeleteSalonEntryMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => salonEntryService.deleteEntry(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["salon-entries"] });
+      
+      const previousQueries = queryClient.getQueriesData({
+        queryKey: ["salon-entries"],
+      });
+
+      queryClient.setQueriesData({ queryKey: ["salon-entries"] }, (current: any) => removeEntryFromCache(current, id));
+
+      return { previousQueries };
+    },
+    onError: (error: any, _variables, context) => {
+      context?.previousQueries?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+      toast.error(error.response?.data?.message || "Failed to delete entry.");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["salon-entries"] });
+      toast.success("Entry deleted successfully.");
     },
   });
 };

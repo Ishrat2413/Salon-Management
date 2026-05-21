@@ -3,15 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Flag, FilePen } from "lucide-react";
+import { Flag, FilePen, Trash2 } from "lucide-react";
 import {
   useSalonEntriesQuery,
   useUpdateSalonEntryStatusMutation,
+  useDeleteSalonEntryMutation,
 } from "@/actions/salon-entry/useSalonEntry";
 import type { SalonEntry } from "@/actions/salon-entry/salon-entry.types";
 import { UniversalTable } from "@/components/univarsalTable/Universaltable";
 import type { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
 import { ManagerCommentModal } from "./manager-comment-modal";
+import { BaseModal } from "@/components/ui/BaseModal";
+import { useAuth } from "@/components/providers/auth-provider";
 
 type ManagerReviewEntry = SalonEntry & {
   percentage?: string;
@@ -20,6 +23,12 @@ type ManagerReviewEntry = SalonEntry & {
 export default function ManagerReviewEntries() {
   const router = useRouter();
   const limit = 5;
+  const { user } = useAuth();
+  const canDelete = 
+    user?.role === "admin" || 
+    user?.role?.toUpperCase() === "ADMIN" || 
+    user?.role === "manager" || 
+    user?.role?.toUpperCase() === "MANAGER";
 
   const { data: response, isLoading } = useSalonEntriesQuery({
     page: 1,
@@ -107,7 +116,7 @@ export default function ManagerReviewEntries() {
       header: "Actions",
       width: "10%",
       align: "right",
-      render: (_, row) => <SalonEntryActions row={row as SalonEntry} />,
+      render: (_, row) => <SalonEntryActions row={row as SalonEntry} canDelete={canDelete} />,
     },
   ];
 
@@ -139,14 +148,18 @@ export default function ManagerReviewEntries() {
   );
 }
 
-function SalonEntryActions({ row }: { row: SalonEntry }) {
+function SalonEntryActions({ row, canDelete }: { row: SalonEntry; canDelete?: boolean }) {
   const router = useRouter();
   const { mutateAsync: updateStatus, isPending: isUpdatingStatus } =
     useUpdateSalonEntryStatusMutation();
+  const { mutateAsync: deleteEntry, isPending: isDeleting } = useDeleteSalonEntryMutation();
+
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [moderationAction, setModerationAction] = useState<
     "APPROVE" | "REJECT" | null
   >(null);
+
   const isPending = row.status === "PENDING";
 
   const moderationLabels = {
@@ -180,53 +193,104 @@ function SalonEntryActions({ row }: { row: SalonEntry }) {
     });
   }
 
-  return (
-    <div className='flex items-center justify-start gap-2'>
-      {isPending ? (
-        <>
-          <button
-            type='button'
-            onClick={() => openModerationModal("APPROVE")}
-            disabled={isUpdatingStatus}
-            className='inline-flex h-10 w-10 items-center justify-center rounded-md border border-[#4FAF8F] text-[#4FAF8F] transition hover:bg-[#4FAF8F]/10'>
-            <Flag className='h-4 w-4' strokeWidth={3} />
-          </button>
+  async function handleDeleteConfirm() {
+    await deleteEntry(row.id);
+    setIsDeleteModalOpen(false);
+  }
 
-          <button
-            type='button'
-            onClick={() => openModerationModal("REJECT")}
-            disabled={isUpdatingStatus}
-            className='inline-flex h-10 w-10 items-center justify-center rounded-md border border-[#E5485D] text-[#E5485D] transition hover:bg-[#E5485D]/10'>
-            <Flag className='h-4 w-4' strokeWidth={3} />
-          </button>
-        </>
-      ) : (
+  return (
+    <>
+      <div className='flex items-center justify-end gap-2'>
+        {isPending ? (
+          <>
+            <button
+              type='button'
+              onClick={() => openModerationModal("APPROVE")}
+              disabled={isUpdatingStatus}
+              title="Approve"
+              className='inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#4FAF8F] text-[#4FAF8F] transition hover:bg-[#4FAF8F]/10'>
+              <Flag className='h-3.5 w-3.5' strokeWidth={3} />
+            </button>
+
+            <button
+              type='button'
+              onClick={() => openModerationModal("REJECT")}
+              disabled={isUpdatingStatus}
+              title="Reject"
+              className='inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#E5485D] text-[#E5485D] transition hover:bg-[#E5485D]/10'>
+              <Flag className='h-3.5 w-3.5' strokeWidth={3} />
+            </button>
+          </>
+        ) : null}
+
         <button
           type='button'
           onClick={() => router.push(`/edit-entry/${row.id}`)}
-          className='inline-flex items-center gap-2 rounded-md border border-[#1850D8] px-3 py-1.5 text-sm text-[#1850D8] hover:bg-[#1850D8]/10'>
-          <FilePen className='h-4 w-4' strokeWidth={3} />
-          <span>Edit</span>
+          title="Edit Entry"
+          className='inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#1850D8] text-[#1850D8] hover:bg-[#1850D8]/10 transition'>
+          <FilePen className='h-3.5 w-3.5' strokeWidth={3} />
         </button>
-      )}
 
-      <ManagerCommentModal
-        open={isCommentModalOpen}
-        onClose={closeModerationModal}
-        entryId={row.id}
-        title={
-          moderationAction
-            ? moderationLabels[moderationAction].title
-            : "Add Comment"
-        }
-        submitLabel={
-          moderationAction
-            ? moderationLabels[moderationAction].submitLabel
-            : "Submit"
-        }
-        isSubmitting={isUpdatingStatus}
-        onSave={handleModerationSubmit}
-      />
-    </div>
+        {canDelete && (
+          <button
+            type='button'
+            onClick={() => setIsDeleteModalOpen(true)}
+            title="Delete Entry"
+            className='inline-flex h-8 w-8 items-center justify-center rounded-md border border-red-300 text-red-500 hover:bg-red-50 transition'>
+            <Trash2 className='h-3.5 w-3.5' strokeWidth={2.5} />
+          </button>
+        )}
+
+        <ManagerCommentModal
+          open={isCommentModalOpen}
+          onClose={closeModerationModal}
+          entryId={row.id}
+          title={
+            moderationAction
+              ? moderationLabels[moderationAction].title
+              : "Add Comment"
+          }
+          submitLabel={
+            moderationAction
+              ? moderationLabels[moderationAction].submitLabel
+              : "Submit"
+          }
+          isSubmitting={isUpdatingStatus}
+          onSave={handleModerationSubmit}
+        />
+      </div>
+
+      <BaseModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Salon Entry"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Are you sure you want to delete the entry for{" "}
+            <span className="font-semibold text-gray-900">
+              {row.employeeName}
+            </span>{" "}
+            ({row.serviceName})? This action cannot be undone and will also permanently remove any associated split entries.
+          </p>
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <button
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              disabled={isDeleting}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
+            >
+              {isDeleting ? "Deleting..." : "Delete Entry"}
+            </button>
+          </div>
+        </div>
+      </BaseModal>
+    </>
   );
 }
