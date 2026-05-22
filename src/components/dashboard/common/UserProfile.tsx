@@ -100,14 +100,12 @@ export default function UserProfile() {
             {/* Fields Grid */}
             <div className='mt-9 grid grid-cols-1 gap-y-6'>
               <DetailField
-                icon={<Mail className='w-6 h-6' />}
                 label='Email'
                 value={profileUser.email}
                 isEditing={false}
                 readOnly
               />
               <DetailField
-                icon={<Phone className='w-6 h-6' />}
                 label='Phone'
                 name='phoneNumber'
                 value={formData.phoneNumber}
@@ -116,7 +114,6 @@ export default function UserProfile() {
                 onChange={handleChange}
               />
               <DetailField
-                icon={<MapPin className='w-6 h-6' />}
                 label='Address'
                 name='address'
                 value={formData.address}
@@ -125,7 +122,6 @@ export default function UserProfile() {
                 onChange={handleChange}
               />
               <DetailField
-                icon={<Locate className='w-6 h-6' />}
                 label='Salon Location'
                 value={profileUser.salon?.address ?? "N/A"}
                 isEditing={false}
@@ -133,7 +129,6 @@ export default function UserProfile() {
               />
               {profileUser.role !== "ADMIN" ? (
                 <DetailField
-                  icon={<Shield className='w-6 h-6' />}
                   label='Commission Rate'
                   value={
                     profileUser.commissionRate
@@ -179,7 +174,6 @@ export default function UserProfile() {
 }
 
 function DetailField({
-  icon,
   label,
   name,
   value,
@@ -189,7 +183,6 @@ function DetailField({
   type = "text",
   readOnly = false,
 }: {
-  icon: React.ReactNode;
   label: string;
   name?: string;
   value: string;
@@ -200,31 +193,35 @@ function DetailField({
   readOnly?: boolean;
 }) {
   return (
-    <div className='flex w-full gap-3'>
-      <div className='w-12 h-12 flex items-start justify-center text-[#445571] shrink-0 mt-0.5'>
-        {icon}
-      </div>
-      <div className='flex-1 min-w-0'>
-        <p className='text-[15px] text-[#898580] mb-0.5'>{label}</p>
-        {isEditing && !readOnly ? (
-          <input
-            type={type}
-            name={name}
-            value={value}
-            placeholder={placeholder}
-            onChange={onChange}
-            className='w-full border-b border-gray-300 focus:border-pink-500 outline-none text-[15px] text-[#445571] py-0.5 bg-transparent placeholder:text-gray-300'
-          />
-        ) : (
-          <p
-            className={`text-sm font-medium ${readOnly ? "text-gray-400" : "text-[#445571]"} truncate`}>
-            {value || (
-              <span className='text-gray-300 font-normal italic'>
-                {placeholder}
-              </span>
+    <div className='w-full'>
+      <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full'>
+        <div className='sm:w-40 shrink-0'>
+          <p className='text-[15px] text-[#898580] mb-0.5'>{label}</p>
+        </div>
+
+        <div className='flex-1'>
+          <div className='w-full border border-[#C7B29B] rounded-md px-3 py-2 bg-white'>
+            {isEditing && !readOnly ? (
+              <input
+                type={type}
+                name={name}
+                value={value}
+                placeholder={placeholder}
+                onChange={onChange}
+                className='w-full outline-none text-[15px] text-[#445571] bg-transparent placeholder:text-gray-300'
+              />
+            ) : (
+              <p
+                className={`text-sm font-medium ${readOnly ? "text-gray-400" : "text-[#445571]"} truncate`}>
+                {value || (
+                  <span className='text-gray-300 font-normal italic'>
+                    {placeholder}
+                  </span>
+                )}
+              </p>
             )}
-          </p>
-        )}
+          </div>
+        </div>
       </div>
     </div>
   );
