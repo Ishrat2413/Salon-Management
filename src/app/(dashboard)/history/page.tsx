@@ -2,7 +2,6 @@
 
 import { useAuth } from "@/components/providers/auth-provider";
 import RoleGuard from "@/components/layout/role-guard";
-import { DashboardPage } from "@/components/layout/dashboard-page";
 import { AdminHistory } from "@/components/dashboard/admin/admin-history";
 import EmployeeHistory from "@/components/dashboard/employee/employee-history";
 
@@ -12,7 +11,7 @@ export default function HistoryPage() {
   if (!user) return null;
 
   return (
-    <RoleGuard allowed={["employee", "admin"]}>
+    <RoleGuard allowed={["employee", "admin", "manager"]}>
       {user.role === "admin" ? (
         <AdminHistory />
       ) : (
