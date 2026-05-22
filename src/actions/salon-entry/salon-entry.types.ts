@@ -16,13 +16,18 @@ export interface SalonEntry extends Record<string, unknown> {
   employeeName: string;
   status: "PENDING" | "APPROVED" | "REJECTED";
   statusComment: string | null;
+  approvedByName: string | null;
   createdAt: string;
   totalPrice: number;
+  actualPrice: number;
   tips: number;
   addHair: number;
   notes: string;
   loggedInUserTotalPrice: number;
   loggedInUserTips: number;
+  loggedInUserCommissionRate: number;
+  commissionRate: number;
+  commissionEarnings: number;
   isSplit: boolean;
   splits: Split[];
 }

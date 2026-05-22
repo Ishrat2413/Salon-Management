@@ -11,6 +11,7 @@ interface HistoryFiltersProps {
     endDate?: string;
     employeeId?: string;
     salonId?: string;
+    status?: string;
   };
   setFilters: React.Dispatch<
     React.SetStateAction<{
@@ -18,6 +19,7 @@ interface HistoryFiltersProps {
       endDate?: string;
       employeeId?: string;
       salonId?: string;
+      status?: string;
     }>
   >;
 }

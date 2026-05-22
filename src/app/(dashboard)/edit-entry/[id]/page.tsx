@@ -4,10 +4,7 @@ import {
   useSalonEntryQuery,
   useUpdateSalonEntryMutation,
 } from "@/actions/salon-entry/useSalonEntry";
-import {
-  EditEntryForm,
-  type SalonEntryFormValues,
-} from "@/components/dashboard/entries/EditEntryForm";
+import SalonEntryForm, { SalonEntryFormValues } from "@/components/dashboard/common/SalonEntryForm";
 import { useParams } from "next/navigation";
 
 export default function EditEntryPage() {
@@ -17,7 +14,7 @@ export default function EditEntryPage() {
   const { data: entry, isLoading } = useSalonEntryQuery(entryId ?? "");
   const { mutate: updateEntry, isPending } = useUpdateSalonEntryMutation();
 
-  if (isLoading) return <div className='p-8'>Loading entry...</div>;
+  if (isLoading) return <div className='p-8 flex justify-center items-center h-[50vh]'>Loading entry...</div>;
   if (!entry) return <div className='p-8 text-red-500'>Entry not found.</div>;
 
   const initialData = {
@@ -28,22 +25,10 @@ export default function EditEntryPage() {
     totalPrice: entry.totalPrice,
     tips: entry.tips,
     addHair: entry.addHair,
-    notes: entry.notes,
+    notes: entry.notes || "",
     isSplit: entry.isSplit,
-    splits: entry.splits?.map((s: any) => ({
+    splits: (entry as any).splits?.map((s: any) => ({
       employeeId: s.employeeId,
-      totalPrice: s.totalPrice,
-      tips: s.tips,
-    })),
-  };
-
-  const initialDisplayData = {
-    employeeName: entry.employeeName,
-    salonName: entry.salonName,
-    serviceName: entry.serviceName,
-    splits: entry.splits?.map((s: any) => ({
-      employeeId: s.employeeId,
-      employeeName: s.employeeName,
       totalPrice: s.totalPrice,
       tips: s.tips,
     })),
@@ -54,12 +39,12 @@ export default function EditEntryPage() {
   };
 
   return (
-    <EditEntryForm
+    <SalonEntryForm
       title='Edit Salon Entry'
       initialData={initialData}
-      initialDisplayData={initialDisplayData}
       onSubmit={handleSubmit}
       isPending={isPending}
+      submitButtonText="Update Entry"
     />
   );
 }
