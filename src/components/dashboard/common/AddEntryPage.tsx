@@ -18,7 +18,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
 type InitialData = {
@@ -45,17 +45,17 @@ export default function AddEntryForm({
 }) {
   const { user } = useAuth();
 
-  const [employeeValueState, setEmployeeValue] = useState<string | undefined>(
-    initialData?.employee,
+  const [employeeValueState, setEmployeeValue] = useState<string>(
+    initialData?.employee ?? "",
   );
   const [clientName, setClientName] = useState<string>(
     initialData?.clientName ?? "",
   );
-  const [serviceNameValue, setServiceNameValue] = useState<string | undefined>(
-    initialData?.serviceName,
+  const [serviceNameValue, setServiceNameValue] = useState<string>(
+    initialData?.serviceName ?? "",
   );
-  const [salonValue, setSalonValue] = useState<string | undefined>(
-    initialData?.salon,
+  const [salonValue, setSalonValue] = useState<string>(
+    initialData?.salon ?? "",
   );
   const [totalPrice, setTotalPrice] = useState<string>(
     initialData?.amount ? String(initialData.amount) : "",
@@ -63,7 +63,7 @@ export default function AddEntryForm({
   const [tipValue, setTipValue] = useState<string>(
     initialData?.tip ? String(initialData.tip) : "",
   );
-  const [notes, setNotes] = useState<string | undefined>(initialData?.notes);
+  const [notes, setNotes] = useState<string>(initialData?.notes ?? "");
   const [addHair, setAddHair] = useState<string>("");
   const [splitService, setSplitService] = useState<boolean>(false);
   const [splits, setSplits] = useState<SplitEntry[]>([]);
@@ -71,7 +71,14 @@ export default function AddEntryForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const isEmployee = user?.role === "employee";
-  const employeeValue = (isEmployee && user?.id) ? user.id : employeeValueState;
+  const employeeValue = isEmployee ? (user?.id ?? "") : employeeValueState;
+
+  // Actual service amount calculation
+  const actualServiceAmount = useMemo(() => {
+    const total = Number(totalPrice) || 0;
+    const hair = Number(addHair) || 0;
+    return Math.max(0, total - hair);
+  }, [totalPrice, addHair]);
 
   const { data: salonsData, isLoading: isLoadingSalons } = useSalonsQuery({
     page: 1,
@@ -93,7 +100,7 @@ export default function AddEntryForm({
     isFetching: isFetchingUsers,
   } = useUsersQuery({
     page: 1,
-    limit: 100,
+    limit: 500,
     searchTerm: "",
     role: "EMPLOYEE,MANAGER",
     enabled: true,
@@ -108,10 +115,26 @@ export default function AddEntryForm({
   const employees = usersData?.data || [];
 
   const handleAddBraider = () => {
-    setSplits([
+    const newSplits = [
       ...splits,
       { id: Date.now().toString(), employeeId: "", totalPrice: "", tips: "" },
-    ]);
+    ];
+
+    // Auto split equally
+    const count = newSplits.length;
+    if (count > 1) {
+      const splitAmount = (actualServiceAmount / count).toFixed(2);
+      const splitTip = ((Number(tipValue) || 0) / count).toFixed(2);
+
+      const redistributed = newSplits.map((s) => ({
+        ...s,
+        totalPrice: splitAmount,
+        tips: splitTip,
+      }));
+      setSplits(redistributed);
+    } else {
+      setSplits(newSplits);
+    }
   };
 
   const validate = () => {
@@ -120,8 +143,6 @@ export default function AddEntryForm({
     if (!employeeValue) newErrors.employee = "Employee is required";
     if (!serviceNameValue) newErrors.service = "Service is required";
     if (!totalPrice) newErrors.totalPrice = "Total price is required";
-
-    const mainTip = Number(tipValue) || 0;
 
     if (splitService) {
       const totalSplitsPrice = splits.reduce(
@@ -133,12 +154,13 @@ export default function AddEntryForm({
         0,
       );
 
-      if (totalSplitsPrice > Number(totalPrice)) {
-        newErrors.splitsPrice = `Sum of splits ($${totalSplitsPrice}) exceeds total ($${totalPrice})`;
+      // We allow minor rounding differences, but generally it should match
+      if (Math.abs(totalSplitsPrice - actualServiceAmount) > 1) {
+        newErrors.splitsPrice = `Sum of splits ($${totalSplitsPrice}) does not match actual service amount ($${actualServiceAmount})`;
       }
 
-      if (totalSplitsTips > mainTip) {
-        newErrors.splitsTips = `Sum of split tips ($${totalSplitsTips}) exceeds main tip ($${mainTip})`;
+      if (Math.abs(totalSplitsTips - (Number(tipValue) || 0)) > 1) {
+        newErrors.splitsTips = `Sum of split tips ($${totalSplitsTips}) does not match total tip ($${tipValue || 0})`;
       }
 
       splits.forEach((s, i) => {
@@ -159,10 +181,6 @@ export default function AddEntryForm({
       return;
     }
 
-    const basePrice = Number(totalPrice) || 0;
-    const hairPrice = Number(addHair) || 0;
-    const mainTip = Number(tipValue) || 0;
-
     const formattedSplits = splits.map((s) => ({
       employeeId: s.employeeId,
       totalPrice: Number(s.totalPrice) || 0,
@@ -175,8 +193,9 @@ export default function AddEntryForm({
       serviceId: serviceNameValue,
       clientName: clientName || undefined,
       totalPrice: Number(totalPrice),
-      tips: mainTip || undefined,
-      addHair: hairPrice || undefined,
+      actualPrice: actualServiceAmount,
+      tips: Number(tipValue) || undefined,
+      addHair: Number(addHair) || undefined,
       notes: notes || undefined,
       isSplit: splitService,
       splits: splitService ? formattedSplits : [],
@@ -213,7 +232,7 @@ export default function AddEntryForm({
                   <Select
                     value={salonValue}
                     onValueChange={(v) => {
-                      setSalonValue(v ?? undefined);
+                      setSalonValue(v ?? "");
                       setErrors((prev) => ({ ...prev, salon: "" }));
                     }}>
                     <SelectTrigger className={inputClasses + " w-full px-3"}>
@@ -245,7 +264,7 @@ export default function AddEntryForm({
                   <Select
                     value={employeeValue}
                     onValueChange={(v) => {
-                      setEmployeeValue(v ?? undefined);
+                      setEmployeeValue(v ?? "");
                       setErrors((prev) => ({ ...prev, employee: "" }));
                     }}
                     disabled={isEmployee && !!user?.id}>
@@ -257,15 +276,15 @@ export default function AddEntryForm({
                             : "Select an employee"
                         }>
                         {employeeValue
-                          ? employees.find((e: any) => e.id === employeeValue)?.fullName || "Loading..."
-                          : undefined
-                        }
+                          ? employees.find((e: any) => e.id === employeeValue)
+                              ?.fullName || "Loading..."
+                          : undefined}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {employees.map((employee: any) => (
                         <SelectItem key={employee.id} value={employee.id}>
-                          {employee.fullName}
+                          {employee.fullName} ({employee.role})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -273,12 +292,6 @@ export default function AddEntryForm({
                   {errors.employee && (
                     <p className={errorClasses}>{errors.employee}</p>
                   )}
-                  {!loadingEmployees &&
-                    employees.length === 0 && (
-                      <p className={errorClasses}>
-                        No employees found
-                      </p>
-                    )}
                 </div>
               </div>
 
@@ -289,7 +302,7 @@ export default function AddEntryForm({
                   <Select
                     value={serviceNameValue}
                     onValueChange={(v) => {
-                      setServiceNameValue(v ?? undefined);
+                      setServiceNameValue(v ?? "");
                       setErrors((prev) => ({ ...prev, service: "" }));
                     }}>
                     <SelectTrigger className={inputClasses + " w-full px-3"}>
@@ -336,7 +349,9 @@ export default function AddEntryForm({
               <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 {/* Total Price */}
                 <div className='space-y-2'>
-                  <label className={labelClasses}>Total price</label>
+                  <label className={labelClasses}>
+                    Total price (Client Payment)
+                  </label>
                   <Input
                     value={totalPrice}
                     onChange={(e) => {
@@ -356,7 +371,7 @@ export default function AddEntryForm({
                 {/* Add Hair */}
                 <div className='space-y-2'>
                   <label className={labelClasses + " text-pink-600"}>
-                    Hair
+                    Hair Cost
                   </label>
                   <Input
                     value={addHair}
@@ -379,6 +394,16 @@ export default function AddEntryForm({
                     min='0'
                     className={inputClasses}
                   />
+                </div>
+
+                {/* Display actual service amount info */}
+                <div className='flex items-center justify-end md:col-span-2'>
+                  <p className='text-sm font-medium text-gray-500'>
+                    Actual Service Amount:{" "}
+                    <span className='text-gray-900 font-bold'>
+                      ${actualServiceAmount}
+                    </span>
+                  </p>
                 </div>
               </div>
             </div>
@@ -408,7 +433,24 @@ export default function AddEntryForm({
                 </div>
                 <Switch
                   checked={splitService}
-                  onCheckedChange={setSplitService}
+                  onCheckedChange={(checked) => {
+                    setSplitService(checked);
+
+                    if (checked && splits.length === 0) {
+                      setSplits([
+                        {
+                          id: "initial-split",
+                          employeeId: employeeValue,
+                          totalPrice: String(actualServiceAmount),
+                          tips: tipValue || "0",
+                        },
+                      ]);
+                    }
+
+                    if (!checked) {
+                      setSplits([]);
+                    }
+                  }}
                 />
               </div>
 
@@ -466,7 +508,7 @@ export default function AddEntryForm({
                                     <SelectItem
                                       key={employee.id}
                                       value={employee.id}>
-                                      {employee.fullName}
+                                      {employee.fullName} ({employee.role})
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -570,7 +612,8 @@ export default function AddEntryForm({
               <Button
                 type='button'
                 variant='ghost'
-                className='h-12 px-8 rounded-xl text-gray-500 hover:bg-gray-100'>
+                className='h-12 px-8 rounded-xl text-gray-500 hover:bg-gray-100'
+                onClick={() => window.history.back()}>
                 Cancel
               </Button>
               <Button
