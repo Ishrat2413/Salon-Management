@@ -47,7 +47,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </Button>
           <div>
             <h1 className='text-xl font-bold text-gray-800'>
-              Welcome, {user.name}
+              Welcome, {user.fullName}
             </h1>
             <p className='text-sm text-gray-500'>
               Here&apos;s what&apos;s happening today
