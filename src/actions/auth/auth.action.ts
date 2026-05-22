@@ -67,7 +67,7 @@ const getErrorMessage = (error: unknown): string => {
  */
 export const forgotPassword = async (email: string): Promise<ForgotPasswordResponse> => {
   try {
-    const response = await apiClient.post<ForgotPasswordResponse>("/api/v1/auth/forgot-password", {
+    const response = await apiClient.post<ForgotPasswordResponse>("/auth/forgot-password", {
       email: email.toLowerCase(),
     });
 
@@ -102,7 +102,7 @@ export const verifyOtp = async (email: string, otp: string): Promise<VerifyOtpRe
       };
     }
 
-    const response = await apiClient.post<VerifyOtpResponse>("/api/v1/auth/verify-reset-code", {
+    const response = await apiClient.post<VerifyOtpResponse>("/auth/verify-reset-code", {
       email: email.toLowerCase(),
       code: otp.trim(),
     });
@@ -148,7 +148,7 @@ export const resetPassword = async (
       };
     }
 
-    const response = await apiClient.post<ResetPasswordResponse>("/api/v1/auth/reset-password", {
+    const response = await apiClient.post<ResetPasswordResponse>("/auth/reset-password", {
       token,
       newPassword,
     });
@@ -193,7 +193,7 @@ export const changePassword = async (
       };
     }
 
-    const response = await apiClient.post<ChangePasswordResponse>("/api/v1/auth/change-password", {
+    const response = await apiClient.post<ChangePasswordResponse>("/auth/change-password", {
       oldPassword: currentPassword,
       newPassword,
     });

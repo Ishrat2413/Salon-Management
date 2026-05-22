@@ -13,7 +13,8 @@ export function AdminHistory() {
     endDate?: string;
     employeeId?: string;
     salonId?: string;
-  }>({});
+    status?: string;
+  }>({ status: "APPROVED" });
   const [page, setPage] = useState(1);
   const limit = 10;
 

@@ -45,12 +45,12 @@ export const salonService = {
     limit?: number;
     searchTerm?: string;
   }): Promise<SalonListResponse> => {
-    const response = await apiClient.get("/api/v1/salons", { params });
+    const response = await apiClient.get("/salons", { params });
     return response.data;
   },
 
   getSingleSalon: async (salonId: string): Promise<SalonSingleResponse> => {
-    const response = await apiClient.get(`/api/v1/salons/${salonId}`);
+    const response = await apiClient.get(`/salons/${salonId}`);
     return response.data;
   },
 
@@ -59,7 +59,7 @@ export const salonService = {
     address: string;
     managerId?: string;
   }): Promise<SalonSingleResponse> => {
-    const response = await apiClient.post("/api/v1/salons", payload);
+    const response = await apiClient.post("/salons", payload);
     return response.data;
   },
 
@@ -67,12 +67,12 @@ export const salonService = {
     salonId: string,
     payload: { name?: string; address?: string; managerId?: string },
   ): Promise<SalonSingleResponse> => {
-    const response = await apiClient.patch(`/api/v1/salons/${salonId}`, payload);
+    const response = await apiClient.patch(`/salons/${salonId}`, payload);
     return response.data;
   },
 
   deleteSalon: async (salonId: string): Promise<SalonSingleResponse> => {
-    const response = await apiClient.delete(`/api/v1/salons/${salonId}`);
+    const response = await apiClient.delete(`/salons/${salonId}`);
     return response.data;
   },
 };

@@ -10,21 +10,29 @@ import { useRouter, usePathname } from "next/navigation";
 import type { UserRole } from "@/lib/auth";
 
 export interface User {
-  id?: string;
-  name: string;
+  id: string;
+  fullName: string;
   email: string;
-  location?: string;
   role: UserRole;
-  title?: string;
-  phone?: string;
+  phoneNumber?: string;
+  address?: string;
+  bio?: string;
+  status?: string;
+  createdAt?: string;
   salonId?: string;
-  salonName?: string;
-  salonLocation?: string;
+  salon?: {
+    name: string;
+    address: string;
+  };
+  commissionRate?: {
+    rate: number;
+  };
 }
 
 interface AuthContextType {
   user: User | null;
   login: (user: User) => void;
+  updateCurrentUserInfo: (updates: Partial<User>) => void;
   logout: () => void;
   isLoading: boolean;
   isHydrated: boolean;
@@ -61,6 +69,8 @@ function normalizeUser(user: User | null): User | null {
     return null;
   }
 
+  const fullName = user.fullName ?? (user as User & { name?: string }).name;
+
   const role = normalizeRole(user.role);
 
   if (!role) {
@@ -69,6 +79,7 @@ function normalizeUser(user: User | null): User | null {
 
   return {
     ...user,
+    fullName: fullName ?? "",
     role,
   };
 }
@@ -177,6 +188,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.replace("/");
   };
 
+  const updateCurrentUserInfo = (updates: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      writeStoredUser(updatedUser);
+      emitAuthChange();
+    }
+  };
+
   const logout = () => {
     writeStoredUser(null);
     emitAuthChange();
@@ -185,7 +204,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, isLoading, isHydrated }}>
+      value={{
+        user,
+        login,
+        updateCurrentUserInfo,
+        logout,
+        isLoading,
+        isHydrated,
+      }}>
       {children}
     </AuthContext.Provider>
   );

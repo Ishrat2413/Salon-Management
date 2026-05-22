@@ -21,6 +21,18 @@ function replaceEntryInCache(
   };
 }
 
+function removeEntryFromCache(
+  current: SalonEntriesResponse | undefined,
+  deletedId: string,
+): SalonEntriesResponse | undefined {
+  if (!current) return current;
+
+  return {
+    ...current,
+    data: current.data.filter((entry) => entry.id !== deletedId),
+  };
+}
+
 export const useSalonEntriesQuery = (params: {
   page: number;
   limit: number;
@@ -32,7 +44,7 @@ export const useSalonEntriesQuery = (params: {
     queryKey: ["salon-entries", params],
     queryFn: () =>
       apiClient
-        .get<SalonEntriesResponse>("/api/v1/salon-entries", { params })
+        .get<SalonEntriesResponse>("/salon-entries", { params })
         .then((res) => res.data),
   });
 };
@@ -42,7 +54,7 @@ export const useSalonEntryQuery = (id: string) => {
     queryKey: ["salon-entry", id],
     queryFn: () =>
       apiClient
-        .get<{ data: SalonEntry }>(`/api/v1/salon-entries/${id}`)
+        .get<{ data: SalonEntry }>(`/salon-entries/${id}`)
         .then((res) => res.data.data),
     enabled: !!id,
   });
@@ -55,7 +67,7 @@ export const useUpdateSalonEntryMutation = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
       apiClient
-        .patch<{ data: SalonEntry }>(`/api/v1/salon-entries/${id}`, data)
+        .patch<{ data: SalonEntry }>(`/salon-entries/${id}`, data)
         .then((res) => res.data.data),
     onSuccess: (updatedEntry, variables) => {
       queryClient.setQueriesData<SalonEntriesResponse>(
@@ -92,7 +104,7 @@ export const useUpdateSalonEntryStatusMutation = () => {
       apiClient
         .patch<{
           data: SalonEntry;
-        }>(`/api/v1/salon-entries/${id}/status`, { status, statusComment })
+        }>(`/salon-entries/${id}/status`, { status, statusComment })
         .then((res) => res.data.data),
     onSuccess: (updatedEntry) => {
       queryClient.setQueriesData<SalonEntriesResponse>(
@@ -120,7 +132,7 @@ export const useCreateSalonEntryMutation = () => {
 
   return useMutation({
     mutationFn: (data: any) =>
-      apiClient.post(`/api/v1/salon-entries`, data).then((res) => res.data),
+      apiClient.post(`/salon-entries`, data).then((res) => res.data),
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ["salon-entries"] });
       toast.success("Entry created successfully.");
@@ -128,6 +140,35 @@ export const useCreateSalonEntryMutation = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to create entry.");
+    },
+  });
+};
+
+export const useDeleteSalonEntryMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => salonEntryService.deleteEntry(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ["salon-entries"] });
+      
+      const previousQueries = queryClient.getQueriesData({
+        queryKey: ["salon-entries"],
+      });
+
+      queryClient.setQueriesData({ queryKey: ["salon-entries"] }, (current: any) => removeEntryFromCache(current, id));
+
+      return { previousQueries };
+    },
+    onError: (error: any, _variables, context) => {
+      context?.previousQueries?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+      toast.error(error.response?.data?.message || "Failed to delete entry.");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["salon-entries"] });
+      toast.success("Entry deleted successfully.");
     },
   });
 };

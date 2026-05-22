@@ -2,9 +2,18 @@ import { apiClient } from "../client";
 import { SalonEntriesResponse } from "@/actions/salon-entry/salon-entry.types";
 
 export const salonEntryService = {
-  getAllEntries: async (params?: { page?: number; limit?: number }) => {
+  getAllEntries: async (params?: {
+    page?: number;
+    limit?: number;
+    searchTerm?: string;
+    startDate?: string;
+    endDate?: string;
+    employeeId?: string;
+    salonId?: string;
+    status?: string;
+  }) => {
     const response = await apiClient.get<SalonEntriesResponse>(
-      "/api/v1/salon-entries",
+      "/salon-entries",
       { params },
     );
     return response.data;
@@ -12,7 +21,7 @@ export const salonEntryService = {
 
   getEntryById: async (id: string) => {
     const response = await apiClient.get<SalonEntriesResponse["data"][number]>(
-      `/api/v1/salon-entries/${id}`,
+      `/salon-entries/${id}`,
     );
     return response.data;
   },
@@ -20,21 +29,25 @@ export const salonEntryService = {
   updateStatus: async (id: string, status: string, statusComment?: string) => {
     const response = await apiClient.patch<
       SalonEntriesResponse["data"][number]
-    >(`/api/v1/salon-entries/${id}/status`, { status, statusComment });
+    >(`/salon-entries/${id}/status`, { status, statusComment });
     return response.data;
   },
 
   updateEntry: async (id: string, data: Record<string, unknown>) => {
     const response = await apiClient.patch<
       SalonEntriesResponse["data"][number]
-    >(`/api/v1/salon-entries/${id}`, data);
+    >(`/salon-entries/${id}`, data);
     return response.data;
   },
   createEntry: async (data: Record<string, unknown>) => {
     const response = await apiClient.post<SalonEntriesResponse["data"][number]>(
-      `/api/v1/salon-entries`,
+      `/salon-entries`,
       data,
     );
+    return response.data;
+  },
+  deleteEntry: async (id: string) => {
+    const response = await apiClient.delete(`/salon-entries/${id}`);
     return response.data;
   },
 };
