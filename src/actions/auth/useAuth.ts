@@ -7,7 +7,10 @@ import { useAuth } from "@/components/providers/auth-provider";
 function getApiErrorMessage(error: any, fallback: string) {
   const responseData = error?.response?.data;
 
-  if (typeof responseData?.message === "string" && responseData.message.trim()) {
+  if (
+    typeof responseData?.message === "string" &&
+    responseData.message.trim()
+  ) {
     return responseData.message;
   }
 
@@ -52,7 +55,7 @@ export const useLoginMutation = () => {
         id: user.id,
         email: user.email,
         role: normalizeRole(user.role),
-        name: user.fullName,
+        fullName: user.fullName,
         salonId: user.salonId,
       });
       toast.success("Successfully logged in");
@@ -86,7 +89,10 @@ export const useForgotPasswordMutation = () => {
     mutationFn: authService.forgotPassword,
     onSuccess: (data, variables) => {
       if (typeof window !== "undefined") {
-        sessionStorage.setItem("resetEmail", variables.email.trim().toLowerCase());
+        sessionStorage.setItem(
+          "resetEmail",
+          variables.email.trim().toLowerCase(),
+        );
       }
       toast.success(data?.message || "Password reset code sent successfully.");
       router.push("/verify-identity");
@@ -110,7 +116,9 @@ export const useVerifyResetCodeMutation = () => {
       router.push("/reset-password");
     },
     onError: (error: any) => {
-      toast.error(getApiErrorMessage(error, "Invalid or expired verification code."));
+      toast.error(
+        getApiErrorMessage(error, "Invalid or expired verification code."),
+      );
     },
   });
 };
@@ -131,5 +139,3 @@ export const useResetPasswordMutation = () => {
     },
   });
 };
-
-

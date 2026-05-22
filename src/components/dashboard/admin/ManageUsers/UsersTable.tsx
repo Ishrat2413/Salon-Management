@@ -4,7 +4,6 @@ import {
   useUpdateUserStatusMutation,
   useUpdateUserRoleMutation,
   useDeleteUserMutation,
-  useUpdateCommissionRateMutation,
 } from "@/actions/admin/useUsers";
 import { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
 import UniversalTable from "@/components/univarsalTable/Universaltable";
@@ -25,7 +24,6 @@ export type User = {
   salonName: string;
   email: string;
   status: "PENDING" | "ACTIVE" | "SUSPEND" | "REJECTED";
-  commissionRate: number | null;
 };
 
 // Role badge color custom define for each role
@@ -117,7 +115,10 @@ const getStatusOptions = (status: User["status"]): StatusOption[] => {
 type StatusDropdownProps = {
   userId: string | number;
   status: User["status"];
-  onStatusChange: (userId: string | number, newStatus: User["status"]) => Promise<void>;
+  onStatusChange: (
+    userId: string | number,
+    newStatus: User["status"],
+  ) => Promise<void>;
 };
 
 function StatusDropdown({
@@ -159,7 +160,10 @@ function StatusDropdown({
 
     const handleScroll = (e: Event) => {
       // Don't close if scrolling inside the dropdown itself
-      if (dropdownRef.current && dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        dropdownRef.current.contains(e.target as Node)
+      ) {
         return;
       }
       if (open) setOpen(false);
@@ -170,7 +174,7 @@ function StatusDropdown({
       window.addEventListener("scroll", handleScroll, true);
       window.addEventListener("resize", () => setOpen(false));
     }
-    
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("scroll", handleScroll, true);
@@ -208,7 +212,7 @@ function StatusDropdown({
         ? createPortal(
             <div
               ref={dropdownRef}
-              className='absolute z-[9999] overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg'
+              className='absolute z-9999 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg'
               style={{
                 top: coords.top,
                 left: coords.left,
@@ -239,7 +243,7 @@ function StatusDropdown({
                 );
               })}
             </div>,
-            document.body
+            document.body,
           )
         : null}
     </>
@@ -290,7 +294,10 @@ function RoleDropdown({ userId, role, onRoleChange }: RoleDropdownProps) {
     };
 
     const handleScroll = (e: Event) => {
-      if (dropdownRef.current && dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        dropdownRef.current.contains(e.target as Node)
+      ) {
         return;
       }
       if (open) setOpen(false);
@@ -301,7 +308,7 @@ function RoleDropdown({ userId, role, onRoleChange }: RoleDropdownProps) {
       window.addEventListener("scroll", handleScroll, true);
       window.addEventListener("resize", () => setOpen(false));
     }
-    
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("scroll", handleScroll, true);
@@ -319,8 +326,7 @@ function RoleDropdown({ userId, role, onRoleChange }: RoleDropdownProps) {
         style={{
           ...roleBadgeStyle[role as keyof typeof roleBadgeStyle],
           cursor: "pointer",
-        }}
-      >
+        }}>
         <span>{role}</span>
         <span aria-hidden className='text-xs opacity-70'>
           ▾
@@ -331,7 +337,7 @@ function RoleDropdown({ userId, role, onRoleChange }: RoleDropdownProps) {
         ? createPortal(
             <div
               ref={dropdownRef}
-              className='absolute z-[9999] overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg p-1 flex flex-col gap-1'
+              className='absolute z-9999 overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg p-1 flex flex-col gap-1'
               style={{
                 top: coords.top,
                 left: coords.left,
@@ -349,15 +355,16 @@ function RoleDropdown({ userId, role, onRoleChange }: RoleDropdownProps) {
                   }}
                   className='w-full text-left transition hover:opacity-80'
                   style={{
-                    ...roleBadgeStyle[option.value as keyof typeof roleBadgeStyle],
+                    ...roleBadgeStyle[
+                      option.value as keyof typeof roleBadgeStyle
+                    ],
                     display: "block",
-                  }}
-                >
+                  }}>
                   {option.label}
                 </button>
               ))}
             </div>,
-            document.body
+            document.body,
           )
         : null}
     </>
@@ -369,27 +376,20 @@ interface UsersTableProps {
 }
 
 export function UsersTable({ data }: UsersTableProps) {
-  const { mutateAsync: updateStatus, isPending: isUpdatingStatus } = useUpdateUserStatusMutation();
+  const { mutateAsync: updateStatus, isPending: isUpdatingStatus } =
+    useUpdateUserStatusMutation();
   const { mutateAsync: updateRole } = useUpdateUserRoleMutation();
-  const { mutateAsync: deleteUser, isPending: isDeleting } = useDeleteUserMutation();
-  const { mutateAsync: updateCommission, isPending: isUpdatingCommission } = useUpdateCommissionRateMutation();
+  const { mutateAsync: deleteUser, isPending: isDeleting } =
+    useDeleteUserMutation();
 
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
-  const [userToApprove, setUserToApprove] = useState<{ userId: string | number; newStatus: User["status"] } | null>(null);
-  const [userToEditCommission, setUserToEditCommission] = useState<User | null>(null);
-  const [commissionRate, setCommissionRate] = useState<string>("");
+  const [userToApprove, setUserToApprove] = useState<{
+    userId: string | number;
+    newStatus: User["status"];
+  } | null>(null);
 
   const handleStatusChange = useCallback(
     async (userId: string | number, newStatus: User["status"]) => {
-      const user = data.find(u => String(u.id) === String(userId));
-      
-      // If changing to ACTIVE and user is EMPLOYEE or MANAGER, show commission modal
-      if (newStatus === "ACTIVE" && user && (user.role === "EMPLOYEE" || user.role === "MANAGER")) {
-        setUserToApprove({ userId, newStatus });
-        setCommissionRate(user.commissionRate ? String(user.commissionRate) : "");
-        return;
-      }
-
       try {
         await updateStatus({ userId: String(userId), status: newStatus });
       } catch (error) {
@@ -398,40 +398,6 @@ export function UsersTable({ data }: UsersTableProps) {
     },
     [updateStatus, data],
   );
-
-  const handleApproveConfirm = async () => {
-    if (!userToApprove) return;
-    try {
-      const rate = commissionRate ? Number(commissionRate) : undefined;
-      await updateStatus({ 
-        userId: String(userToApprove.userId), 
-        status: userToApprove.newStatus,
-        commissionRate: rate
-      });
-      setUserToApprove(null);
-      setCommissionRate("");
-    } catch (error) {
-      console.error(`Failed to approve user:`, error);
-    }
-  };
-
-  const handleCommissionUpdate = async () => {
-    if (!userToEditCommission) return;
-    if (!commissionRate) {
-      toast.error("Please enter a commission rate.");
-      return;
-    }
-    try {
-      await updateCommission({ 
-        userId: String(userToEditCommission.id), 
-        commissionRate: Number(commissionRate) 
-      });
-      setUserToEditCommission(null);
-      setCommissionRate("");
-    } catch (error) {
-      console.error(`Failed to update commission:`, error);
-    }
-  };
 
   const handleRoleChange = useCallback(
     async (userId: string | number, newRole: string) => {
@@ -481,30 +447,6 @@ export function UsersTable({ data }: UsersTableProps) {
         header: "Salon",
       },
       {
-        key: "commissionRate",
-        header: "Commission Rate",
-        render: (value, row) => {
-          if (row.role === "ADMIN") return <span className="text-gray-400">N/A</span>;
-          return (
-            <div className="flex items-center gap-2 group">
-              <span className={value ? "font-medium text-gray-900" : "text-gray-400"}>
-                {value !== null ? `${value}%` : "Not Set"}
-              </span>
-              <button
-                onClick={() => {
-                  setUserToEditCommission(row);
-                  setCommissionRate(row.commissionRate ? String(row.commissionRate) : "");
-                }}
-                className="p-1 text-gray-400 hover:text-pink-600 transition-colors opacity-0 group-hover:opacity-100"
-                title="Edit Commission"
-              >
-                <Edit2 size={14} />
-              </button>
-            </div>
-          );
-        }
-      },
-      {
         key: "status",
         header: "Status",
         render: (value, row: User) => (
@@ -521,9 +463,8 @@ export function UsersTable({ data }: UsersTableProps) {
         render: (_, row: User) => (
           <button
             onClick={() => setUserToDelete(row)}
-            className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-full hover:bg-red-50"
-            title="Delete User"
-          >
+            className='p-2 text-gray-400 hover:text-red-600 transition-colors rounded-full hover:bg-red-50'
+            title='Delete User'>
             <Trash2 size={18} />
           </button>
         ),
@@ -545,108 +486,28 @@ export function UsersTable({ data }: UsersTableProps) {
       <BaseModal
         isOpen={!!userToDelete}
         onClose={() => setUserToDelete(null)}
-        title="Delete User"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-600">
+        title='Delete User'>
+        <div className='space-y-4'>
+          <p className='text-gray-600'>
             Are you sure you want to delete user{" "}
-            <span className="font-semibold text-gray-900">
+            <span className='font-semibold text-gray-900'>
               {userToDelete?.fullName}
             </span>
             ? This action cannot be undone.
           </p>
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <div className='flex justify-end gap-3 pt-4 border-t border-gray-100'>
             <button
               onClick={() => setUserToDelete(null)}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-              disabled={isDeleting}
-            >
+              className='px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors'
+              disabled={isDeleting}>
               Cancel
             </button>
             <button
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
-            >
+              className='px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2'>
               {isDeleting ? "Deleting..." : "Delete User"}
             </button>
-          </div>
-        </div>
-      </BaseModal>
-
-      {/* Approval Modal */}
-      <BaseModal
-        isOpen={!!userToApprove}
-        onClose={() => setUserToApprove(null)}
-        title="Approve User"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-600">
-            Set a commission rate for this user (Optional).
-          </p>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Commission Rate (%)</label>
-            <Input
-              type="number"
-              value={commissionRate}
-              onChange={(e) => setCommissionRate(e.target.value)}
-              placeholder="e.g. 60"
-              min="0"
-              max="100"
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-            <Button
-              variant="ghost"
-              onClick={() => setUserToApprove(null)}
-              disabled={isUpdatingStatus}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-pink-600 hover:bg-pink-700 text-white"
-              onClick={handleApproveConfirm}
-              disabled={isUpdatingStatus}
-            >
-              {isUpdatingStatus ? "Approving..." : "Approve & Set Rate"}
-            </Button>
-          </div>
-        </div>
-      </BaseModal>
-
-      {/* Edit Commission Modal */}
-      <BaseModal
-        isOpen={!!userToEditCommission}
-        onClose={() => setUserToEditCommission(null)}
-        title="Edit Commission Rate"
-      >
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Commission Rate (%)</label>
-            <Input
-              type="number"
-              value={commissionRate}
-              onChange={(e) => setCommissionRate(e.target.value)}
-              placeholder="e.g. 60"
-              min="0"
-              max="100"
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-            <Button
-              variant="ghost"
-              onClick={() => setUserToEditCommission(null)}
-              disabled={isUpdatingCommission}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-pink-600 hover:bg-pink-700 text-white"
-              onClick={handleCommissionUpdate}
-              disabled={isUpdatingCommission}
-            >
-              {isUpdatingCommission ? "Updating..." : "Update Commission"}
-            </Button>
           </div>
         </div>
       </BaseModal>
