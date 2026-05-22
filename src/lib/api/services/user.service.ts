@@ -13,9 +13,17 @@ export const userService = {
     return response.data;
   },
 
-  updateStatus: async (userId: string, status: string) => {
+  updateStatus: async (userId: string, status: string, commissionRate?: number) => {
     const response = await apiClient.patch(`/users/${userId}/status`, {
       status,
+      commissionRate,
+    });
+    return response.data;
+  },
+
+  updateCommissionRate: async (userId: string, commissionRate: number) => {
+    const response = await apiClient.patch(`/users/${userId}/commission-rate`, {
+      commissionRate,
     });
     return response.data;
   },
