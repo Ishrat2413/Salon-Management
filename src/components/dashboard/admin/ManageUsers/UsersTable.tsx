@@ -4,14 +4,18 @@ import {
   useUpdateUserStatusMutation,
   useUpdateUserRoleMutation,
   useDeleteUserMutation,
+  useUpdateCommissionRateMutation,
 } from "@/actions/admin/useUsers";
 import { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
 import UniversalTable from "@/components/univarsalTable/Universaltable";
 import { BaseModal } from "@/components/ui/BaseModal";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { CSSProperties } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export type User = {
   id: string | number;
@@ -21,6 +25,7 @@ export type User = {
   salonName: string;
   email: string;
   status: "PENDING" | "ACTIVE" | "SUSPEND" | "REJECTED";
+  commissionRate: number | null;
 };
 
 // Role badge color custom define for each role
@@ -364,22 +369,69 @@ interface UsersTableProps {
 }
 
 export function UsersTable({ data }: UsersTableProps) {
-  const { mutateAsync: updateStatus } = useUpdateUserStatusMutation();
+  const { mutateAsync: updateStatus, isPending: isUpdatingStatus } = useUpdateUserStatusMutation();
   const { mutateAsync: updateRole } = useUpdateUserRoleMutation();
   const { mutateAsync: deleteUser, isPending: isDeleting } = useDeleteUserMutation();
+  const { mutateAsync: updateCommission, isPending: isUpdatingCommission } = useUpdateCommissionRateMutation();
 
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [userToApprove, setUserToApprove] = useState<{ userId: string | number; newStatus: User["status"] } | null>(null);
+  const [userToEditCommission, setUserToEditCommission] = useState<User | null>(null);
+  const [commissionRate, setCommissionRate] = useState<string>("");
 
   const handleStatusChange = useCallback(
     async (userId: string | number, newStatus: User["status"]) => {
+      const user = data.find(u => String(u.id) === String(userId));
+      
+      // If changing to ACTIVE and user is EMPLOYEE or MANAGER, show commission modal
+      if (newStatus === "ACTIVE" && user && (user.role === "EMPLOYEE" || user.role === "MANAGER")) {
+        setUserToApprove({ userId, newStatus });
+        setCommissionRate(user.commissionRate ? String(user.commissionRate) : "");
+        return;
+      }
+
       try {
         await updateStatus({ userId: String(userId), status: newStatus });
       } catch (error) {
         console.error(`Failed to update user ${userId} status:`, error);
       }
     },
-    [updateStatus],
+    [updateStatus, data],
   );
+
+  const handleApproveConfirm = async () => {
+    if (!userToApprove) return;
+    try {
+      const rate = commissionRate ? Number(commissionRate) : undefined;
+      await updateStatus({ 
+        userId: String(userToApprove.userId), 
+        status: userToApprove.newStatus,
+        commissionRate: rate
+      });
+      setUserToApprove(null);
+      setCommissionRate("");
+    } catch (error) {
+      console.error(`Failed to approve user:`, error);
+    }
+  };
+
+  const handleCommissionUpdate = async () => {
+    if (!userToEditCommission) return;
+    if (!commissionRate) {
+      toast.error("Please enter a commission rate.");
+      return;
+    }
+    try {
+      await updateCommission({ 
+        userId: String(userToEditCommission.id), 
+        commissionRate: Number(commissionRate) 
+      });
+      setUserToEditCommission(null);
+      setCommissionRate("");
+    } catch (error) {
+      console.error(`Failed to update commission:`, error);
+    }
+  };
 
   const handleRoleChange = useCallback(
     async (userId: string | number, newRole: string) => {
@@ -429,6 +481,30 @@ export function UsersTable({ data }: UsersTableProps) {
         header: "Salon",
       },
       {
+        key: "commissionRate",
+        header: "Commission Rate",
+        render: (value, row) => {
+          if (row.role === "ADMIN") return <span className="text-gray-400">N/A</span>;
+          return (
+            <div className="flex items-center gap-2 group">
+              <span className={value ? "font-medium text-gray-900" : "text-gray-400"}>
+                {value !== null ? `${value}%` : "Not Set"}
+              </span>
+              <button
+                onClick={() => {
+                  setUserToEditCommission(row);
+                  setCommissionRate(row.commissionRate ? String(row.commissionRate) : "");
+                }}
+                className="p-1 text-gray-400 hover:text-pink-600 transition-colors opacity-0 group-hover:opacity-100"
+                title="Edit Commission"
+              >
+                <Edit2 size={14} />
+              </button>
+            </div>
+          );
+        }
+      },
+      {
         key: "status",
         header: "Status",
         render: (value, row: User) => (
@@ -465,6 +541,7 @@ export function UsersTable({ data }: UsersTableProps) {
         pageSize={10}
       />
 
+      {/* Delete User Modal */}
       <BaseModal
         isOpen={!!userToDelete}
         onClose={() => setUserToDelete(null)}
@@ -493,6 +570,83 @@ export function UsersTable({ data }: UsersTableProps) {
             >
               {isDeleting ? "Deleting..." : "Delete User"}
             </button>
+          </div>
+        </div>
+      </BaseModal>
+
+      {/* Approval Modal */}
+      <BaseModal
+        isOpen={!!userToApprove}
+        onClose={() => setUserToApprove(null)}
+        title="Approve User"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Set a commission rate for this user (Optional).
+          </p>
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700">Commission Rate (%)</label>
+            <Input
+              type="number"
+              value={commissionRate}
+              onChange={(e) => setCommissionRate(e.target.value)}
+              placeholder="e.g. 60"
+              min="0"
+              max="100"
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <Button
+              variant="ghost"
+              onClick={() => setUserToApprove(null)}
+              disabled={isUpdatingStatus}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-pink-600 hover:bg-pink-700 text-white"
+              onClick={handleApproveConfirm}
+              disabled={isUpdatingStatus}
+            >
+              {isUpdatingStatus ? "Approving..." : "Approve & Set Rate"}
+            </Button>
+          </div>
+        </div>
+      </BaseModal>
+
+      {/* Edit Commission Modal */}
+      <BaseModal
+        isOpen={!!userToEditCommission}
+        onClose={() => setUserToEditCommission(null)}
+        title="Edit Commission Rate"
+      >
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700">Commission Rate (%)</label>
+            <Input
+              type="number"
+              value={commissionRate}
+              onChange={(e) => setCommissionRate(e.target.value)}
+              placeholder="e.g. 60"
+              min="0"
+              max="100"
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <Button
+              variant="ghost"
+              onClick={() => setUserToEditCommission(null)}
+              disabled={isUpdatingCommission}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-pink-600 hover:bg-pink-700 text-white"
+              onClick={handleCommissionUpdate}
+              disabled={isUpdatingCommission}
+            >
+              {isUpdatingCommission ? "Updating..." : "Update Commission"}
+            </Button>
           </div>
         </div>
       </BaseModal>
