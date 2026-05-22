@@ -2,7 +2,16 @@ import { apiClient } from "../client";
 import { SalonEntriesResponse } from "@/actions/salon-entry/salon-entry.types";
 
 export const salonEntryService = {
-  getAllEntries: async (params?: { page?: number; limit?: number }) => {
+  getAllEntries: async (params?: {
+    page?: number;
+    limit?: number;
+    searchTerm?: string;
+    startDate?: string;
+    endDate?: string;
+    employeeId?: string;
+    salonId?: string;
+    status?: string;
+  }) => {
     const response = await apiClient.get<SalonEntriesResponse>(
       "/salon-entries",
       { params },

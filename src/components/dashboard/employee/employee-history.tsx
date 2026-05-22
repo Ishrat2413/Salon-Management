@@ -2,142 +2,30 @@
 
 import { useState, useMemo } from "react";
 import {
-  CalendarDays,
-  Clock3,
   DollarSign,
-  Filter,
   ShoppingBag,
   Tags,
   Loader2,
 } from "lucide-react";
-import { format, isToday, isYesterday, parseISO } from "date-fns";
 
 import { Card, CardContent } from "@/components/ui/card";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useSalonEntriesQuery } from "@/actions/salon-entry/useSalonEntry";
 import { useAuth } from "@/components/providers/auth-provider";
-import type { SalonEntry } from "@/actions/salon-entry/salon-entry.types";
-
-type HistoryItem = {
-  id: string;
-  service: string;
-  salon: string;
-  time: string;
-  amount: string;
-  tip: string;
-};
-
-function HistorySection({
-  title,
-  items,
-}: {
-  title: string;
-  items: HistoryItem[];
-}) {
-  return (
-    <section className='space-y-4'>
-      {/* Section Header */}
-      <div className='flex items-center gap-2'>
-        <div className='flex h-9 w-9 items-center justify-center rounded-full bg-pink-100 text-pink-600'>
-          <CalendarDays className='h-4 w-4' />
-        </div>
-
-        <h2 className='text-lg font-semibold text-gray-800'>{title}</h2>
-      </div>
-
-      {/* Items */}
-      <div className='space-y-4'>
-        {items.map((item) => (
-          <Card
-            key={item.id}
-            className='border border-gray-100 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md'>
-            <CardContent className='flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between'>
-              {/* Left */}
-              <div className='space-y-2'>
-                <h3 className='text-base font-semibold text-gray-800'>
-                  {item.service}
-                </h3>
-
-                <div className='flex flex-wrap items-center gap-4 text-sm text-gray-500'>
-                  <span>{item.salon}</span>
-
-                  <div className='flex items-center gap-1'>
-                    <Clock3 className='h-4 w-4' />
-
-                    <span>{item.time}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right */}
-              <div className='text-left md:text-right'>
-                <p className='text-xl font-bold text-gray-800'>{item.amount}</p>
-
-                <p className='text-sm font-medium text-green-500'>{item.tip}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </section>
-  );
-}
+import { HistoryTable } from "../common/HistoryTable";
 
 export default function EmployeeHistory() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
-  const [page, setPage] = useState(1);
-  const limit = 10;
+  const isManager = user?.role === "manager";
+  const [page] = useState(1);
+  const limit = 100; // Fetch more for table view or handle pagination
 
   const { data, isLoading, isError } = useSalonEntriesQuery({
     page,
     limit,
-    employeeId: user?.id,
+    employeeId: isAdmin || isManager ? undefined : user?.id,
+    status: "APPROVED",
   });
-
-  const groupedHistory = useMemo(() => {
-    if (!data?.data) return {};
-
-    const groups: Record<string, HistoryItem[]> = {};
-
-    data.data.forEach((entry: any) => {
-      const date = parseISO(entry.createdAt);
-      let groupTitle = format(date, "MMMM d, yyyy");
-
-      if (isToday(date)) {
-        groupTitle = "Today";
-      } else if (isYesterday(date)) {
-        groupTitle = "Yesterday";
-      }
-
-      if (!groups[groupTitle]) {
-        groups[groupTitle] = [];
-      }
-
-      const earning = isAdmin
-        ? entry.totalPrice
-        : (entry.commissionEarnings ?? 0);
-      const tip = isAdmin ? entry.tips : (entry.loggedInUserTips ?? 0);
-
-      groups[groupTitle].push({
-        id: entry.id,
-        service: entry.serviceName,
-        salon: entry.salonName,
-        time: format(date, "h:mm aa"),
-        amount: `+$${earning.toLocaleString()}`,
-        tip: `+$${tip.toLocaleString()} tip`,
-      });
-    });
-
-    return groups;
-  }, [data, isAdmin]);
 
   const summaryCards = useMemo(() => {
     if (!data?.meta) {
@@ -156,10 +44,18 @@ export default function EmployeeHistory() {
       loggedInUserTips,
     } = data.meta as any;
 
+    const displayEarned = isAdmin || isManager 
+        ? totalPrices 
+        : (loggedInUserCommissionEarnings ?? 0);
+    
+    const displayTips = isAdmin || isManager
+        ? totalTips
+        : (loggedInUserTips ?? 0);
+
     return [
       {
         title: "Total Earned",
-        value: `$${(isAdmin ? totalPrices : (loggedInUserCommissionEarnings ?? 0)).toLocaleString()}`,
+        value: `$${displayEarned.toLocaleString()}`,
         icon: DollarSign,
       },
       {
@@ -169,11 +65,11 @@ export default function EmployeeHistory() {
       },
       {
         title: "Total Tips",
-        value: `$${(isAdmin ? totalTips : (loggedInUserTips ?? 0)).toLocaleString()}`,
+        value: `$${displayTips.toLocaleString()}`,
         icon: Tags,
       },
     ];
-  }, [data, isAdmin]);
+  }, [data, isAdmin, isManager]);
 
   if (isLoading) {
     return (
@@ -198,8 +94,6 @@ export default function EmployeeHistory() {
     );
   }
 
-  const groupTitles = Object.keys(groupedHistory);
-
   return (
     <div className='min-h-screen p-4 md:p-8'>
       <div className='space-y-10'>
@@ -211,29 +105,8 @@ export default function EmployeeHistory() {
             </h1>
 
             <p className='mt-1 text-sm text-gray-500'>
-              Track your bookings, earnings, and tips.
+              Track your approved bookings, earnings, and tips.
             </p>
-          </div>
-
-          {/* Filter */}
-          <div className=''>
-            <Select defaultValue='week'>
-              <SelectTrigger className='h-11 bg-white'>
-                <div className='flex items-center gap-2'>
-                  <Filter className='h-4 w-4 text-gray-400' />
-
-                  <SelectValue placeholder='This week' />
-                </div>
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value='today'>Today</SelectItem>
-
-                <SelectItem value='week'>This week</SelectItem>
-
-                <SelectItem value='month'>This month</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
@@ -264,48 +137,8 @@ export default function EmployeeHistory() {
           })}
         </div>
 
-        {/* History Sections */}
-        <div className='space-y-10'>
-          {groupTitles.length > 0 ? (
-            groupTitles.map((title) => (
-              <HistorySection
-                key={title}
-                title={title}
-                items={groupedHistory[title]}
-              />
-            ))
-          ) : (
-            <div className='flex flex-col items-center justify-center py-20 text-gray-500'>
-              <CalendarDays className='mb-4 h-12 w-12 opacity-20' />
-              <p>No history found.</p>
-            </div>
-          )}
-        </div>
-
-        {/* Pagination */}
-        {data?.meta && data.meta.total > limit && (
-          <div className='flex items-center justify-center gap-4 pt-4'>
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className='rounded-md border border-gray-200 px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-50 disabled:opacity-50'>
-              Previous
-            </button>
-            <span className='text-sm text-gray-500'>
-              Page {page} of {Math.ceil(data.meta.total / limit)}
-            </span>
-            <button
-              onClick={() =>
-                setPage((p) =>
-                  Math.min(Math.ceil(data.meta.total / limit), p + 1),
-                )
-              }
-              disabled={page >= Math.ceil(data.meta.total / limit)}
-              className='rounded-md border border-gray-200 px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-50 disabled:opacity-50'>
-              Next
-            </button>
-          </div>
-        )}
+        {/* History Table */}
+        <HistoryTable data={data?.data || []} isLoading={isLoading} />
       </div>
     </div>
   );
