@@ -24,11 +24,11 @@ export function ServiceHistoryList({
             key={i}
             className="bg-white rounded-md p-6 shadow-sm border border-gray-100 animate-pulse flex flex-wrap items-center justify-between gap-4"
           >
-            <div className="flex-1 min-w-[150px] h-16 bg-gray-100 rounded"></div>
-            <div className="flex-1 min-w-[120px] h-16 bg-gray-100 rounded"></div>
-            <div className="flex-1 min-w-[120px] h-16 bg-gray-100 rounded"></div>
-            <div className="flex-1 min-w-[100px] h-16 bg-gray-100 rounded"></div>
-            <div className="flex-1 min-w-[80px] h-16 bg-gray-100 rounded"></div>
+            <div className="flex-1 min-w-37.5 h-16 bg-gray-100 rounded"></div>
+            <div className="flex-1 min-w-30 h-16 bg-gray-100 rounded"></div>
+            <div className="flex-1 min-w-30 h-16 bg-gray-100 rounded"></div>
+            <div className="flex-1 min-w-25 h-16 bg-gray-100 rounded"></div>
+            <div className="flex-1 min-w-20 h-16 bg-gray-100 rounded"></div>
           </article>
         ))}
       </section>
@@ -59,18 +59,18 @@ export function ServiceHistoryList({
             key={entry.id}
             className="bg-white rounded-md p-6 shadow-sm border border-gray-100 flex flex-wrap items-center justify-between gap-4"
           >
-            <div className="flex-1 min-w-[150px]">
+            <div className="flex-1 min-w-37.5">
               <h3 className="text-lg font-bold text-gray-800 mb-2">
                 {entry.serviceName}
               </h3>
               <p className="text-xs text-gray-500 mb-1">Employee name</p>
               <p className="text-sm font-medium">{entry.employeeName}</p>
             </div>
-            <div className="flex-1 min-w-[120px]">
+            <div className="flex-1 min-w-30">
               <p className="text-xs text-gray-500 mb-1">Salon</p>
               <p className="text-sm font-medium">{entry.salonName}</p>
             </div>
-            <div className="flex-1 min-w-[120px]">
+            <div className="flex-1 min-w-30">
               <p className="text-xs text-gray-500 mb-1">Date &amp; Time</p>
               <p className="text-sm font-medium">
                 {format(new Date(entry.createdAt), "MMM d, yyyy")}
@@ -79,16 +79,18 @@ export function ServiceHistoryList({
                 {format(new Date(entry.createdAt), "h:mm a")}
               </p>
             </div>
-            <div className="flex-1 min-w-[100px]">
-              <p className="text-xs text-gray-500 mb-1">Service Price</p>
-              <p className="text-sm font-medium">${displayPrice}</p>
+            <div className="flex-1 min-w-25">
+              <p className="text-xs text-gray-500 mb-1">
+                {role === "employee" ? "Earnings" : "Service Price"}
+              </p>
+              <p className="text-sm font-medium">${role === "employee" ? entry.commissionEarnings : entry.totalPrice}</p>
               {entry.isSplit && (
                 <span className="text-[10px] bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded ml-1">
                   Split
                 </span>
               )}
             </div>
-            <div className="flex-1 min-w-[80px]">
+            <div className="flex-1 min-w-20">
               <p className="text-xs text-gray-500 mb-1">Tip</p>
               <p className="text-sm font-medium text-green-500">
                 ${displayTips}

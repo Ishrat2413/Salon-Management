@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { format, startOfWeek, endOfWeek } from "date-fns";
 import {
   DollarSign,
   ShoppingBag,
@@ -16,19 +17,26 @@ import { HistoryDateFilters } from "../common/HistoryDateFilters";
 
 export default function EmployeeHistory() {
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
-  const isManager = user?.role === "manager";
+  
+  // Default to current week: Monday to Sunday
+  const defaultStartDate = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+  const defaultEndDate = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+
   const [filters, setFilters] = useState<{
     startDate?: string;
     endDate?: string;
-  }>({});
+  }>({
+    startDate: defaultStartDate,
+    endDate: defaultEndDate,
+  });
+  
   const [page] = useState(1);
   const limit = 100; // Fetch more for table view or handle pagination
 
   const { data, isLoading, isError, isFetching } = useSalonEntriesQuery({
     page,
     limit,
-    employeeId: isAdmin || isManager ? undefined : user?.id,
+    employeeId: user?.id,
     status: "APPROVED",
     ...filters,
   });
@@ -36,7 +44,7 @@ export default function EmployeeHistory() {
   const summaryCards = useMemo(() => {
     if (!data?.meta) {
       return [
-        { title: "Total Earned", value: "$0", icon: DollarSign },
+        { title: "Total Earnings", value: "$0", icon: DollarSign },
         { title: "Total Bookings", value: "0", icon: ShoppingBag },
         { title: "Total Tips", value: "$0", icon: Tags },
       ];
@@ -44,23 +52,17 @@ export default function EmployeeHistory() {
 
     const {
       total,
-      totalPrices,
-      totalTips,
       loggedInUserCommissionEarnings,
       loggedInUserTips,
     } = data.meta as any;
 
-    const displayEarned = isAdmin || isManager 
-        ? totalPrices 
-        : (loggedInUserCommissionEarnings ?? 0);
-    
-    const displayTips = isAdmin || isManager
-        ? totalTips
-        : (loggedInUserTips ?? 0);
+    const displayCommission = loggedInUserCommissionEarnings ?? 0;
+    const displayTips = loggedInUserTips ?? 0;
+    const displayEarned = displayCommission + displayTips;
 
     return [
       {
-        title: "Total Earned",
+        title: "Total Earnings",
         value: `$${displayEarned.toLocaleString()}`,
         icon: DollarSign,
       },
@@ -75,11 +77,11 @@ export default function EmployeeHistory() {
         icon: Tags,
       },
     ];
-  }, [data, isAdmin, isManager]);
+  }, [data]);
 
   if (isError) {
     return (
-      <div className='flex min-h-[400px] flex-col items-center justify-center gap-4'>
+      <div className='flex min-h-100 flex-col items-center justify-center gap-4'>
         <p className='text-lg font-medium text-red-500'>
           Failed to load history.
         </p>
@@ -95,7 +97,7 @@ export default function EmployeeHistory() {
   return (
     <div className='min-h-screen p-4 md:p-8 relative'>
       {/* Subtle fetching indicator */}
-      <div className={`fixed top-20 right-8 z-[60] transition-opacity duration-300 ${isFetching ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`fixed top-20 right-8 z-60 transition-opacity duration-300 ${isFetching ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-full p-2 border border-pink-100">
            <Loader2 className="h-5 w-5 animate-spin text-[#D13C92]" />
         </div>

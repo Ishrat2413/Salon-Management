@@ -42,8 +42,10 @@ export interface SalonEntriesResponse {
     total: number;
     totalPrices: number;
     totalTips: number;
+    totalCommissionEarnings: number;
     loggedInUserPrices: number;
     loggedInUserTips: number;
+    loggedInUserCommissionEarnings: number;
   };
   data: SalonEntry[];
 }

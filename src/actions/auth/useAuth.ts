@@ -139,3 +139,15 @@ export const useResetPasswordMutation = () => {
     },
   });
 };
+
+export const useChangePasswordMutation = () => {
+  return useMutation({
+    mutationFn: authService.changePassword,
+    onSuccess: (data) => {
+      toast.success(data?.message || "Password changed successfully.");
+    },
+    onError: (error: any) => {
+      toast.error(getApiErrorMessage(error, "Failed to change password."));
+    },
+  });
+};

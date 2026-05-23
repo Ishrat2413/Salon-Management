@@ -11,11 +11,13 @@ interface HistoryDateFiltersProps {
   setFilters: React.Dispatch<
     React.SetStateAction<any>
   >;
+  children?: React.ReactNode;
 }
 
 export function HistoryDateFilters({
   filters,
   setFilters,
+  children,
 }: HistoryDateFiltersProps) {
   
   const presets = [
@@ -103,7 +105,7 @@ export function HistoryDateFilters({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${children ? 'lg:grid-cols-4' : ''} gap-4`}>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-gray-500 ml-1">Start Date</label>
           <input
@@ -122,6 +124,7 @@ export function HistoryDateFilters({
             className="w-full bg-gray-50 border border-gray-100 rounded-lg py-2.5 px-4 text-sm text-gray-800 focus:ring-2 focus:ring-[#D13C92] focus:outline-none transition-all"
           />
         </div>
+        {children}
       </div>
     </section>
   );

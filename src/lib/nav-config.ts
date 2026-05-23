@@ -34,6 +34,7 @@ export const NAV_CONFIG: Record<UserRole, SidebarNavItem[]> = {
       href: "/manager-review-entries",
       icon: FileText,
     },
+    { title: "History", href: "/history", icon: History },
     { title: "Profile", href: "/profile", icon: User },
   ],
   admin: [

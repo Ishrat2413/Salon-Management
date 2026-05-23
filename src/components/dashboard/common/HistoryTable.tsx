@@ -70,27 +70,30 @@ export function HistoryTable({ data, isLoading }: HistoryTableProps) {
           key: "actualPrice",
           header: "Actual Service Price",
           sortable: true,
-          render: (val) => `$${(Number(val) || 0).toLocaleString()}`,
+          render: (val, row) => `$${(isEmployee ? Number(row.loggedInUserTotalPrice || 0) : Number(val || 0)).toLocaleString()}`,
         },
         {
           key: "tips",
           header: "Tip",
           sortable: true,
-          render: (val) => `$${(Number(val) || 0).toLocaleString()}`,
+          render: (val, row) => `$${(isEmployee ? Number(row.loggedInUserTips || 0) : Number(val || 0)).toLocaleString()}`,
         },
         {
           key: "commissionRate",
           header: "Commission Rate",
           sortable: true,
-          render: (val) => (val !== undefined && val !== null ? `${val}%` : "N/A"),
+          render: (val, row) => {
+            const rate = isEmployee ? row.loggedInUserCommissionRate : val;
+            return rate !== undefined && rate !== null ? `${rate}%` : "N/A";
+          },
         },
         {
           key: "commissionEarnings",
           header: "Calculated Earnings",
           sortable: true,
           render: (val, row) => {
-            const earning = Number(val) || 0;
-            const tip = Number(row.tips) || 0;
+            const earning = isEmployee ? Number(row.commissionEarnings || 0) : Number(val || 0);
+            const tip = isEmployee ? Number(row.loggedInUserTips || 0) : Number(row.tips || 0);
             return `$${(earning + tip).toLocaleString()}`;
           },
         },
