@@ -7,43 +7,43 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import type { PayrollSalonOption } from "@/actions/payroll/payroll.types";
+import type { PayrollEmployeeOption } from "@/actions/payroll/payroll.types";
 
 interface PayrollFilterBarProps {
   searchTerm: string;
   startDate: string;
   endDate: string;
-  salonId: string;
-  salons: PayrollSalonOption[];
-  isSalonLoading?: boolean;
+  employeeId: string;
+  employees: PayrollEmployeeOption[];
+  isEmployeeLoading?: boolean;
   onSearchTermChange: (value: string) => void;
   onStartDateChange: (value: string) => void;
   onEndDateChange: (value: string) => void;
-  onSalonChange: (value: string | null) => void;
+  onEmployeeChange: (value: string | null) => void;
   onReset: () => void;
 }
 
-const ALL_SALONS_VALUE = "__all_salons__";
+const ALL_EMPLOYEES_VALUE = "__all_employees__";
 
 export default function PayrollFilterBar({
   searchTerm,
   startDate,
   endDate,
-  salonId,
-  salons,
-  isSalonLoading,
+  employeeId,
+  employees,
+  isEmployeeLoading,
   onSearchTermChange,
   onStartDateChange,
   onEndDateChange,
-  onSalonChange,
+  onEmployeeChange,
   onReset,
 }: PayrollFilterBarProps) {
-  const selectedSalonLabel = isSalonLoading
-    ? "Loading salons..."
-    : salonId
-      ? (salons.find((salon) => salon.value === salonId)?.label ??
-        "Selected salon")
-      : "All salons";
+  const selectedEmployeeLabel = isEmployeeLoading
+    ? "Loading employees..."
+    : employeeId
+      ? (employees.find((emp) => emp.value === employeeId)?.label ??
+        "Selected employee")
+      : "All employees";
 
   return (
     <div className='w-full mx-auto pb-6'>
@@ -53,7 +53,7 @@ export default function PayrollFilterBar({
             <label
               className='font-semibold text-xs text-[#334155] pl-1'
               htmlFor='payroll-search'>
-              Search service
+              Search employee name
             </label>
             <div className='relative'>
               <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
@@ -74,7 +74,7 @@ export default function PayrollFilterBar({
                 id='payroll-search'
                 value={searchTerm}
                 onChange={(event) => onSearchTermChange(event.target.value)}
-                placeholder='Search by service name'
+                placeholder='Search by employee name'
                 className='block w-full pl-9 pr-3 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#364153] placeholder-[#334155] sm:text-sm'
               />
             </div>
@@ -143,28 +143,28 @@ export default function PayrollFilterBar({
           <div className='flex-1 flex flex-col gap-1.5'>
             <label
               className='font-semibold text-xs text-[#334155] pl-1'
-              htmlFor='payroll-salon-filter'>
-              Salon
+              htmlFor='payroll-employee-filter'>
+              Employee
             </label>
             <div className='relative'>
               <Select
-                value={salonId || ALL_SALONS_VALUE}
-                disabled={isSalonLoading}
+                value={employeeId || ALL_EMPLOYEES_VALUE}
+                disabled={isEmployeeLoading}
                 onValueChange={(value) =>
-                  onSalonChange(value === ALL_SALONS_VALUE ? "" : value)
+                  onEmployeeChange(value === ALL_EMPLOYEES_VALUE ? "" : value)
                 }>
                 <SelectTrigger
-                  id='payroll-salon-filter'
+                  id='payroll-employee-filter'
                   className='w-full h-11 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#334155] sm:text-sm'>
                   <span className='flex-1 text-left text-sm text-[#364153]'>
-                    {selectedSalonLabel}
+                    {selectedEmployeeLabel}
                   </span>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ALL_SALONS_VALUE}>All salons</SelectItem>
-                  {salons.map((salon) => (
-                    <SelectItem key={salon.value} value={salon.value}>
-                      {salon.label}
+                  <SelectItem value={ALL_EMPLOYEES_VALUE}>All employees</SelectItem>
+                  {employees.map((emp) => (
+                    <SelectItem key={emp.value} value={emp.value}>
+                      {emp.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
