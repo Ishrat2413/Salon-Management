@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -14,29 +14,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { registerSchema } from "@/actions/auth/auth.schema";
 import { useRegisterMutation } from "@/actions/auth/useAuth";
-import { salonService } from "@/lib/api/services/salon.service";
-
-interface Salon {
-  id: string;
-  name: string;
-}
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [salons, setSalons] = useState<Salon[]>([]);
   const { mutate: register, isPending } = useRegisterMutation();
 
   const form = useForm<z.infer<typeof registerSchema>>({
@@ -44,31 +30,19 @@ export function RegisterForm() {
     defaultValues: {
       fullName: "",
       email: "",
-      salonId: "",
       password: "",
       confirmPassword: "",
       role: "EMPLOYEE",
     },
   });
 
-  useEffect(() => {
-    async function fetchSalons() {
-      try {
-        const result = await salonService.getSalons({ limit: 100 });
-        console.log("Salons fetched:", result);
-        if (result.success) {
-          setSalons(result.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch salons:", error);
-      }
-    }
-    fetchSalons();
-  }, []);
-
   function onSubmit(values: z.infer<typeof registerSchema>) {
-    const { confirmPassword, ...data } = values;
-    register(data);
+    const { confirmPassword, salonId, ...data } = values;
+    
+    // We only pass the salonId if it's a valid string, otherwise we omit it
+    const payload = salonId ? { ...data, salonId } : data;
+    
+    register(payload);
   }
 
   const roleTabHandler = (value: string) => {
@@ -144,37 +118,6 @@ export function RegisterForm() {
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='salonId'
-              render={({ field }) => (
-                <FormItem className='space-y-1.5 flex-none w-full'>
-                  <FormLabel className='text-sm font-semibold text-[#020617]'>
-                    Salon
-                  </FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className='w-full rounded-md px-3 py-5 border-gray-200 focus:ring-[#D13C92] text-gray-500'>
-                        <SelectValue placeholder='Select a Salon'>
-                          {salons.find((s) => s.id === field.value)?.name || "Select a Salon"}
-                        </SelectValue>
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {salons.map((salon) => (
-                        <SelectItem key={salon.id} value={salon.id}>
-                          {salon.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
