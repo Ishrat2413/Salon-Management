@@ -13,6 +13,7 @@ import {
 import type { SalonEntry } from "@/actions/salon-entry/salon-entry.types";
 import { UniversalTable } from "@/components/univarsalTable/Universaltable";
 import type { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
+import { ManagerEditModal } from "./manager-edit-modal";
 import { ManagerCommentModal } from "./manager-comment-modal";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -23,17 +24,18 @@ type ManagerReviewEntry = SalonEntry & {
 
 export default function ManagerReviewEntries() {
   const router = useRouter();
-  const limit = 5;
+  const limit = 1000;
   const { user } = useAuth();
-  const canDelete = 
-    user?.role === "admin" || 
-    user?.role?.toUpperCase() === "ADMIN" || 
-    user?.role === "manager" || 
+  const canDelete =
+    user?.role === "admin" ||
+    user?.role?.toUpperCase() === "ADMIN" ||
+    user?.role === "manager" ||
     user?.role?.toUpperCase() === "MANAGER";
 
   const { data: response, isLoading } = useSalonEntriesQuery({
     page: 1,
     limit,
+    status: "PENDING",
   });
 
   function getSplitPercentage(row: SalonEntry) {
@@ -117,8 +119,10 @@ export default function ManagerReviewEntries() {
       header: "Actions",
       width: "12%",
       align: "left",
-      render: (_, row) => <SalonEntryActions row={row as SalonEntry} canDelete={canDelete} />,
-      },
+      render: (_, row) => (
+        <SalonEntryActions row={row as SalonEntry} canDelete={canDelete} />
+      ),
+    },
   ];
 
   if (isLoading) return <div className='p-6 text-[#283E5C]'>Loading...</div>;
@@ -149,13 +153,22 @@ export default function ManagerReviewEntries() {
   );
 }
 
-function SalonEntryActions({ row, canDelete }: { row: SalonEntry; canDelete?: boolean }) {
+function SalonEntryActions({
+  row,
+  canDelete,
+}: {
+  row: SalonEntry;
+  canDelete?: boolean;
+}) {
   const router = useRouter();
   const { mutateAsync: updateStatus, isPending: isUpdatingStatus } =
     useUpdateSalonEntryStatusMutation();
-  const { mutateAsync: deleteEntry, isPending: isDeleting } = useDeleteSalonEntryMutation();
+  const { mutateAsync: deleteEntry, isPending: isDeleting } =
+    useDeleteSalonEntryMutation();
 
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editMode, setEditMode] = useState<"edit" | "approve">("edit");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
@@ -200,7 +213,7 @@ function SalonEntryActions({ row, canDelete }: { row: SalonEntry; canDelete?: bo
       window.addEventListener("scroll", handleScroll, true);
       window.addEventListener("resize", () => setIsDropdownOpen(false));
     }
-    
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("scroll", handleScroll, true);
@@ -220,11 +233,32 @@ function SalonEntryActions({ row, canDelete }: { row: SalonEntry; canDelete?: bo
 
   function openModerationModal(action: "APPROVE" | "REJECT") {
     setModerationAction(action);
+    if (action === "APPROVE") {
+      setEditMode("approve");
+      setIsEditModalOpen(true);
+      return;
+    }
+
     setIsCommentModalOpen(true);
+  }
+
+  function openEditModal(mode: "edit" | "approve" = "edit") {
+    setEditMode(mode);
+    setIsEditModalOpen(true);
   }
 
   function closeModerationModal() {
     setIsCommentModalOpen(false);
+    setModerationAction(null);
+  }
+
+  function handleEditSaved() {
+    if (editMode === "approve") {
+      setModerationAction("APPROVE");
+      setIsCommentModalOpen(true);
+      return;
+    }
+
     setModerationAction(null);
   }
 
@@ -252,7 +286,7 @@ function SalonEntryActions({ row, canDelete }: { row: SalonEntry; canDelete?: bo
               type='button'
               onClick={() => openModerationModal("APPROVE")}
               disabled={isUpdatingStatus}
-              title="Approve"
+              title='Approve'
               className='inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#4FAF8F] text-[#4FAF8F] transition hover:bg-[#4FAF8F]/10'>
               <Flag className='h-3.5 w-3.5' strokeWidth={3} />
             </button>
@@ -261,40 +295,37 @@ function SalonEntryActions({ row, canDelete }: { row: SalonEntry; canDelete?: bo
               type='button'
               onClick={() => openModerationModal("REJECT")}
               disabled={isUpdatingStatus}
-              title="Reject"
+              title='Reject'
               className='inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#E5485D] text-[#E5485D] transition hover:bg-[#E5485D]/10'>
               <Flag className='h-3.5 w-3.5' strokeWidth={3} />
             </button>
 
-            <div className="relative">
+            <div className='relative'>
               <button
                 ref={triggerRef}
-                type="button"
+                type='button'
                 onClick={handleToggleDropdown}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 transition"
-              >
-                <MoreVertical className="h-4 w-4" />
+                className='inline-flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 transition'>
+                <MoreVertical className='h-4 w-4' />
               </button>
 
               {isDropdownOpen && typeof document !== "undefined"
                 ? createPortal(
                     <div
                       ref={dropdownRef}
-                      className="absolute z-[9999] w-32 rounded-md bg-white shadow-xl ring-1 ring-black ring-opacity-5 overflow-hidden"
+                      className='absolute z-9999 w-32 rounded-md bg-white shadow-xl ring-1 ring-black ring-opacity-5 overflow-hidden'
                       style={{
                         top: coords.top,
                         left: coords.left,
-                      }}
-                    >
-                      <div className="py-1 text-left">
+                      }}>
+                      <div className='py-1 text-left'>
                         <button
                           onClick={() => {
-                            router.push(`/edit-entry/${row.id}`);
+                            openEditModal("edit");
                             setIsDropdownOpen(false);
                           }}
-                          className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 gap-2"
-                        >
-                          <FilePen className="h-3.5 w-3.5" />
+                          className='flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 gap-2'>
+                          <FilePen className='h-3.5 w-3.5' />
                           Edit
                         </button>
                         {canDelete && (
@@ -303,38 +334,35 @@ function SalonEntryActions({ row, canDelete }: { row: SalonEntry; canDelete?: bo
                               setIsDeleteModalOpen(true);
                               setIsDropdownOpen(false);
                             }}
-                            className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 gap-2"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            className='flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 gap-2'>
+                            <Trash2 className='h-3.5 w-3.5' />
                             Delete
                           </button>
                         )}
                       </div>
                     </div>,
-                    document.body
+                    document.body,
                   )
                 : null}
             </div>
           </>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className='flex items-center gap-2'>
             <button
-              type="button"
-              onClick={() => router.push(`/edit-entry/${row.id}`)}
-              title="Edit"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#1850D8] text-[#1850D8] transition hover:bg-[#1850D8]/10"
-            >
-              <FilePen className="h-3.5 w-3.5" />
+              type='button'
+              onClick={() => openEditModal("edit")}
+              title='Edit'
+              className='inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#1850D8] text-[#1850D8] transition hover:bg-[#1850D8]/10'>
+              <FilePen className='h-3.5 w-3.5' />
             </button>
 
             {canDelete && (
               <button
-                type="button"
+                type='button'
                 onClick={() => setIsDeleteModalOpen(true)}
-                title="Delete"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#E5485D] text-[#E5485D] transition hover:bg-[#E5485D]/10"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
+                title='Delete'
+                className='inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#E5485D] text-[#E5485D] transition hover:bg-[#E5485D]/10'>
+                <Trash2 className='h-3.5 w-3.5' />
               </button>
             )}
           </div>
@@ -357,34 +385,40 @@ function SalonEntryActions({ row, canDelete }: { row: SalonEntry; canDelete?: bo
           isSubmitting={isUpdatingStatus}
           onSave={handleModerationSubmit}
         />
+
+        <ManagerEditModal
+          open={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          row={row}
+          mode={editMode}
+          onSaved={handleEditSaved}
+        />
       </div>
 
       <BaseModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Salon Entry"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-600">
+        title='Delete Salon Entry'>
+        <div className='space-y-4'>
+          <p className='text-gray-600'>
             Are you sure you want to delete the entry for{" "}
-            <span className="font-semibold text-gray-900">
+            <span className='font-semibold text-gray-900'>
               {row.employeeName}
             </span>{" "}
-            ({row.serviceName})? This action cannot be undone and will also permanently remove any associated split entries.
+            ({row.serviceName})? This action cannot be undone and will also
+            permanently remove any associated split entries.
           </p>
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <div className='flex justify-end gap-3 pt-4 border-t border-gray-100'>
             <button
               onClick={() => setIsDeleteModalOpen(false)}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-              disabled={isDeleting}
-            >
+              className='px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors'
+              disabled={isDeleting}>
               Cancel
             </button>
             <button
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
-            >
+              className='px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2'>
               {isDeleting ? "Deleting..." : "Delete Entry"}
             </button>
           </div>
