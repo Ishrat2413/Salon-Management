@@ -34,4 +34,12 @@ export const authService = {
     );
     return response.data;
   },
+
+  changePassword: async (payload: any) => {
+    const response = await apiClient.post(
+      "/auth/change-password",
+      payload,
+    );
+    return response.data;
+  },
 };

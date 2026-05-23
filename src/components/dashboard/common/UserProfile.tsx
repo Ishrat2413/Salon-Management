@@ -16,6 +16,7 @@ import {
   Shield,
 } from "lucide-react";
 import React, { useState } from "react";
+import ChangePasswordForm from "./ChangePasswordForm";
 
 interface ProfileFormData {
   fullName: string;
@@ -168,6 +169,7 @@ export default function UserProfile() {
             </div>
           )}
         </div>
+        <ChangePasswordForm />
       </div>
     </div>
   );
