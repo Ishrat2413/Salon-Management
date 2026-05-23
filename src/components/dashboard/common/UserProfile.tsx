@@ -5,16 +5,7 @@ import {
   useUpdateProfileMutation,
 } from "@/actions/admin/useUsers";
 import { useAuth } from "@/components/providers/auth-provider";
-import {
-  Edit2,
-  Home,
-  Locate,
-  Mail,
-  MapPin,
-  Phone,
-  Save,
-  Shield,
-} from "lucide-react";
+import { Edit2, Save } from "lucide-react";
 import React, { useState } from "react";
 import ChangePasswordForm from "./ChangePasswordForm";
 
@@ -26,20 +17,59 @@ interface ProfileFormData {
 
 export default function UserProfile() {
   const { user, updateCurrentUserInfo } = useAuth();
-  const { data: currentUserResponse } = useCurrentUserQuery(Boolean(user));
+  const {
+    data: currentUserResponse,
+    isPending: isCurrentUserPending,
+    isFetching: isCurrentUserFetching,
+  } = useCurrentUserQuery(Boolean(user));
   const { mutate: updateProfile, isPending } = useUpdateProfileMutation();
 
   const profileUser = currentUserResponse?.data ?? user;
-  const createFormData = () => ({
-    fullName: profileUser?.fullName ?? "",
-    phoneNumber: profileUser?.phoneNumber ?? "",
-    address: profileUser?.address ?? "",
+  const createFormData = (source: typeof profileUser): ProfileFormData => ({
+    fullName: source?.fullName ?? "",
+    phoneNumber: source?.phoneNumber ?? "",
+    address: source?.address ?? "",
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<ProfileFormData>(createFormData);
+  const [formData, setFormData] = useState<ProfileFormData>({
+    fullName: "",
+    phoneNumber: "",
+    address: "",
+  });
 
   if (!profileUser) return null;
+
+  const isProfileLoading =
+    Boolean(user) &&
+    !currentUserResponse?.data &&
+    (isCurrentUserPending || isCurrentUserFetching);
+
+  if (isProfileLoading) {
+    return (
+      <div className='min-h-screen py-12 px-4'>
+        <div className='max-w-200 mx-auto'>
+          <div className='bg-white rounded-[12px] shadow-sm border border-[#C7B29B] overflow-hidden p-8'>
+            <div className='animate-pulse'>
+              <div className='flex items-center gap-5'>
+                <div className='w-20 h-20 rounded-full bg-[#E8DED4]' />
+                <div className='flex-1'>
+                  <div className='h-7 w-56 bg-[#E8DED4] rounded mb-3' />
+                  <div className='h-4 w-40 bg-[#EFE6DD] rounded' />
+                </div>
+              </div>
+              <div className='mt-9 space-y-5'>
+                <div className='h-12 w-full bg-[#F5EEE7] rounded-md' />
+                <div className='h-12 w-full bg-[#F5EEE7] rounded-md' />
+                <div className='h-12 w-full bg-[#F5EEE7] rounded-md' />
+                <div className='h-12 w-full bg-[#F5EEE7] rounded-md' />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -59,14 +89,18 @@ export default function UserProfile() {
   };
 
   const handleStartEditing = () => {
-    setFormData(createFormData());
+    setFormData(createFormData(profileUser));
     setIsEditing(true);
   };
 
   const handleCancel = () => {
-    setFormData(createFormData());
+    setFormData(createFormData(profileUser));
     setIsEditing(false);
   };
+
+  const avatarInitial = (isEditing ? formData.fullName : profileUser.fullName)
+    .charAt(0)
+    .toUpperCase();
 
   return (
     <div className='min-h-screen py-12 px-4'>
@@ -76,7 +110,7 @@ export default function UserProfile() {
             {/* Header */}
             <div className='flex items-center gap-5'>
               <div className='w-20 h-20 rounded-full bg-linear-to-br from-[#D23599] to-[#805C3CDB] flex items-center justify-center text-white text-4xl font-semibold shadow-md shrink-0'>
-                {formData.fullName.charAt(0).toUpperCase() || "?"}
+                {avatarInitial || "?"}
               </div>
               <div className='flex-1 min-w-0'>
                 {isEditing ? (
@@ -109,7 +143,11 @@ export default function UserProfile() {
               <DetailField
                 label='Phone'
                 name='phoneNumber'
-                value={formData.phoneNumber}
+                value={
+                  isEditing
+                    ? formData.phoneNumber
+                    : (profileUser.phoneNumber ?? "")
+                }
                 placeholder='Add phone number'
                 isEditing={isEditing}
                 onChange={handleChange}
@@ -117,7 +155,9 @@ export default function UserProfile() {
               <DetailField
                 label='Address'
                 name='address'
-                value={formData.address}
+                value={
+                  isEditing ? formData.address : (profileUser.address ?? "")
+                }
                 placeholder='Add address'
                 isEditing={isEditing}
                 onChange={handleChange}
@@ -213,8 +253,7 @@ function DetailField({
                 className='w-full outline-none text-[15px] text-[#445571] bg-transparent placeholder:text-gray-300'
               />
             ) : (
-              <p
-                className={`text-sm font-medium ${readOnly ? "text-gray-400" : "text-[#445571]"} truncate`}>
+              <p className='text-sm font-medium text-[#445571] truncate'>
                 {value || (
                   <span className='text-gray-300 font-normal italic'>
                     {placeholder}
