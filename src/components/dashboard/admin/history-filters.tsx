@@ -48,22 +48,19 @@ export function HistoryFilters({
   if (role === "employee") return null;
 
   return (
-    <section
-      className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-wrap gap-6 items-end"
-      data-purpose="filters-container"
-    >
+    <>
       {/* Employee Filter - Only for Admin/Manager */}
       {(role === "admin" || role === "manager") && (
-        <div className="flex-1 min-w-[250px]">
+        <div className="space-y-1.5">
           <label
-            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2"
+            className="text-xs font-medium text-gray-500 ml-1"
             htmlFor="employee-filter"
           >
             Employee
           </label>
           <div className="relative">
             <select
-              className="w-full bg-gray-50 border border-gray-100 rounded-lg py-2.5 px-4 text-sm text-gray-800 appearance-none focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all"
+              className="w-full bg-gray-50 border border-gray-100 rounded-lg py-2.5 px-4 text-sm text-gray-800 appearance-none focus:ring-2 focus:ring-[#D13C92] focus:outline-none transition-all"
               id="employee-filter"
               value={filters.employeeId || ""}
               onChange={handleEmployeeChange}
@@ -97,16 +94,16 @@ export function HistoryFilters({
 
       {/* Salon Filter - Only for Admin */}
       {role === "admin" && (
-        <div className="flex-1 min-w-[250px]">
+        <div className="space-y-1.5">
           <label
-            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2"
+            className="text-xs font-medium text-gray-500 ml-1"
             htmlFor="salon-filter"
           >
             Salon
           </label>
           <div className="relative">
             <select
-              className="w-full bg-gray-50 border border-gray-100 rounded-lg py-2.5 px-4 text-sm text-gray-800 appearance-none focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all"
+              className="w-full bg-gray-50 border border-gray-100 rounded-lg py-2.5 px-4 text-sm text-gray-800 appearance-none focus:ring-2 focus:ring-[#D13C92] focus:outline-none transition-all"
               id="salon-filter"
               value={filters.salonId || ""}
               onChange={handleSalonChange}
@@ -137,6 +134,6 @@ export function HistoryFilters({
           </div>
         </div>
       )}
-    </section>
+    </>
   );
 }

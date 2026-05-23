@@ -140,8 +140,9 @@ export function AdminHistory() {
           </div>
         </div>
 
-        <HistoryDateFilters filters={filters} setFilters={setFilters} />
-        <HistoryFilters role={role} filters={filters} setFilters={setFilters} />
+        <HistoryDateFilters filters={filters} setFilters={setFilters}>
+          <HistoryFilters role={role} filters={filters} setFilters={setFilters} />
+        </HistoryDateFilters>
 
         <div className={`transition-opacity duration-300 ${isFetching ? 'opacity-60' : 'opacity-100'}`}>
           <ServiceHistoryList
