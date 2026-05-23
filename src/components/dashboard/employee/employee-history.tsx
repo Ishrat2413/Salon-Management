@@ -12,19 +12,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useSalonEntriesQuery } from "@/actions/salon-entry/useSalonEntry";
 import { useAuth } from "@/components/providers/auth-provider";
 import { HistoryTable } from "../common/HistoryTable";
+import { HistoryDateFilters } from "../common/HistoryDateFilters";
 
 export default function EmployeeHistory() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const isManager = user?.role === "manager";
+  const [filters, setFilters] = useState<{
+    startDate?: string;
+    endDate?: string;
+  }>({});
   const [page] = useState(1);
   const limit = 100; // Fetch more for table view or handle pagination
 
-  const { data, isLoading, isError } = useSalonEntriesQuery({
+  const { data, isLoading, isError, isFetching } = useSalonEntriesQuery({
     page,
     limit,
     employeeId: isAdmin || isManager ? undefined : user?.id,
     status: "APPROVED",
+    ...filters,
   });
 
   const summaryCards = useMemo(() => {
@@ -71,17 +77,9 @@ export default function EmployeeHistory() {
     ];
   }, [data, isAdmin, isManager]);
 
-  if (isLoading) {
-    return (
-      <div className='flex min-h-100 items-center justify-center'>
-        <Loader2 className='h-8 w-8 animate-spin text-pink-500' />
-      </div>
-    );
-  }
-
   if (isError) {
     return (
-      <div className='flex min-h-100 flex-col items-center justify-center gap-4'>
+      <div className='flex min-h-[400px] flex-col items-center justify-center gap-4'>
         <p className='text-lg font-medium text-red-500'>
           Failed to load history.
         </p>
@@ -95,7 +93,14 @@ export default function EmployeeHistory() {
   }
 
   return (
-    <div className='min-h-screen p-4 md:p-8'>
+    <div className='min-h-screen p-4 md:p-8 relative'>
+      {/* Subtle fetching indicator */}
+      <div className={`fixed top-20 right-8 z-[60] transition-opacity duration-300 ${isFetching ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-full p-2 border border-pink-100">
+           <Loader2 className="h-5 w-5 animate-spin text-[#D13C92]" />
+        </div>
+      </div>
+      
       <div className='space-y-10'>
         {/* Header */}
         <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
@@ -109,6 +114,9 @@ export default function EmployeeHistory() {
             </p>
           </div>
         </div>
+
+        {/* Filters */}
+        <HistoryDateFilters filters={filters} setFilters={setFilters} />
 
         {/* Summary Cards */}
         <div className='grid grid-cols-1 gap-6 sm:grid-cols-1 lg:grid-cols-3'>
@@ -127,8 +135,8 @@ export default function EmployeeHistory() {
                       {card.title}
                     </p>
 
-                    <h3 className='mt-1 text-3xl font-bold text-gray-800'>
-                      {card.value}
+                    <h3 className='mt-1 text-3xl font-bold text-gray-800 transition-all'>
+                      {isLoading && !data ? "..." : card.value}
                     </h3>
                   </div>
                 </CardContent>
@@ -138,7 +146,9 @@ export default function EmployeeHistory() {
         </div>
 
         {/* History Table */}
-        <HistoryTable data={data?.data || []} isLoading={isLoading} />
+        <div className={`transition-opacity duration-300 ${isFetching ? 'opacity-60' : 'opacity-100'}`}>
+          <HistoryTable data={data?.data || []} isLoading={isLoading && !data} />
+        </div>
       </div>
     </div>
   );
