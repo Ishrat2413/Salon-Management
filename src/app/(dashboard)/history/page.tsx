@@ -12,7 +12,7 @@ export default function HistoryPage() {
 
   return (
     <RoleGuard allowed={["employee", "admin", "manager"]}>
-      {user.role === "admin" ? (
+      {user.role === "admin" || user.role === "manager" ? (
         <AdminHistory />
       ) : (
         <EmployeeHistory/>

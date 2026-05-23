@@ -14,13 +14,7 @@ interface HistoryFiltersProps {
     status?: string;
   };
   setFilters: React.Dispatch<
-    React.SetStateAction<{
-      startDate?: string;
-      endDate?: string;
-      employeeId?: string;
-      salonId?: string;
-      status?: string;
-    }>
+    React.SetStateAction<any>
   >;
 }
 
@@ -43,59 +37,38 @@ export function HistoryFilters({
     enabled: role === "admin" || role === "manager",
   });
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev) => ({ ...prev, startDate: e.target.value }));
-  };
-
   const handleEmployeeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilters((prev) => ({ ...prev, employeeId: e.target.value }));
+    setFilters((prev: any) => ({ ...prev, employeeId: e.target.value }));
   };
 
   const handleSalonChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilters((prev) => ({ ...prev, salonId: e.target.value, employeeId: "" }));
+    setFilters((prev: any) => ({ ...prev, salonId: e.target.value, employeeId: "" }));
   };
+
+  if (role === "employee") return null;
 
   return (
     <section
-      className="bg-white rounded-md p-6 shadow-sm border border-gray-100 flex flex-wrap gap-6 items-end"
+      className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-wrap gap-6 items-end"
       data-purpose="filters-container"
     >
-      {/* Date Filter */}
-      <div className="flex-1 min-w-[250px]">
-        <label
-          className="block text-sm font-medium text-gray-500 mb-2"
-          htmlFor="date-sort"
-        >
-          Sort By date
-        </label>
-        <div className="relative">
-          <input
-            className="w-full bg-gray-100 border-none rounded-md py-3 px-4 text-sm text-gray-800 focus:ring-2 focus:ring-[#D13C92] focus:outline-none placeholder-gray-400"
-            id="date-sort"
-            type="date"
-            value={filters.startDate || ""}
-            onChange={handleDateChange}
-          />
-        </div>
-      </div>
-
       {/* Employee Filter - Only for Admin/Manager */}
       {(role === "admin" || role === "manager") && (
         <div className="flex-1 min-w-[250px]">
           <label
-            className="block text-sm font-medium text-gray-500 mb-2"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2"
             htmlFor="employee-filter"
           >
             Employee
           </label>
           <div className="relative">
             <select
-              className="w-full bg-gray-100 border-none rounded-md py-3 px-4 text-sm text-gray-800 appearance-none focus:ring-2 focus:ring-[#D13C92] focus:outline-none"
+              className="w-full bg-gray-50 border border-gray-100 rounded-lg py-2.5 px-4 text-sm text-gray-800 appearance-none focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all"
               id="employee-filter"
               value={filters.employeeId || ""}
               onChange={handleEmployeeChange}
             >
-              <option value="">Filter by Employee</option>
+              <option value="">All Employees</option>
               {usersData?.data?.map((user: any) => (
                 <option key={user.id} value={user.id}>
                   {user.fullName}
@@ -126,19 +99,19 @@ export function HistoryFilters({
       {role === "admin" && (
         <div className="flex-1 min-w-[250px]">
           <label
-            className="block text-sm font-medium text-gray-500 mb-2"
+            className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2"
             htmlFor="salon-filter"
           >
             Salon
           </label>
           <div className="relative">
             <select
-              className="w-full bg-gray-100 border-none rounded-md py-3 px-4 text-sm text-gray-800 appearance-none focus:ring-2 focus:ring-[#D13C92] focus:outline-none"
+              className="w-full bg-gray-50 border border-gray-100 rounded-lg py-2.5 px-4 text-sm text-gray-800 appearance-none focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all"
               id="salon-filter"
               value={filters.salonId || ""}
               onChange={handleSalonChange}
             >
-              <option value="">Filter by Salon</option>
+              <option value="">All Salons</option>
               {salonsData?.data?.map((salon: any) => (
                 <option key={salon.id} value={salon.id}>
                   {salon.name}

@@ -3,7 +3,7 @@ import React from "react";
 interface PayrollSummary {
   totalGroups: number;
   totalOccurrences: number;
-  totalIncome: number;
+  totalEarnings: number;
   totalTips: number;
 }
 
@@ -26,9 +26,9 @@ export default function PayrollCard({
   return (
     <section className='grid grid-cols-1 md:grid-cols-3 gap-4'>
       <div className='rounded-xl border border-gray-100 bg-white p-4 shadow-sm'>
-        <p className='text-sm text-gray-500'>Total Service Earning</p>
+        <p className='text-sm text-gray-500'>Total Earnings</p>
         <p className='mt-2 text-2xl font-semibold text-pink-600'>
-          {isLoading ? "—" : formatCurrency(summary?.totalIncome ?? 0)}
+          {isLoading ? "—" : formatCurrency(summary?.totalEarnings ?? 0)}
         </p>
       </div>
 
