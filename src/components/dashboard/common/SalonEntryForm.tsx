@@ -411,7 +411,7 @@ export default function SalonEntryForm({
                 {/* Add Hair */}
                 <div className='space-y-2'>
                   <label className={labelClasses + " text-pink-600"}>
-                    Hair
+                    Hair Cost
                   </label>
                   <Input
                     value={addHair}
