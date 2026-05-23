@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { format, startOfWeek, endOfWeek } from "date-fns";
 import PayrollFilterBar from "./PayrollFilterBar";
 import { PayrollTable } from "./PayrollTable";
 import { useUsersQuery } from "@/actions/admin/useUsers";
@@ -10,8 +11,13 @@ import PayrollCard from "./PayrollCard";
 const PayrollPage = () => {
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+
+  // Default to current week: Monday to Sunday
+  const defaultStartDate = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+  const defaultEndDate = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+
+  const [startDate, setStartDate] = useState(defaultStartDate);
+  const [endDate, setEndDate] = useState(defaultEndDate);
   const [employeeId, setEmployeeId] = useState("");
 
   useEffect(() => {
@@ -74,14 +80,14 @@ const PayrollPage = () => {
   const isLoading = payrollQuery.isLoading || payrollQuery.isFetching;
 
   const hasActiveFilters = Boolean(
-    searchInput.trim() || startDate || endDate || employeeId,
+    searchInput.trim() || startDate !== defaultStartDate || endDate !== defaultEndDate || employeeId,
   );
 
   const resetFilters = () => {
     setSearchInput("");
     setSearchTerm("");
-    setStartDate("");
-    setEndDate("");
+    setStartDate(defaultStartDate);
+    setEndDate(defaultEndDate);
     setEmployeeId("");
   };
 
