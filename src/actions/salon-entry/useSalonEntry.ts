@@ -39,6 +39,7 @@ export const useSalonEntriesQuery = (params: {
   employeeId?: string;
   status?: string;
   salonId?: string;
+  viewerScope?: string;
 }) => {
   return useQuery({
     queryKey: ["salon-entries", params],
@@ -46,6 +47,7 @@ export const useSalonEntriesQuery = (params: {
       apiClient
         .get<SalonEntriesResponse>("/salon-entries", { params })
         .then((res) => res.data),
+    refetchOnMount: "always",
   });
 };
 
@@ -151,12 +153,15 @@ export const useDeleteSalonEntryMutation = () => {
     mutationFn: (id: string) => salonEntryService.deleteEntry(id),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["salon-entries"] });
-      
+
       const previousQueries = queryClient.getQueriesData({
         queryKey: ["salon-entries"],
       });
 
-      queryClient.setQueriesData({ queryKey: ["salon-entries"] }, (current: any) => removeEntryFromCache(current, id));
+      queryClient.setQueriesData(
+        { queryKey: ["salon-entries"] },
+        (current: any) => removeEntryFromCache(current, id),
+      );
 
       return { previousQueries };
     },

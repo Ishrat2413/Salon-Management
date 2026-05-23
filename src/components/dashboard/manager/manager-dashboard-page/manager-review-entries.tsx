@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Flag, FilePen, Trash2, MoreVertical } from "lucide-react";
@@ -37,21 +37,6 @@ export default function ManagerReviewEntries() {
     limit,
     status: "PENDING",
   });
-
-  function getSplitPercentage(row: SalonEntry) {
-    if (!row.isSplit) return "";
-
-    const totalPrice = Number(row.totalPrice || 0);
-    const splitShare = Number(
-      row.loggedInUserTotalPrice || row.splits?.[0]?.totalPrice || 0,
-    );
-
-    if (!totalPrice) return "";
-
-    const percentage = (splitShare / totalPrice) * 100;
-
-    return `${percentage.toFixed(2)}%`;
-  }
 
   const columns: ColumnDef<ManagerReviewEntry>[] = [
     { key: "employeeName", header: "Employee", width: "15%", sortable: true },
@@ -185,7 +170,7 @@ function SalonEntryActions({
       const rect = triggerRef.current.getBoundingClientRect();
       setCoords({
         top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX - 100, // Align dropdown to the left of the button
+        left: rect.left + window.scrollX - 100,
       });
     }
     setIsDropdownOpen((prev) => !prev);
@@ -239,7 +224,7 @@ function SalonEntryActions({
       return;
     }
 
-    setIsCommentModalOpen(true);
+    setIsDeleteModalOpen(true);
   }
 
   function openEditModal(mode: "edit" | "approve" = "edit") {
@@ -275,6 +260,12 @@ function SalonEntryActions({
   async function handleDeleteConfirm() {
     await deleteEntry(row.id);
     setIsDeleteModalOpen(false);
+  }
+
+  async function handleRejectDelete() {
+    await deleteEntry(row.id);
+    setIsDeleteModalOpen(false);
+    setModerationAction(null);
   }
 
   return (
@@ -331,6 +322,7 @@ function SalonEntryActions({
                         {canDelete && (
                           <button
                             onClick={() => {
+                              setModerationAction(null);
                               setIsDeleteModalOpen(true);
                               setIsDropdownOpen(false);
                             }}
@@ -359,7 +351,10 @@ function SalonEntryActions({
             {canDelete && (
               <button
                 type='button'
-                onClick={() => setIsDeleteModalOpen(true)}
+                onClick={() => {
+                  setModerationAction(null);
+                  setIsDeleteModalOpen(true);
+                }}
                 title='Delete'
                 className='inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#E5485D] text-[#E5485D] transition hover:bg-[#E5485D]/10'>
                 <Trash2 className='h-3.5 w-3.5' />
@@ -398,10 +393,16 @@ function SalonEntryActions({
       <BaseModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title='Delete Salon Entry'>
+        title={
+          moderationAction === "REJECT" ? "Reject Entry" : "Delete Salon Entry"
+        }>
         <div className='space-y-4'>
           <p className='text-gray-600'>
-            Are you sure you want to delete the entry for{" "}
+            Are you sure you want to{" "}
+            {moderationAction === "REJECT"
+              ? "reject and permanently delete"
+              : "delete"}{" "}
+            the entry for{" "}
             <span className='font-semibold text-gray-900'>
               {row.employeeName}
             </span>{" "}
@@ -416,10 +417,18 @@ function SalonEntryActions({
               Cancel
             </button>
             <button
-              onClick={handleDeleteConfirm}
+              onClick={
+                moderationAction === "REJECT"
+                  ? handleRejectDelete
+                  : handleDeleteConfirm
+              }
               disabled={isDeleting}
               className='px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors flex items-center gap-2'>
-              {isDeleting ? "Deleting..." : "Delete Entry"}
+              {isDeleting
+                ? "Deleting..."
+                : moderationAction === "REJECT"
+                  ? "Reject & Delete"
+                  : "Delete Entry"}
             </button>
           </div>
         </div>

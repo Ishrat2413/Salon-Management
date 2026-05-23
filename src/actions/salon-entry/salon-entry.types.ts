@@ -17,6 +17,7 @@ export interface SalonEntry extends Record<string, unknown> {
   status: "PENDING" | "APPROVED" | "REJECTED";
   statusComment: string | null;
   approvedByName: string | null;
+  editedByName?: string | null;
   createdAt: string;
   totalPrice: number;
   actualPrice: number;
