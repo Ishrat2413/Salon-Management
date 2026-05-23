@@ -7,6 +7,7 @@ import {
 import { useAuth } from "@/components/providers/auth-provider";
 import { Edit2, Save } from "lucide-react";
 import React, { useState } from "react";
+import ChangePasswordForm from "./ChangePasswordForm";
 
 interface ProfileFormData {
   fullName: string;
@@ -208,6 +209,7 @@ export default function UserProfile() {
             </div>
           )}
         </div>
+        <ChangePasswordForm />
       </div>
     </div>
   );
