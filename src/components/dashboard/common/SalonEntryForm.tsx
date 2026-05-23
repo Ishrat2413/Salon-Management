@@ -17,7 +17,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
 export type SalonEntryFormValues = {
@@ -61,6 +61,7 @@ export default function SalonEntryForm({
   submitButtonText = "Save Entry",
 }: SalonEntryFormProps) {
   const { user } = useAuth();
+  const isAddMode = !initialData;
 
   const [employeeValueState, setEmployeeValue] = useState<string>(
     initialData?.employeeId ?? "",
@@ -139,20 +140,6 @@ export default function SalonEntryForm({
   const salons = salonsData?.data || [];
   const services = servicesData?.data || [];
   const employees = usersData?.data || [];
-
-  // When enabling split, auto-fill the first row if empty
-  useEffect(() => {
-    if (splitService && splits.length === 0 && employeeValue) {
-      setSplits([
-        {
-          id: "initial-split",
-          employeeId: employeeValue,
-          totalPrice: String(actualServiceAmount),
-          tips: tipValue || "0",
-        },
-      ]);
-    }
-  }, [splitService, employeeValue, actualServiceAmount, tipValue, splits.length]);
 
   const handleAddBraider = () => {
     const newSplits = [
@@ -304,7 +291,25 @@ export default function SalonEntryForm({
                   <Select
                     value={employeeValue}
                     onValueChange={(v) => {
-                      setEmployeeValue(v ?? "");
+                      const nextEmployee = v ?? "";
+                      setEmployeeValue(nextEmployee);
+
+                      if (isAddMode && splitService) {
+                        setSplits((prev) => {
+                          if (prev.length === 0 || !nextEmployee) {
+                            return prev;
+                          }
+
+                          if (prev[0].employeeId === nextEmployee) {
+                            return prev;
+                          }
+
+                          const next = [...prev];
+                          next[0] = { ...next[0], employeeId: nextEmployee };
+                          return next;
+                        });
+                      }
+
                       setErrors((prev) => ({ ...prev, employee: "" }));
                     }}
                     disabled={isEmployee && !!user?.id}>
@@ -522,7 +527,12 @@ export default function SalonEntryForm({
                             <td className='px-6 py-4'>
                               <Select
                                 value={split.employeeId}
+                                disabled={isAddMode && index === 0}
                                 onValueChange={(val) => {
+                                  if (isAddMode && index === 0) {
+                                    return;
+                                  }
+
                                   const newSplits = [...splits];
                                   newSplits[index].employeeId = val ?? "";
                                   setSplits(newSplits);
