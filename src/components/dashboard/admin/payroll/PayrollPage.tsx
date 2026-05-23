@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { format, startOfWeek, endOfWeek } from "date-fns";
 import PayrollFilterBar from "./PayrollFilterBar";
 import { PayrollTable } from "./PayrollTable";
-import { useSalonsQuery } from "@/actions/admin/useSalons";
+import { useUsersQuery } from "@/actions/admin/useUsers";
 import { usePayrollQuery } from "@/actions/payroll/usePayroll";
 import type { PayrollQueryParams } from "@/actions/payroll/payroll.types";
 import PayrollCard from "./PayrollCard";
@@ -10,9 +11,14 @@ import PayrollCard from "./PayrollCard";
 const PayrollPage = () => {
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [salonId, setSalonId] = useState("");
+
+  // Default to current week: Monday to Sunday
+  const defaultStartDate = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+  const defaultEndDate = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+
+  const [startDate, setStartDate] = useState(defaultStartDate);
+  const [endDate, setEndDate] = useState(defaultEndDate);
+  const [employeeId, setEmployeeId] = useState("");
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -27,16 +33,17 @@ const PayrollPage = () => {
       searchTerm,
       startDate,
       endDate,
-      salonId,
+      employeeId,
     }),
-    [searchTerm, startDate, endDate, salonId],
+    [searchTerm, startDate, endDate, employeeId],
   );
 
   const payrollQuery = usePayrollQuery(payrollParams);
-  const salonsQuery = useSalonsQuery({
+  const usersQuery = useUsersQuery({
     page: 1,
     limit: 100,
     searchTerm: "",
+    role: "EMPLOYEE,MANAGER",
   });
 
   const payrollData = useMemo(
@@ -44,27 +51,27 @@ const PayrollPage = () => {
     [payrollQuery.data?.data],
   );
 
-  const salonOptions = useMemo(
+  const employeeOptions = useMemo(
     () =>
-      (salonsQuery.data?.data || []).map((salon) => ({
-        value: salon.id,
-        label: salon.name,
+      (usersQuery.data?.data || []).map((emp: any) => ({
+        value: emp.id,
+        label: emp.fullName,
       })),
-    [salonsQuery.data],
+    [usersQuery.data],
   );
 
   const payrollSummary = useMemo(() => {
     return payrollData.reduce(
       (summary, row) => {
         summary.totalOccurrences += row.totalOccurrences;
-        summary.totalIncome += row.totalIncome;
+        summary.totalEarnings += row.earnings;
         summary.totalTips += row.totalTips;
         return summary;
       },
       {
         totalGroups: payrollData.length,
         totalOccurrences: 0,
-        totalIncome: 0,
+        totalEarnings: 0,
         totalTips: 0,
       },
     );
@@ -72,23 +79,16 @@ const PayrollPage = () => {
 
   const isLoading = payrollQuery.isLoading || payrollQuery.isFetching;
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 2,
-    }).format(value);
-
   const hasActiveFilters = Boolean(
-    searchInput.trim() || startDate || endDate || salonId,
+    searchInput.trim() || startDate !== defaultStartDate || endDate !== defaultEndDate || employeeId,
   );
 
   const resetFilters = () => {
     setSearchInput("");
     setSearchTerm("");
-    setStartDate("");
-    setEndDate("");
-    setSalonId("");
+    setStartDate(defaultStartDate);
+    setEndDate(defaultEndDate);
+    setEmployeeId("");
   };
 
   const payrollErrorMessage =
@@ -101,13 +101,13 @@ const PayrollPage = () => {
         searchTerm={searchInput}
         startDate={startDate}
         endDate={endDate}
-        salonId={salonId}
-        salons={salonOptions}
-        isSalonLoading={salonsQuery.isLoading}
+        employeeId={employeeId}
+        employees={employeeOptions}
+        isEmployeeLoading={usersQuery.isLoading}
         onSearchTermChange={setSearchInput}
         onStartDateChange={setStartDate}
         onEndDateChange={setEndDate}
-        onSalonChange={(value) => setSalonId(value ?? "")}
+        onEmployeeChange={(value) => setEmployeeId(value ?? "")}
         onReset={resetFilters}
       />
 
@@ -125,7 +125,7 @@ const PayrollPage = () => {
       ) : (
         <PayrollTable
           data={payrollData}
-          isLoading={isLoading || salonsQuery.isLoading}
+          isLoading={isLoading || usersQuery.isLoading}
           emptyMessage={
             hasActiveFilters
               ? "No payroll entries match the current filters."
@@ -137,7 +137,7 @@ const PayrollPage = () => {
       <div>
         <PayrollCard
           summary={payrollSummary}
-          isLoading={isLoading || salonsQuery.isLoading}
+          isLoading={isLoading || usersQuery.isLoading}
         />
       </div>
     </div>

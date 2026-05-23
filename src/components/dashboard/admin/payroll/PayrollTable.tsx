@@ -12,17 +12,41 @@ function formatCurrency(value: number) {
 }
 
 const payrollColumns: ColumnDef<PayrollRow>[] = [
-  { key: "serviceName", header: "Service", sortable: true },
-  {
-    key: "salonName",
-    header: "Salon",
-    sortable: true,
-    render: (value) => String(value ?? "N/A"),
-  },
+  { key: "employeeName", header: "Employee", sortable: true },
   {
     key: "totalOccurrences",
-    header: "Occurrences",
+    header: "Total Service",
     sortable: true,
+  },
+  {
+    key: "commissionRate",
+    header: "Commission Rate",
+    sortable: true,
+    render: (value) => (
+      <span style={{ fontWeight: 500 }}>
+        {Number(value)}%
+      </span>
+    ),
+  },
+  {
+    key: "serviceCharge",
+    header: "Service Charge",
+    sortable: true,
+    render: (value) => (
+      <span style={{ color: "#334155", fontWeight: 500 }}>
+        {formatCurrency(Number(value))}
+      </span>
+    ),
+  },
+  {
+    key: "commissionEarnings",
+    header: "Commission Earnings",
+    sortable: true,
+    render: (value) => (
+      <span style={{ color: "#0ea5e9", fontWeight: 500 }}>
+        {formatCurrency(Number(value))}
+      </span>
+    ),
   },
   {
     key: "totalTips",
@@ -35,8 +59,8 @@ const payrollColumns: ColumnDef<PayrollRow>[] = [
     ),
   },
   {
-    key: "totalIncome",
-    header: "Service Earning",
+    key: "earnings",
+    header: "Earnings",
     sortable: true,
     render: (value) => (
       <span style={{ color: "#d0166e", fontWeight: 700, fontSize: 15 }}>

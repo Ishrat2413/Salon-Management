@@ -2,17 +2,19 @@ export interface PayrollQueryParams {
   searchTerm?: string;
   startDate?: string;
   endDate?: string;
-  salonId?: string;
+  employeeId?: string;
 }
 
 export interface PayrollRow extends Record<string, unknown> {
-  serviceId: string;
-  serviceName: string;
-  salonId: string;
+  employeeId: string;
+  employeeName: string;
   salonName: string;
   totalOccurrences: number;
-  totalIncome: number;
+  commissionRate: number;
+  serviceCharge: number;
+  commissionEarnings: number;
   totalTips: number;
+  earnings: number;
 }
 
 export interface PayrollResponse {
@@ -21,7 +23,7 @@ export interface PayrollResponse {
   data: PayrollRow[];
 }
 
-export interface PayrollSalonOption {
+export interface PayrollEmployeeOption {
   value: string;
   label: string;
 }
