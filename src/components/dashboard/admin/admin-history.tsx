@@ -28,9 +28,13 @@ export function AdminHistory() {
 
   const summaryData = {
     totalPrice:
-      role === "employee" ? data?.meta.loggedInUserPrices : data?.meta.totalPrices,
+      (role === "employee" || filters.employeeId) 
+        ? data?.meta.loggedInUserPrices 
+        : data?.meta.totalPrices,
     totalTips:
-      role === "employee" ? data?.meta.loggedInUserTips : data?.meta.totalTips,
+      (role === "employee" || filters.employeeId) 
+        ? data?.meta.loggedInUserTips 
+        : data?.meta.totalTips,
   };
 
   const handlePageChange = (newPage: number) => {
