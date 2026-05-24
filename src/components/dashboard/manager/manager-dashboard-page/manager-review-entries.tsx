@@ -35,7 +35,6 @@ export default function ManagerReviewEntries() {
   const { data: response, isLoading } = useSalonEntriesQuery({
     page: 1,
     limit,
-    status: "PENDING",
   });
 
   const columns: ColumnDef<ManagerReviewEntry>[] = [
