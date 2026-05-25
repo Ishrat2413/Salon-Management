@@ -1,6 +1,9 @@
 import React from "react";
 
 interface FilterBarProps {
+  searchValue?: string;
+  roleValue?: string;
+  salonValue?: string;
   onSearchChange?: (value: string) => void;
   onRoleChange?: (value: string) => void;
   onSalonChange?: (value: string) => void;
@@ -12,6 +15,9 @@ interface FilterBarProps {
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
+  searchValue = "",
+  roleValue = "",
+  salonValue = "",
   onSearchChange,
   onRoleChange,
   onSalonChange,
@@ -59,6 +65,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                 id='search-input'
                 placeholder={searchPlaceholder}
                 type='text'
+                value={searchValue}
                 onChange={(e) => onSearchChange?.(e.target.value)}
               />
             </div>
@@ -75,11 +82,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
               <select
                 className='block w-full pl-4 pr-10 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#334155] sm:text-sm appearance-none'
                 id='role-select'
-                defaultValue=''
+                value={roleValue}
                 onChange={(e) => onRoleChange?.(e.target.value)}>
-                <option disabled value=''>
-                  {rolePlaceholder}
-                </option>
                 {roles.map((role) => (
                   <option key={role.value} value={role.value}>
                     {role.label}
@@ -115,11 +119,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
               <select
                 className='block w-full pl-4 pr-10 py-3 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#334155] sm:text-sm appearance-none'
                 id='salon-select'
-                defaultValue=''
+                value={salonValue}
                 onChange={(e) => onSalonChange?.(e.target.value)}>
-                <option disabled value=''>
-                  {salonPlaceholder}
-                </option>
                 {salons.map((salon) => (
                   <option key={salon.value} value={salon.value}>
                     {salon.label}
