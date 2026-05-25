@@ -8,11 +8,17 @@ import { useSalonsQuery } from "@/actions/admin/useSalons";
 
 const ManageUsersPage = () => {
   const [search, setSearch] = useState("");
+  const [role, setRole] = useState("");
+  const [salonId, setSalonId] = useState("");
+
   const { data, isLoading } = useUsersQuery({
     page: 1,
-    limit: 10,
+    limit: 100, // Fetch more for management
     searchTerm: search,
+    role: role || undefined,
+    salonId: salonId || undefined,
   });
+
   const { data: salonsData } = useSalonsQuery({
     page: 1,
     limit: 100,
@@ -39,9 +45,12 @@ const ManageUsersPage = () => {
   return (
     <div className='flex flex-col gap-6 p-6'>
       <FilterBar
+        searchValue={search}
+        roleValue={role}
+        salonValue={salonId}
         onSearchChange={setSearch}
-        onRoleChange={() => {}}
-        onSalonChange={() => {}}
+        onRoleChange={setRole}
+        onSalonChange={setSalonId}
         roles={roles}
         salons={salons}
       />
