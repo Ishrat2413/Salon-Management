@@ -61,18 +61,7 @@ function PasswordRule({ met, label }: { met: boolean; label: string }) {
 export default function ResetPasswordPage() {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
-
   const { mutate: resetPassword, isPending: isLoading } = useResetPasswordMutation();
-
-  useEffect(() => {
-    const storedToken = sessionStorage.getItem("resetToken");
-    if (storedToken) {
-      setToken(storedToken);
-    } else {
-      toast.error("Session expired. Please request a new code.");
-    }
-  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -91,8 +80,9 @@ export default function ResetPasswordPage() {
   ];
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    const token = typeof window !== 'undefined' ? sessionStorage.getItem("resetToken") : null;
     if (!token) {
-      toast.error("No reset token found. Please verify your identity again.");
+      toast.error("Session expired or no reset token found. Please verify your identity again.");
       return;
     }
     resetPassword({ token, newPassword: values.newPassword });
