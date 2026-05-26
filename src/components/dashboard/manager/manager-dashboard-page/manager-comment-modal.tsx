@@ -51,10 +51,12 @@ function CommentForm({
   onSave?: (comment: string) => Promise<void> | void;
 }) {
   const [comment, setComment] = useState("");
+  const [prevEntryId, setPrevEntryId] = useState<string | number>(entryId);
 
-  useEffect(() => {
+  if (entryId !== prevEntryId) {
+    setPrevEntryId(entryId);
     setComment("");
-  }, [entryId]);
+  }
 
   async function handleSubmit() {
     const trimmedComment = comment.trim();

@@ -85,16 +85,14 @@ export function EditUserModal({
   user,
   onSave,
 }: EditUserModalProps) {
-  const [form, setForm] = useState<User | null>(null);
+  const [form, setForm] = useState<User | null>(user);
+  const [prevUser, setPrevUser] = useState<User | null | undefined>(user);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      setForm({ ...user });
-    } else {
-      setForm(null);
-    }
-  }, [user, isOpen]);
+  if (user !== prevUser) {
+    setPrevUser(user);
+    setForm(user ? { ...user } : null);
+  }
 
   if (!isOpen || !form) return null;
 
