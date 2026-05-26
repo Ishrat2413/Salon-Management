@@ -28,8 +28,8 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className='flex flex-col gap-[6px]'>
-      <label className='text-[13px] font-medium leading-[20px] text-[#374151]'>
+    <div className='flex flex-col gap-1.5'>
+      <label className='text-[13px] font-medium leading-5 text-[#374151]'>
         {label}
       </label>
       {children}
@@ -105,11 +105,13 @@ export function EditServiceModal({
   onSave,
 }: EditServiceModalProps) {
   const [form, setForm] = useState<ServiceEntry>(entry ?? defaultEntry);
+  const [prevEntry, setPrevEntry] = useState<ServiceEntry | null | undefined>(entry);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (entry) setForm({ ...entry });
-  }, [entry, isOpen]);
+  if (entry !== prevEntry) {
+    setPrevEntry(entry);
+    setForm(entry ?? defaultEntry);
+  }
 
   if (!isOpen) return null;
 
@@ -137,17 +139,17 @@ export function EditServiceModal({
       {/* Modal */}
       <div className='fixed inset-0 z-50 flex items-center justify-center px-4'>
         <div
-          className='w-full max-w-[840px] rounded-[12px] bg-white shadow-[0_20px_25px_-5px_rgba(0,0,0,0.10),0_10px_10px_-5px_rgba(0,0,0,0.04)] overflow-hidden'
+          className='w-full max-w-210 rounded-[12px] bg-white shadow-[0_20px_25px_-5px_rgba(0,0,0,0.10),0_10px_10px_-5px_rgba(0,0,0,0.04)] overflow-hidden'
           onClick={(e) => e.stopPropagation()}>
           {/* ── Header ── */}
           <div className='relative px-8 pt-8 pb-5'>
-            <h2 className='text-[18px] font-semibold leading-[28px] text-[#111827]'>
+            <h2 className='text-[18px] font-semibold leading-7 text-[#111827]'>
               Edit Entry
             </h2>
             <button
               onClick={onClose}
               aria-label='Close'
-              className='absolute top-[22px] right-6 text-[#9CA3AF] hover:text-[#6B7280] transition-colors focus:outline-none'>
+              className='absolute top-5.5 right-6 text-[#9CA3AF] hover:text-[#6B7280] transition-colors focus:outline-none'>
               <svg
                 className='h-5 w-5'
                 fill='none'
@@ -269,14 +271,14 @@ export function EditServiceModal({
               type='button'
               onClick={onClose}
               disabled={loading}
-              className='h-[38px] rounded-[6px] border border-[#D1D5DB] bg-white px-6 text-[13px] font-medium text-[#374151] shadow-sm hover:bg-[#F9FAFB] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D83B8F] disabled:opacity-60'>
+              className='h-9.5 rounded-[6px] border border-[#D1D5DB] bg-white px-6 text-[13px] font-medium text-[#374151] shadow-sm hover:bg-[#F9FAFB] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D83B8F] disabled:opacity-60'>
               Cancel
             </button>
             <button
               type='button'
               onClick={handleSave}
               disabled={loading}
-              className='h-[38px] rounded-[6px] bg-[#D83B8F] px-6 text-[13px] font-medium text-white shadow-sm hover:bg-[#C23580] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D83B8F] disabled:opacity-70 flex items-center gap-2'>
+              className='h-9.5 rounded-[6px] bg-[#D83B8F] px-6 text-[13px] font-medium text-white shadow-sm hover:bg-[#C23580] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D83B8F] disabled:opacity-70 flex items-center gap-2'>
               {loading ? (
                 <>
                   <svg

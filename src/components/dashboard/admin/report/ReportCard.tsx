@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { Wallet, Briefcase, Users } from "lucide-react";
 
 interface ReportCardProps {
@@ -46,7 +47,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
         {/* Card - Total Revenue */}
         <article className='bg-white rounded-xl border border-[#F5EBEB] shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] p-6 flex items-start gap-5'>
           {/* Icon Container */}
-          <div className='flex-shrink-0 w-[4.5rem] h-[4.5rem] rounded-full bg-[#FDF0F5] flex items-center justify-center text-[#D54D88]'>
+          <div className='shrink-0 w-18 h-18 rounded-full bg-[#FDF0F5] flex items-center justify-center text-[#D54D88]'>
             <Wallet size={32} strokeWidth={1.5} />
           </div>
           {/* Details Container */}
@@ -67,7 +68,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
         {/* Card - Total Services */}
         <article className='bg-white rounded-xl border border-[#F5EBEB] shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] p-6 flex items-start gap-5'>
           {/* Icon Container */}
-          <div className='flex-shrink-0 w-[4.5rem] h-[4.5rem] rounded-full bg-[#FDF0F5] flex items-center justify-center text-[#D54D88]'>
+          <div className='shrink-0 w-18 h-18 rounded-full bg-[#FDF0F5] flex items-center justify-center text-[#D54D88]'>
             <Briefcase size={32} strokeWidth={1.5} />
           </div>
           {/* Details Container */}
@@ -88,7 +89,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
         {/* Card - Active Employees */}
         <article className='bg-white rounded-xl border border-[#F5EBEB] shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] p-6 flex items-start gap-5'>
           {/* Icon Container */}
-          <div className='flex-shrink-0 w-[4.5rem] h-[4.5rem] rounded-full bg-[#FDF0F5] flex items-center justify-center text-[#D54D88]'>
+          <div className='shrink-0 w-18 h-18 rounded-full bg-[#FDF0F5] flex items-center justify-center text-[#D54D88]'>
             <Users size={32} strokeWidth={1.5} />
           </div>
           {/* Details Container */}
@@ -102,23 +103,29 @@ const ReportCard: React.FC<ReportCardProps> = ({
             {/* Employee Avatars */}
             <div className='flex items-center gap-0'>
               <div className='flex -space-x-1.5 items-center'>
-                <img
+                <Image
                   alt='Employee Avatar 1'
-                  className='w-[22px] h-[22px] rounded-full ring-[1.5px] ring-white object-cover'
-                  src='https://lh3.googleusercontent.com/aida-public/AB6AXuDd4PhWyVTg4bA5nDsyuvHQ_8x4QNoqRSvn481HbMz0TXr9YoGduzE9H0KlZ-3_iEICNlOF1Xn0L5znwzzL6JiJ0PH8A7nq31b2cRHN-wivhGZCsWFgQwjuy0MdW9w1TmsWPYFRgWV3MjlFLjBcTnDcW-BHlLy93IoejVupJ13fl0UA8oCBwsYtKvcKec5lCX2rn8t-SB6eVNvmHOwSvrJHMyge2g3wPCux6IGsfAXesqo-P9Sr7nNdniIyQ0oUMiJuuC7U2eFyEbcs'
+                  width={22}
+                  height={22}
+                  className='w-5.5 h-5.5 rounded-full ring-[1.5px] ring-white object-cover'
+                  src='/image/Elena.svg'
                 />
-                <img
+                <Image
                   alt='Employee Avatar 2'
-                  className='w-[22px] h-[22px] rounded-full ring-[1.5px] ring-white object-cover'
-                  src='https://lh3.googleusercontent.com/aida-public/AB6AXuBFErzX08ZYQXZf2NDNjXy8SwqCP0ydFxBMJqkdPRF-ouDk-Cr79rvSWLEMOUBrs9F9IL21pdrwKE_K7VuyJnPyQhhpUH7ZHlSymxvVIkoxhvq-ouJuOyH88pHMUG169ATPXuGQR0oL64acPkH-6vE7Cq4RV-3K44Jcvql0Nq2gBTR-u2rfiSKLMJB7p4JiCTUL-ixmLu_dBe2ZO5VuOX6zHf09UvJOLTa5BuoBQMUctWD1xj1UDlt9BraI2rLlIXr7uKPYcKPozHaa'
+                  width={22}
+                  height={22}
+                  className='w-5.5 h-5.5 rounded-full ring-[1.5px] ring-white object-cover'
+                  src='/image/Elena.svg'
                 />
-                <img
+                <Image
                   alt='Employee Avatar 3'
-                  className='w-[22px] h-[22px] rounded-full ring-[1.5px] ring-white object-cover'
-                  src='https://lh3.googleusercontent.com/aida-public/AB6AXuAdXszNbChilFlcjTNex7S2f2huVyhlXLLvjD6QjSwYAy1PrZfpAhmgmslJo7KfhFkQh-nluh63vRk6Ug70x5T-nmMzeukIk9oRnjeAC7S4w2TrjgWt1-zLwuQ6LPjLNM68oSu77MXypDuDU6nhwzfwvlDC8YhaLcJPMUCadMZkVZ-BoNENVB2VxcxflO4rPTa5RtXL6oqMoXtr-TZUqbWr3xKV6Za4LJNhq_fS4biqD2Of315VV1TpNWhqOJoRetwl3n-tMpb93TeY'
+                  width={22}
+                  height={22}
+                  className='w-5.5 h-5.5 rounded-full ring-[1.5px] ring-white object-cover'
+                  src='/image/Elena.svg'
                 />
                 {/* Overlap Indicator */}
-                <div className='w-[22px] h-[22px] rounded-full ring-[1.5px] ring-white bg-gray-100 flex items-center justify-center z-10'>
+                <div className='w-5.5 h-5.5 rounded-full ring-[1.5px] ring-white bg-gray-100 flex items-center justify-center z-10'>
                   <span className='text-[8px] font-medium text-gray-500'>
                     +{Math.max(0, activeEmployees - 3)}
                   </span>
