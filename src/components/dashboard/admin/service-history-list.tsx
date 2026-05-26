@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { format } from "date-fns";
 import UniversalTable from "@/components/univarsalTable/Universaltable";
 import { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
 import type { SalonEntry } from "@/actions/salon-entry/salon-entry.types";
-import { useRouter } from "next/navigation";
+import { EntryDetailsModal } from "./entry-details-modal";
 
 interface ServiceHistoryListProps {
   entries: SalonEntry[];
@@ -18,7 +18,7 @@ export function ServiceHistoryList({
   role,
   isLoading,
 }: ServiceHistoryListProps) {
-  const router = useRouter();
+  const [selectedEntry, setSelectedEntry] = useState<SalonEntry | null>(null);
 
   const columns = useMemo<ColumnDef<SalonEntry>[]>(() => {
     return [
@@ -67,7 +67,7 @@ export function ServiceHistoryList({
         sortable: false,
         render: (_, row) => (
           <button
-            onClick={() => router.push(`/dashboard/admin/history/${row.id}`)}
+            onClick={() => setSelectedEntry(row as SalonEntry)}
             className="text-sm font-medium text-[#D13C92] hover:underline whitespace-nowrap inline-flex items-center gap-1"
           >
             View Details
@@ -75,18 +75,26 @@ export function ServiceHistoryList({
         )
       }
     ];
-  }, [router]);
+  }, []);
 
   return (
-    <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
-      <UniversalTable<SalonEntry>
-        title='Work History (Approved)'
-        data={entries}
-        columns={columns}
-        loading={isLoading}
-        pageSize={10}
-        emptyMessage='No approved history records found.'
+    <>
+      <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
+        <UniversalTable<SalonEntry>
+          title='Work History (Approved)'
+          data={entries}
+          columns={columns}
+          loading={isLoading}
+          pageSize={10}
+          emptyMessage='No approved history records found.'
+        />
+      </div>
+
+      <EntryDetailsModal
+        isOpen={!!selectedEntry}
+        onClose={() => setSelectedEntry(null)}
+        entry={selectedEntry}
       />
-    </div>
+    </>
   );
 }
