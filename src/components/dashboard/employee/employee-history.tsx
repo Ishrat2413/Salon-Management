@@ -45,7 +45,7 @@ export default function EmployeeHistory() {
     if (!data?.meta) {
       return [
         { title: "Total Earnings", value: "$0", icon: DollarSign },
-        { title: "Total Bookings", value: "0", icon: ShoppingBag },
+        { title: "Total Services", value: "0", icon: ShoppingBag },
         { title: "Total Tips", value: "$0", icon: Tags },
       ];
     }
@@ -67,7 +67,7 @@ export default function EmployeeHistory() {
         icon: DollarSign,
       },
       {
-        title: "Total Bookings",
+        title: "Total Services",
         value: total.toString(),
         icon: ShoppingBag,
       },
