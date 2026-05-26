@@ -17,7 +17,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export type SalonEntryFormValues = {
@@ -53,6 +53,40 @@ type SplitEntryState = {
   employeeId: string;
   totalPrice: string;
   tips: string;
+};
+
+const distributeAmount = (amount: number, count: number) => {
+  if (count <= 0) {
+    return [] as string[];
+  }
+
+  const totalCents = Math.round(amount * 100);
+  const baseCents = Math.floor(totalCents / count);
+  const remainder = totalCents % count;
+
+  return Array.from({ length: count }, (_value, index) => {
+    const cents = baseCents + (index < remainder ? 1 : 0);
+    return (cents / 100).toFixed(2);
+  });
+};
+
+const redistributeAllSplits = (
+  nextSplits: SplitEntryState[],
+  nextActualAmount: number,
+  nextTipAmount: number,
+) => {
+  if (nextSplits.length === 0) {
+    return nextSplits;
+  }
+
+  const nextPrices = distributeAmount(nextActualAmount, nextSplits.length);
+  const nextTips = distributeAmount(nextTipAmount, nextSplits.length);
+
+  return nextSplits.map((split, index) => ({
+    ...split,
+    totalPrice: nextPrices[index],
+    tips: nextTips[index],
+  }));
 };
 
 export default function SalonEntryForm({
@@ -146,39 +180,39 @@ export default function SalonEntryForm({
   const services = servicesData?.data || [];
   const employees = usersData?.data || [];
 
-  const distributeAmount = (amount: number, count: number) => {
-    if (count <= 0) {
-      return [] as string[];
+  // Auto-redistribute splits when main amounts change
+  useEffect(() => {
+    if (splitService && splits.length > 0) {
+      // Check if the sum of splits already matches the main amounts to avoid unnecessary state updates
+      const totalSplitsPrice = splits.reduce(
+        (sum, s) => sum + (Number(s.totalPrice) || 0),
+        0,
+      );
+      const totalSplitsTips = splits.reduce(
+        (sum, s) => sum + (Number(s.tips) || 0),
+        0,
+      );
+
+      const priceMismatch =
+        Math.abs(totalSplitsPrice - actualServiceAmount) > 0.001;
+      const tipMismatch =
+        Math.abs(totalSplitsTips - (Number(tipValue) || 0)) > 0.001;
+
+      if (priceMismatch || tipMismatch) {
+        const timeoutId = window.setTimeout(() => {
+          setSplits((prev) =>
+            redistributeAllSplits(
+              prev,
+              actualServiceAmount,
+              Number(tipValue) || 0,
+            ),
+          );
+        }, 0);
+
+        return () => window.clearTimeout(timeoutId);
+      }
     }
-
-    const totalCents = Math.round(amount * 100);
-    const baseCents = Math.floor(totalCents / count);
-    const remainder = totalCents % count;
-
-    return Array.from({ length: count }, (_value, index) => {
-      const cents = baseCents + (index < remainder ? 1 : 0);
-      return (cents / 100).toFixed(2);
-    });
-  };
-
-  const redistributeAllSplits = (
-    nextSplits: SplitEntryState[],
-    nextActualAmount = actualServiceAmount,
-    nextTipAmount = Number(tipValue) || 0,
-  ) => {
-    if (nextSplits.length === 0) {
-      return nextSplits;
-    }
-
-    const nextPrices = distributeAmount(nextActualAmount, nextSplits.length);
-    const nextTips = distributeAmount(nextTipAmount, nextSplits.length);
-
-    return nextSplits.map((split, index) => ({
-      ...split,
-      totalPrice: nextPrices[index],
-      tips: nextTips[index],
-    }));
-  };
+  }, [actualServiceAmount, tipValue, splitService, splits]);
 
   const redistributeAfterSplitEdit = (
     nextSplits: SplitEntryState[],
@@ -257,12 +291,12 @@ export default function SalonEntryForm({
         0,
       );
 
-      if (Math.abs(totalSplitsPrice - actualServiceAmount) > 1) {
-        newErrors.splitsPrice = `Sum of splits ($${totalSplitsPrice}) does not match actual service amount ($${actualServiceAmount})`;
+      if (Math.abs(totalSplitsPrice - actualServiceAmount) > 0.01) {
+        newErrors.splitsPrice = `Sum of splits ($${totalSplitsPrice.toFixed(2)}) does not match actual service amount ($${actualServiceAmount.toFixed(2)})`;
       }
 
-      if (Math.abs(totalSplitsTips - (Number(tipValue) || 0)) > 1) {
-        newErrors.splitsTips = `Sum of split tips ($${totalSplitsTips}) does not match total tip ($${tipValue || 0})`;
+      if (Math.abs(totalSplitsTips - (Number(tipValue) || 0)) > 0.01) {
+        newErrors.splitsTips = `Sum of split tips ($${totalSplitsTips.toFixed(2)}) does not match total tip ($${(Number(tipValue) || 0).toFixed(2)})`;
       }
 
       splits.forEach((s, i) => {
@@ -481,6 +515,7 @@ export default function SalonEntryForm({
                     }}
                     placeholder='$ 0.00'
                     type='number'
+                    step='any'
                     min='0'
                     className={inputClasses}
                   />
@@ -500,6 +535,7 @@ export default function SalonEntryForm({
                     }}
                     placeholder='$ 0.00'
                     type='number'
+                    step='any'
                     min='0'
                     className={inputClasses}
                   />
@@ -514,6 +550,7 @@ export default function SalonEntryForm({
                     }}
                     placeholder='$ 0.00'
                     type='number'
+                    step='any'
                     min='0'
                     className={inputClasses}
                   />
@@ -523,7 +560,7 @@ export default function SalonEntryForm({
                   <p className='text-sm font-medium text-gray-500'>
                     Actual Service Amount:{" "}
                     <span className='text-gray-900 font-bold'>
-                      ${actualServiceAmount}
+                      ${actualServiceAmount.toFixed(2)}
                     </span>
                   </p>
                 </div>
@@ -663,6 +700,7 @@ export default function SalonEntryForm({
                                 }}
                                 placeholder='0.00'
                                 type='number'
+                                step='any'
                                 min='0'
                                 className={inputClasses + " bg-white"}
                               />
@@ -691,6 +729,7 @@ export default function SalonEntryForm({
                                 }}
                                 placeholder='0.00'
                                 type='number'
+                                step='any'
                                 min='0'
                                 className={inputClasses + " bg-white"}
                               />

@@ -612,6 +612,7 @@ export function UsersTable({ data }: UsersTableProps) {
             </label>
             <Input
               type='number'
+              step='any'
               value={commissionRate}
               onChange={(e) => setCommissionRate(e.target.value)}
               placeholder='e.g. 60'
@@ -648,6 +649,7 @@ export function UsersTable({ data }: UsersTableProps) {
             </label>
             <Input
               type='number'
+              step='any'
               value={commissionRate}
               onChange={(e) => setCommissionRate(e.target.value)}
               placeholder='e.g. 60'
