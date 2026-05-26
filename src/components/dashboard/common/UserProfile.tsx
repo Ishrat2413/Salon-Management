@@ -234,6 +234,14 @@ function DetailField({
   type?: string;
   readOnly?: boolean;
 }) {
+  const wrapperClasses = readOnly
+    ? "w-full border border-[#DDD7D1] rounded-md px-3 py-2 bg-[#F7F5F2]"
+    : "w-full border border-[#C7B29B] rounded-md px-3 py-2 bg-white";
+
+  const valueClasses = readOnly
+    ? "text-sm font-medium text-[#8A8783] truncate"
+    : "text-sm font-medium text-[#445571] truncate";
+
   return (
     <div className='w-full'>
       <div className='flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full'>
@@ -242,7 +250,7 @@ function DetailField({
         </div>
 
         <div className='flex-1'>
-          <div className='w-full border border-[#C7B29B] rounded-md px-3 py-2 bg-white'>
+          <div className={wrapperClasses}>
             {isEditing && !readOnly ? (
               <input
                 type={type}
@@ -253,7 +261,7 @@ function DetailField({
                 className='w-full outline-none text-[15px] text-[#445571] bg-transparent placeholder:text-gray-300'
               />
             ) : (
-              <p className='text-sm font-medium text-[#445571] truncate'>
+              <p className={valueClasses}>
                 {value || (
                   <span className='text-gray-300 font-normal italic'>
                     {placeholder}
