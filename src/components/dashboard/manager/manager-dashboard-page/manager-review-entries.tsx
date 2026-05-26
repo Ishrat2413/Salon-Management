@@ -115,12 +115,6 @@ export default function ManagerReviewEntries() {
     <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6'>
       <div className='flex items-center justify-between'>
         <h2 className='text-3xl font-medium text-[#283E5C]'>Review Entries</h2>
-        <button
-          type='button'
-          onClick={() => router.push("/manager-review-entries")}
-          className='px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition'>
-          View All
-        </button>
       </div>
 
       <UniversalTable<SalonEntry>

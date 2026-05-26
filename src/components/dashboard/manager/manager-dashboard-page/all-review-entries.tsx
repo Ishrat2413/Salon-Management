@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Flag, FilePen, Trash2, MoreVertical } from "lucide-react";
+import { Flag, FilePen, Trash2, MoreVertical, Search } from "lucide-react";
 import { createPortal } from "react-dom";
 import {
   useSalonEntriesQuery,
@@ -32,9 +32,21 @@ export default function AllReviewEntries() {
     user?.role === "manager" ||
     user?.role?.toUpperCase() === "MANAGER";
 
-  const { data: response, isLoading } = useSalonEntriesQuery({
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setSearchTerm(searchInput.trim());
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchInput]);
+
+  const { data: response, isLoading, isFetching } = useSalonEntriesQuery({
     page: 1,
     limit,
+    searchTerm,
   });
 
   const columns: ColumnDef<ManagerReviewEntry>[] = [
@@ -113,26 +125,36 @@ export default function AllReviewEntries() {
 
   return (
     <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6'>
-      <div className='flex items-center justify-between'>
+      <div className='flex flex-col md:flex-row items-start md:items-center justify-between gap-4'>
         <h2 className='text-3xl font-medium text-[#283E5C]'>Review Entries</h2>
-        <button
-          type='button'
-          onClick={() => router.push("/manager-review-entries")}
-          className='px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition'>
-          View All
-        </button>
+        
+        <div className='flex items-center gap-4 w-full md:w-auto'>
+          <div className='relative w-full md:w-72'>
+            <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
+              <Search className='h-4 w-4 text-[#334155]' />
+            </div>
+            <input
+              className='block w-full pl-9 pr-3 py-2 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-[#364153] placeholder-[#334155] sm:text-sm'
+              placeholder="Search by name, service, salon..."
+              type='text'
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+          </div>
+        </div>
       </div>
 
-      <UniversalTable<SalonEntry>
-        data={(response?.data || []) as ManagerReviewEntry[]}
-        columns={columns}
-        emptyMessage='No entries found.'
-        showPagination={false}
-        className='p-0!'
-        rowStyle={(row) =>
-          (row as ManagerReviewEntry) ? { backgroundColor: "#FFFFFF" } : {}
-        }
-      />
+      <div className={`transition-opacity duration-300 ${isFetching && !isLoading ? 'opacity-60' : 'opacity-100'}`}>
+        <UniversalTable<SalonEntry>
+          data={(response?.data || []) as ManagerReviewEntry[]}
+          columns={columns}
+          emptyMessage='No entries found.'
+          className='p-0!'
+          rowStyle={(row) =>
+            (row as ManagerReviewEntry) ? { backgroundColor: "#FFFFFF" } : {}
+          }
+        />
+      </div>
     </div>
   );
 }

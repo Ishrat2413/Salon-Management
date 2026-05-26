@@ -40,6 +40,7 @@ export const useSalonEntriesQuery = (params: {
   status?: string;
   salonId?: string;
   viewerScope?: string;
+  searchTerm?: string;
 }) => {
   return useQuery({
     queryKey: ["salon-entries", params],
