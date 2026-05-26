@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import { HistoryFilters } from "./history-filters";
 import { ServiceHistoryList } from "./service-history-list";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useSalonEntriesQuery } from "@/actions/salon-entry/useSalonEntry";
 import { HistoryDateFilters } from "../common/HistoryDateFilters";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 
 export function AdminHistory() {
   const { user } = useAuth();
@@ -27,13 +27,24 @@ export function AdminHistory() {
     startDate: defaultStartDate,
     endDate: defaultEndDate,
   });
+
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setSearchTerm(searchInput.trim());
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchInput]);
   
-  const [page, setPage] = useState(1);
-  const limit = 10;
+  const limit = 1000;
 
   const { data, isLoading, isFetching } = useSalonEntriesQuery({
-    page,
+    page: 1,
     limit,
+    searchTerm,
     ...filters,
   });
 
@@ -44,12 +55,6 @@ export function AdminHistory() {
     totalCommissionPaid: data?.meta?.totalCommissionEarnings || 0,
     totalTips: data?.meta?.totalTips || 0,
   };
-
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
-
-  const totalPages = data?.meta?.total ? Math.ceil(data.meta.total / limit) : 0;
 
   return (
     <div className="bg-[#fef8f8] min-h-[calc(100vh-4rem)] p-4 sm:p-8 text-gray-800 -mx-4 -my-6 sm:-mx-6 sm:-my-6 lg:-mx-8 lg:-my-8 relative">
@@ -151,51 +156,6 @@ export function AdminHistory() {
             isLoading={isLoading && !data}
           />
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-            <span className="text-sm text-gray-500">
-              Showing {(page - 1) * limit + 1} to{" "}
-              {Math.min(page * limit, data?.meta?.total || 0)} of{" "}
-              {data?.meta?.total} records
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => handlePageChange(Math.max(1, page - 1))}
-                disabled={page === 1}
-                className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <div className="flex gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => handlePageChange(p)}
-                    className={`px-3 py-1 text-sm font-medium rounded-md ${
-                      page === p
-                        ? "bg-[#D13C92] text-white"
-                        : "bg-white text-gray-600 border border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
-                disabled={page === totalPages}
-                className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
