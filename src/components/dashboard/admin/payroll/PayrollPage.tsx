@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import PayrollFilterBar from "./PayrollFilterBar";
-import { PayrollTable } from "./PayrollTable";
+import { PayrollAccordionTable } from "./PayrollAccordionTable";
 import { useUsersQuery } from "@/actions/admin/useUsers";
 import { usePayrollQuery } from "@/actions/payroll/usePayroll";
 import type { PayrollQueryParams } from "@/actions/payroll/payroll.types";
@@ -123,7 +123,7 @@ const PayrollPage = () => {
           </button>
         </div>
       ) : (
-        <PayrollTable
+        <PayrollAccordionTable
           data={payrollData}
           isLoading={isLoading || usersQuery.isLoading}
           emptyMessage={
@@ -131,6 +131,8 @@ const PayrollPage = () => {
               ? "No payroll entries match the current filters."
               : "No payroll entries available."
           }
+          startDate={startDate}
+          endDate={endDate}
         />
       )}
 

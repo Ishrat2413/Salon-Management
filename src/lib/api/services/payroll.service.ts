@@ -9,4 +9,9 @@ export const payrollService = {
     const response = await apiClient.get("/payroll", { params });
     return response.data;
   },
+
+  getEmployeeEntries: async (employeeId: string, params?: { startDate?: string; endDate?: string }) => {
+    const response = await apiClient.get(`/payroll/employee/${employeeId}/entries`, { params });
+    return response.data;
+  },
 };
