@@ -29,6 +29,11 @@ export function PayrollAccordionTable({
   endDate,
 }: PayrollAccordionTableProps) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
+  const paginated = data.slice((page - 1) * pageSize, page * pageSize);
 
   const toggleRow = (employeeId: string) => {
     setExpandedRow((prev) => (prev === employeeId ? null : employeeId));
@@ -63,14 +68,14 @@ export function PayrollAccordionTable({
                   </div>
                 </td>
               </tr>
-            ) : data.length === 0 ? (
+            ) : paginated.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-8 text-center text-gray-500">
                   {emptyMessage}
                 </td>
               </tr>
             ) : (
-              data.map((row) => {
+              paginated.map((row) => {
                 const isExpanded = expandedRow === row.employeeId;
                 
                 return (
@@ -112,6 +117,85 @@ export function PayrollAccordionTable({
             )}
           </tbody>
         </table>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "10px 16px",
+          borderTop: "1px solid #f5f4fa",
+          fontSize: 13,
+          color: "#9999b5",
+        }}>
+        <span className='py-4'>
+          Showing {data.length === 0 ? 0 : (page - 1) * pageSize + 1} to{" "}
+          {Math.min(page * pageSize, data.length)} of {data.length} records
+        </span>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            style={{
+              padding: "5px 14px",
+              borderRadius: 7,
+              border: "1px solid #ece9f1",
+              background: page === 1 ? "#faf9fd" : "#fff",
+              cursor: page === 1 ? "not-allowed" : "pointer",
+              fontSize: 13,
+              color: page === 1 ? "#ccc" : "#6b6b8a",
+            }}>
+            Previous
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter(
+              (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1,
+            )
+            .reduce<(number | "...")[]>((acc, p, i, arr) => {
+              if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
+              acc.push(p);
+              return acc;
+            }, [])
+            .map((p, i) =>
+              p === "..." ? (
+                <span
+                  key={`e-${i}`}
+                  style={{ padding: "5px 4px", color: "#ccc" }}>
+                  …
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  onClick={() => setPage(p as number)}
+                  style={{
+                    padding: "5px 10px",
+                    borderRadius: 7,
+                    background: page === p ? "#D13C92" : "#fff",
+                    color: page === p ? "#fff" : "#6b6b8a",
+                    cursor: "pointer",
+                    fontWeight: page === p ? 600 : 400,
+                    fontSize: 13,
+                  }}>
+                  {p}
+                </button>
+              ),
+            )}
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            style={{
+              padding: "5px 14px",
+              borderRadius: 7,
+              border: "1px solid #ece9f1",
+              background: page === totalPages ? "#faf9fd" : "#fff",
+              cursor: page === totalPages ? "not-allowed" : "pointer",
+              fontSize: 13,
+              color: page === totalPages ? "#ccc" : "#6b6b8a",
+            }}>
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
