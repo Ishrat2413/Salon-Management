@@ -28,18 +28,10 @@ export function PayrollAccordionTable({
   startDate,
   endDate,
 }: PayrollAccordionTableProps) {
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const toggleRow = (employeeId: string) => {
-    setExpandedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(employeeId)) {
-        next.delete(employeeId);
-      } else {
-        next.add(employeeId);
-      }
-      return next;
-    });
+    setExpandedRow((prev) => (prev === employeeId ? null : employeeId));
   };
 
   return (
@@ -79,7 +71,7 @@ export function PayrollAccordionTable({
               </tr>
             ) : (
               data.map((row) => {
-                const isExpanded = expandedRows.has(row.employeeId);
+                const isExpanded = expandedRow === row.employeeId;
                 
                 return (
                   <React.Fragment key={row.employeeId}>
