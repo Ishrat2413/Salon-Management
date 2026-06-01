@@ -182,82 +182,40 @@ export default function SalonEntryForm({
 
   // Auto-redistribute splits when main amounts change
   useEffect(() => {
-    if (splitService && splits.length > 0) {
-      // Check if the sum of splits already matches the main amounts to avoid unnecessary state updates
-      const totalSplitsPrice = splits.reduce(
-        (sum, s) => sum + (Number(s.totalPrice) || 0),
-        0,
-      );
-      const totalSplitsTips = splits.reduce(
-        (sum, s) => sum + (Number(s.tips) || 0),
-        0,
-      );
+    if (splitService) {
+      const timeoutId = window.setTimeout(() => {
+        setSplits((prev) => {
+          if (prev.length === 0) return prev;
 
-      const priceMismatch =
-        Math.abs(totalSplitsPrice - actualServiceAmount) > 0.001;
-      const tipMismatch =
-        Math.abs(totalSplitsTips - (Number(tipValue) || 0)) > 0.001;
+          const totalSplitsPrice = prev.reduce(
+            (sum, s) => sum + (Number(s.totalPrice) || 0),
+            0,
+          );
+          const totalSplitsTips = prev.reduce(
+            (sum, s) => sum + (Number(s.tips) || 0),
+            0,
+          );
 
-      if (priceMismatch || tipMismatch) {
-        const timeoutId = window.setTimeout(() => {
-          setSplits((prev) =>
-            redistributeAllSplits(
+          const priceMismatch = Math.abs(totalSplitsPrice - actualServiceAmount) > 0.001;
+          const tipMismatch = Math.abs(totalSplitsTips - (Number(tipValue) || 0)) > 0.001;
+
+          if (priceMismatch || tipMismatch) {
+            return redistributeAllSplits(
               prev,
               actualServiceAmount,
               Number(tipValue) || 0,
-            ),
-          );
-        }, 0);
+            );
+          }
+          
+          return prev;
+        });
+      }, 0);
 
-        return () => window.clearTimeout(timeoutId);
-      }
+      return () => window.clearTimeout(timeoutId);
     }
-  }, [actualServiceAmount, tipValue, splitService, splits]);
-
-  const redistributeAfterSplitEdit = (
-    nextSplits: SplitEntryState[],
-    changedIndex: number,
-    field: "totalPrice" | "tips",
-    value: string,
-    nextActualAmount = actualServiceAmount,
-    nextTipAmount = Number(tipValue) || 0,
-  ) => {
-    if (nextSplits.length === 0) {
-      return nextSplits;
-    }
-
-    const updatedSplits = nextSplits.map((split) => ({ ...split }));
-    updatedSplits[changedIndex][field] = value;
-
-    if (updatedSplits.length === 1) {
-      return updatedSplits;
-    }
-
-    const lockedValue = Number(value) || 0;
-    const sourceTotal =
-      field === "totalPrice" ? nextActualAmount : nextTipAmount;
-    const remainingValue = Math.max(0, sourceTotal - lockedValue);
-    const redistributedValues = distributeAmount(
-      remainingValue,
-      updatedSplits.length - 1,
-    );
-
-    let redistributedIndex = 0;
-
-    return updatedSplits.map((split, index) => {
-      if (index === changedIndex) {
-        return split;
-      }
-
-      const nextValue = redistributedValues[redistributedIndex] ?? "0.00";
-      redistributedIndex += 1;
-
-      return {
-        ...split,
-        [field]: nextValue,
-      };
-    });
-  };
+    // Note: 'splits' is intentionally excluded from the dependency array 
+    // so that manual edits to individual split fields don't get instantly overwritten.
+  }, [actualServiceAmount, tipValue, splitService]);
 
   const handleAddBraider = () => {
     const newSplits = [
