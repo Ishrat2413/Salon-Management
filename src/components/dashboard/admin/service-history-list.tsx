@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import UniversalTable from "@/components/univarsalTable/Universaltable";
 import { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
 import type { SalonEntry } from "@/actions/salon-entry/salon-entry.types";
@@ -51,9 +52,9 @@ export function ServiceHistoryList({
       },
       {
         key: "createdAt",
-        header: "Created Date",
+        header: "Created Date (CT)",
         sortable: true,
-        render: (val) => format(new Date(val as string), "MMM d, yyyy"),
+        render: (val) => formatInTimeZone(new Date(val as string), "America/Chicago", "MMM d, yyyy h:mm a"),
       },
       {
         key: "approvedByName",

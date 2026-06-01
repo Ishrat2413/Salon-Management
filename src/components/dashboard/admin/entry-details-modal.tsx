@@ -2,6 +2,7 @@
 
 import React from "react";
 import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { BaseModal } from "@/components/ui/BaseModal";
 import type { SalonEntry } from "@/actions/salon-entry/salon-entry.types";
 
@@ -33,8 +34,8 @@ export function EntryDetailsModal({ isOpen, onClose, entry }: EntryDetailsModalP
             </span>
           </div>
           <div>
-            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Created At</p>
-            <p className="text-sm font-medium text-gray-900">{format(new Date(entry.createdAt), "MMM d, yyyy 'at' h:mm a")}</p>
+            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Created At (CT)</p>
+            <p className="text-sm font-medium text-gray-900">{formatInTimeZone(new Date(entry.createdAt), "America/Chicago", "MMM d, yyyy 'at' h:mm a")}</p>
           </div>
           <div>
             <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Approved By</p>

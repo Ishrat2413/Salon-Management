@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { Loader2 } from "lucide-react";
 import { useEmployeePayrollEntriesQuery } from "@/actions/payroll/usePayroll";
 import type { SalonEntry } from "@/actions/salon-entry/salon-entry.types";
@@ -78,10 +78,10 @@ export function ExpandedEmployeeHistory({
                 <tr key={entry.id} className="hover:bg-gray-50/30 transition-colors">
                   <td className="py-3 px-4 text-gray-600">
                     <div className="font-medium text-gray-900">
-                      {format(new Date(entry.createdAt), "MMM d, yyyy")}
+                      {formatInTimeZone(new Date(entry.createdAt), "America/Chicago", "MMM d, yyyy")}
                     </div>
                     <div className="text-xs">
-                      {format(new Date(entry.createdAt), "h:mm a")}
+                      {formatInTimeZone(new Date(entry.createdAt), "America/Chicago", "h:mm a")}
                     </div>
                   </td>
                   <td className="py-3 px-4 font-medium text-gray-700">{entry.salonName}</td>

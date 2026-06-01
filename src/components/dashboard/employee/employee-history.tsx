@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { format, startOfWeek, endOfWeek } from "date-fns";
+import { startOfWeek, endOfWeek } from "date-fns";
+import { toZonedTime, format } from "date-fns-tz";
 import {
   DollarSign,
   ShoppingBag,
@@ -18,9 +19,10 @@ import { HistoryDateFilters } from "../common/HistoryDateFilters";
 export default function EmployeeHistory() {
   const { user } = useAuth();
   
-  // Default to current week: Monday to Sunday
-  const defaultStartDate = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
-  const defaultEndDate = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+  // Default to current week: Monday to Sunday in Texas (America/Chicago)
+  const nowInTexas = toZonedTime(new Date(), "America/Chicago");
+  const defaultStartDate = format(startOfWeek(nowInTexas, { weekStartsOn: 1 }), "yyyy-MM-dd", { timeZone: "America/Chicago" });
+  const defaultEndDate = format(endOfWeek(nowInTexas, { weekStartsOn: 1 }), "yyyy-MM-dd", { timeZone: "America/Chicago" });
 
   const [filters, setFilters] = useState<{
     startDate?: string;
