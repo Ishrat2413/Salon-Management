@@ -52,7 +52,7 @@ export function ServiceHistoryList({
       },
       {
         key: "createdAt",
-        header: "Created Date (CT)",
+        header: "Created Date",
         sortable: true,
         render: (val) => formatInTimeZone(new Date(val as string), "America/Chicago", "MMM d, yyyy h:mm a"),
       },

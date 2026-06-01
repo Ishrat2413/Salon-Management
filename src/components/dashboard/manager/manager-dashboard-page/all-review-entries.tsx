@@ -70,7 +70,7 @@ export default function AllReviewEntries() {
     },
     {
       key: "createdAt",
-      header: "Date (CT)",
+      header: "Date",
       width: "12%",
       sortable: true,
       render: (value) =>
@@ -78,7 +78,7 @@ export default function AllReviewEntries() {
     },
     {
       key: "time",
-      header: "Time (CT)",
+      header: "Time",
       width: "10%",
       sortable: true,
       render: (_, row) =>

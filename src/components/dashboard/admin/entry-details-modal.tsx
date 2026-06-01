@@ -34,7 +34,7 @@ export function EntryDetailsModal({ isOpen, onClose, entry }: EntryDetailsModalP
             </span>
           </div>
           <div>
-            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Created At (CT)</p>
+            <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Created At</p>
             <p className="text-sm font-medium text-gray-900">{formatInTimeZone(new Date(entry.createdAt), "America/Chicago", "MMM d, yyyy 'at' h:mm a")}</p>
           </div>
           <div>

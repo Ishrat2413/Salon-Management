@@ -58,7 +58,7 @@ export default function ManagerReviewEntries() {
     },
     {
       key: "createdAt",
-      header: "Date (CT)",
+      header: "Date",
       width: "12%",
       sortable: true,
       render: (value) =>
@@ -66,7 +66,7 @@ export default function ManagerReviewEntries() {
     },
     {
       key: "time",
-      header: "Time (CT)",
+      header: "Time",
       width: "10%",
       sortable: true,
       render: (_, row) =>
