@@ -51,15 +51,22 @@ function CommentForm({
   onSave?: (comment: string) => Promise<void> | void;
 }) {
   const [comment, setComment] = useState("");
+  const [error, setError] = useState("");
   const [prevEntryId, setPrevEntryId] = useState<string | number>(entryId);
 
   if (entryId !== prevEntryId) {
     setPrevEntryId(entryId);
     setComment("");
+    setError("");
   }
 
   async function handleSubmit() {
     const trimmedComment = comment.trim();
+    if (!trimmedComment) {
+      setError("A comment is required.");
+      return;
+    }
+    setError("");
     if (onSave) {
       await onSave(trimmedComment);
     }
@@ -80,11 +87,15 @@ function CommentForm({
         </div>
         <textarea
           value={comment}
-          onChange={(e) => setComment(e.target.value)}
+          onChange={(e) => {
+            setComment(e.target.value);
+            if (error) setError("");
+          }}
           placeholder='Enter your comment here...'
-          className='mb-4 w-full rounded-lg border border-gray-300 p-3 focus:border-pink-500 focus:outline-none'
+          className={`mb-2 w-full rounded-lg border ${error ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-pink-500'} p-3 focus:outline-none`}
           rows={5}
         />
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <div className='flex justify-end gap-3'>
           <button
             type='button'
