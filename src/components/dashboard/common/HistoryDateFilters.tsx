@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { format, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth } from "date-fns";
+import { subWeeks, startOfWeek, endOfWeek } from "date-fns";
+import { toZonedTime, format } from "date-fns-tz";
 
 interface HistoryDateFiltersProps {
   filters: {
@@ -21,36 +22,37 @@ export function HistoryDateFilters({
   children,
 }: HistoryDateFiltersProps) {
   
-  const presets = [
-    {
-      label: "This Week",
-      getRange: () => ({
-        startDate: format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd"),
-        endDate: format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd"),
-      }),
-    },
-    {
-      label: "Last Week",
-      getRange: () => {
-        const lastWeek = subWeeks(new Date(), 1);
-        return {
-          startDate: format(startOfWeek(lastWeek, { weekStartsOn: 1 }), "yyyy-MM-dd"),
-          endDate: format(endOfWeek(lastWeek, { weekStartsOn: 1 }), "yyyy-MM-dd"),
-        };
-      },
-    },
-    {
-      label: "This Month",
-      getRange: () => ({
-        startDate: format(startOfMonth(new Date()), "yyyy-MM-dd"),
-        endDate: format(endOfMonth(new Date()), "yyyy-MM-dd"),
-      }),
-    },
-  ];
+  const nowInTexas = toZonedTime(new Date(), "America/Chicago");
+  
+  const recentWeeks = Array.from({ length: 15 }).map((_, i) => {
+    const targetDate = subWeeks(nowInTexas, i);
+    const start = startOfWeek(targetDate, { weekStartsOn: 1 });
+    const end = endOfWeek(targetDate, { weekStartsOn: 1 });
 
-  const handlePresetClick = (getRange: () => { startDate: string; endDate: string }) => {
-    const range = getRange();
-    setFilters((prev: any) => ({ ...prev, ...range }));
+    // The Date object is already shifted to match Texas local time, so we just format it directly.
+    const startDate = format(start, "yyyy-MM-dd");
+    const endDate = format(end, "yyyy-MM-dd");
+    
+    let baseLabel = "";
+    if (i === 0) baseLabel = "This Week";
+    else if (i === 1) baseLabel = "Last Week";
+    else baseLabel = `${i} Weeks Ago`;
+    
+    const startLabel = format(start, "MMM d");
+    const endLabel = format(end, "MMM d");
+    const label = `${baseLabel} (${startLabel} - ${endLabel})`;
+
+    return { label, value: `${startDate}_${endDate}`, startDate, endDate };
+  });
+
+  const handleWeekChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (!val) {
+      setFilters((prev: any) => ({ ...prev, startDate: "", endDate: "" }));
+      return;
+    }
+    const [start, end] = val.split("_");
+    setFilters((prev: any) => ({ ...prev, startDate: start, endDate: end }));
   };
 
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,14 +67,8 @@ export function HistoryDateFilters({
     setFilters((prev: any) => ({ ...prev, status: e.target.value }));
   };
 
-  const clearFilters = () => {
-    setFilters((prev: any) => ({ ...prev, startDate: "", endDate: "", status: "APPROVED,PENDING" }));
-  };
-
-  const isActive = (getRange: () => { startDate: string; endDate: string }) => {
-    const range = getRange();
-    return filters.startDate === range.startDate && filters.endDate === range.endDate;
-  };
+  const selectedWeekValue = `${filters.startDate}_${filters.endDate}`;
+  const isPresetMatch = recentWeeks.some(w => w.value === selectedWeekValue);
 
   return (
     <section className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-4">
@@ -80,33 +76,31 @@ export function HistoryDateFilters({
         <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
           Filter by Date & Status
         </h3>
-        <div className="flex flex-wrap gap-2">
-          {presets.map((preset) => {
-            const active = isActive(preset.getRange);
-            return (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => handlePresetClick(preset.getRange)}
-                className={`px-4 py-2 text-xs font-medium rounded-full transition-all border ${
-                  active
-                    ? "bg-[#D13C92] text-white border-[#D13C92] shadow-md scale-105"
-                    : "bg-pink-50 text-pink-600 border-pink-100 hover:bg-pink-100"
-                }`}
-              >
-                {preset.label}
-              </button>
-            );
-          })}
-          {(filters.startDate || filters.endDate || filters.status) && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="px-4 py-2 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors border border-gray-200"
-            >
-              Reset
-            </button>
-          )}
+        <div className="flex flex-wrap gap-2 relative">
+          <select
+            value={isPresetMatch ? selectedWeekValue : ""}
+            onChange={handleWeekChange}
+            className="bg-gray-50 border border-gray-100 rounded-lg py-2 px-4 pr-8 text-sm text-gray-800 focus:ring-2 focus:ring-[#D13C92] focus:outline-none transition-all appearance-none cursor-pointer"
+          >
+            <option value="" disabled>
+              {filters.startDate || filters.endDate ? "Custom Date Range" : "Select a Week..."}
+            </option>
+            {recentWeeks.map((week) => (
+              <option key={week.value} value={week.value}>
+                {week.label}
+              </option>
+            ))}
+          </select>
+          <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
+            <svg
+              className='h-4 w-4 text-[#a0aec0]'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              viewBox='0 0 24 24'>
+              <path d='M19 9l-7 7-7-7' strokeLinecap='round' strokeLinejoin='round' />
+            </svg>
+          </div>
         </div>
       </div>
 

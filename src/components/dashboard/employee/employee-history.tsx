@@ -21,8 +21,8 @@ export default function EmployeeHistory() {
   
   // Default to current week: Monday to Sunday in Texas (America/Chicago)
   const nowInTexas = toZonedTime(new Date(), "America/Chicago");
-  const defaultStartDate = format(startOfWeek(nowInTexas, { weekStartsOn: 1 }), "yyyy-MM-dd", { timeZone: "America/Chicago" });
-  const defaultEndDate = format(endOfWeek(nowInTexas, { weekStartsOn: 1 }), "yyyy-MM-dd", { timeZone: "America/Chicago" });
+  const defaultStartDate = format(startOfWeek(nowInTexas, { weekStartsOn: 1 }), "yyyy-MM-dd");
+  const defaultEndDate = format(endOfWeek(nowInTexas, { weekStartsOn: 1 }), "yyyy-MM-dd");
 
   const [filters, setFilters] = useState<{
     startDate?: string;
