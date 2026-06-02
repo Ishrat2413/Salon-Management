@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import UniversalTable from "@/components/univarsalTable/Universaltable";
 import { ColumnDef } from "@/components/univarsalTable/UnivarsalTable.type";
 import type { SalonEntry } from "@/actions/salon-entry/salon-entry.types";
 import { useAuth } from "@/components/providers/auth-provider";
+import { EmployeeEntryDetailsModal } from "../employee/employee-entry-details-modal";
 
 interface HistoryTableProps {
   data: SalonEntry[];
@@ -17,15 +18,22 @@ export function HistoryTable({ data, isLoading }: HistoryTableProps) {
   const { user } = useAuth();
   const isAdminOrManager = user?.role === "admin" || user?.role === "manager";
   const isEmployee = user?.role === "employee";
+  const [selectedEntry, setSelectedEntry] = useState<SalonEntry | null>(null);
 
   const columns = useMemo<ColumnDef<SalonEntry>[]>(
     () => {
       const baseColumns: ColumnDef<SalonEntry>[] = [
         {
+          key: "createdAt",
+          header: "Created Date",
+          sortable: true,
+          render: (val) => formatInTimeZone(new Date(val as string), "America/Chicago", "MMM d, yyyy h:mm a"),
+        },
+        {
           key: "salonName",
           header: "Salon Name",
           sortable: true,
-        },
+        }
       ];
 
       if (!isEmployee) {
@@ -41,11 +49,6 @@ export function HistoryTable({ data, isLoading }: HistoryTableProps) {
           key: "serviceName",
           header: "Service Name",
           sortable: true,
-        },
-        {
-          key: "clientName",
-          header: "Client Name",
-          sortable: true,
         }
       );
 
@@ -56,12 +59,6 @@ export function HistoryTable({ data, isLoading }: HistoryTableProps) {
             header: "Total Price",
             sortable: true,
             render: (val) => `$${Number(val).toLocaleString()}`,
-          },
-          {
-            key: "addHair",
-            header: "Hair Price",
-            sortable: true,
-            render: (val) => `$${(Number(val) || 0).toLocaleString()}`,
           }
         );
       }
@@ -114,28 +111,26 @@ export function HistoryTable({ data, isLoading }: HistoryTableProps) {
               bg: "#fff8e6",
               color: "#b07d00",
               className: "font-medium",
-            },
-            REJECTED: {
-              label: "Rejected",
-              bg: "#fef0f0",
-              color: "#c0392b",
-              className: "font-medium",
-            },
+            }
           },
-        },
-        {
-          key: "createdAt",
-          header: "Created Date",
-          sortable: true,
-          render: (val) => formatInTimeZone(new Date(val as string), "America/Chicago", "MMM d, yyyy h:mm a"),
-        },
-        {
-          key: "approvedByName",
-          header: "Approved By",
-          sortable: true,
-          render: (val) => (val ? String(val) : "System"),
         }
       );
+
+      if (isEmployee) {
+        baseColumns.push({
+          key: "id",
+          header: "Actions",
+          sortable: false,
+          render: (_, row) => (
+            <button
+              onClick={() => setSelectedEntry(row as SalonEntry)}
+              className="text-sm font-medium text-[#D13C92] hover:underline whitespace-nowrap inline-flex items-center gap-1"
+            >
+              View Details
+            </button>
+          )
+        });
+      }
 
       return baseColumns;
     },
@@ -143,15 +138,23 @@ export function HistoryTable({ data, isLoading }: HistoryTableProps) {
   );
 
   return (
-    <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
-      <UniversalTable<SalonEntry>
-        title='Work History'
-        data={data}
-        columns={columns}
-        loading={isLoading}
-        pageSize={10}
-        emptyMessage='No history records found.'
+    <>
+      <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
+        <UniversalTable<SalonEntry>
+          title='Work History'
+          data={data}
+          columns={columns}
+          loading={isLoading}
+          pageSize={10}
+          emptyMessage='No history records found.'
+        />
+      </div>
+
+      <EmployeeEntryDetailsModal
+        isOpen={!!selectedEntry}
+        onClose={() => setSelectedEntry(null)}
+        entry={selectedEntry}
       />
-    </div>
+    </>
   );
 }
