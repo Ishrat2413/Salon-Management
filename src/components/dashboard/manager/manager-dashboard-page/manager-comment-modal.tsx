@@ -9,6 +9,7 @@ type ManagerCommentModalProps = {
   title?: string;
   submitLabel?: string;
   isSubmitting?: boolean;
+  initialComment?: string;
   onSave?: (comment: string) => Promise<void> | void;
 };
 
@@ -19,6 +20,7 @@ export function ManagerCommentModal({
   title = "Add Comment",
   submitLabel = "Submit",
   isSubmitting = false,
+  initialComment = "",
   onSave,
 }: ManagerCommentModalProps) {
   if (!open) return null;
@@ -30,6 +32,7 @@ export function ManagerCommentModal({
       title={title}
       submitLabel={submitLabel}
       isSubmitting={isSubmitting}
+      initialComment={initialComment}
       onSave={onSave}
     />
   );
@@ -41,6 +44,7 @@ function CommentForm({
   title,
   submitLabel,
   isSubmitting,
+  initialComment,
   onSave,
 }: {
   onClose: () => void;
@@ -48,15 +52,16 @@ function CommentForm({
   title: string;
   submitLabel: string;
   isSubmitting: boolean;
+  initialComment: string;
   onSave?: (comment: string) => Promise<void> | void;
 }) {
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState(initialComment);
   const [error, setError] = useState("");
   const [prevEntryId, setPrevEntryId] = useState<string | number>(entryId);
 
   if (entryId !== prevEntryId) {
     setPrevEntryId(entryId);
-    setComment("");
+    setComment(initialComment);
     setError("");
   }
 

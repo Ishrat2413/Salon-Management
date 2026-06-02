@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import {
   useSalonEntriesQuery,
   useUpdateSalonEntryStatusMutation,
+  useUpdateSalonEntryMutation,
   useDeleteSalonEntryMutation,
 } from "@/actions/salon-entry/useSalonEntry";
 import type { SalonEntry } from "@/actions/salon-entry/salon-entry.types";
@@ -127,7 +128,7 @@ export default function ManagerReviewEntries() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full bg-[#F3F3F5] border-transparent rounded-lg py-2 pl-4 pr-10 text-sm text-[#364153] appearance-none focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all cursor-pointer"
             >
-              <option value="PENDING,APPROVED,REJECTED">All Statuses</option>
+              <option value="PENDING,APPROVED,REJECTED">All Status</option>
               <option value="PENDING">Pending</option>
               <option value="APPROVED">Approved</option>
             </select>
@@ -171,6 +172,8 @@ function SalonEntryActions({
   const router = useRouter();
   const { mutateAsync: updateStatus, isPending: isUpdatingStatus } =
     useUpdateSalonEntryStatusMutation();
+  const { mutateAsync: updateEntry, isPending: isUpdatingEntry } =
+    useUpdateSalonEntryMutation();
   const { mutateAsync: deleteEntry, isPending: isDeleting } =
     useDeleteSalonEntryMutation();
 
@@ -181,7 +184,7 @@ function SalonEntryActions({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0 });
   const [moderationAction, setModerationAction] = useState<
-    "APPROVE" | "REJECT" | null
+    "APPROVE" | "REJECT" | "EDIT" | null
   >(null);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -237,6 +240,10 @@ function SalonEntryActions({
       title: "Reject Entry",
       submitLabel: "Reject",
     },
+    EDIT: {
+      title: "Reason for Edit",
+      submitLabel: "Save Reason",
+    },
   } as const;
 
   function openModerationModal(action: "APPROVE" | "REJECT") {
@@ -267,11 +274,22 @@ function SalonEntryActions({
       return;
     }
 
+    if (editMode === "edit") {
+      setModerationAction("EDIT");
+      setIsCommentModalOpen(true);
+      return;
+    }
+
     setModerationAction(null);
   }
 
   async function handleModerationSubmit(comment: string) {
     if (!moderationAction) return;
+
+    if (moderationAction === "EDIT") {
+      await updateEntry({ id: row.id, data: { statusComment: comment } });
+      return;
+    }
 
     await updateStatus({
       id: row.id,
@@ -400,7 +418,8 @@ function SalonEntryActions({
               ? moderationLabels[moderationAction].submitLabel
               : "Submit"
           }
-          isSubmitting={isUpdatingStatus}
+          isSubmitting={isUpdatingStatus || isUpdatingEntry}
+          initialComment={row.statusComment || ""}
           onSave={handleModerationSubmit}
         />
 

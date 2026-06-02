@@ -112,7 +112,7 @@ export function HistoryDateFilters({
             onChange={handleStatusChange}
             className="w-full bg-gray-50 border border-gray-100 rounded-lg py-2.5 px-4 text-sm text-gray-800 appearance-none focus:ring-2 focus:ring-[#D13C92] focus:outline-none transition-all"
           >
-            <option value="APPROVED,PENDING">All Statuses</option>
+            <option value="APPROVED,PENDING">All Status</option>
             <option value="APPROVED">Approved</option>
             <option value="PENDING">Pending</option>
           </select>
