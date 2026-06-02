@@ -25,7 +25,7 @@ export function AdminHistory() {
     salonId?: string;
     status?: string;
   }>({ 
-    status: "APPROVED",
+    status: "APPROVED,PENDING", // Show both to match employee view unless filtered
     startDate: defaultStartDate,
     endDate: defaultEndDate,
   });

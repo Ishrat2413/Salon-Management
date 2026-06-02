@@ -102,6 +102,26 @@ export function HistoryTable({ data, isLoading }: HistoryTableProps) {
           key: "status",
           header: "Status",
           sortable: true,
+          statusMap: {
+            APPROVED: {
+              label: "Approved",
+              bg: "#e8f8f0",
+              color: "#1a7a4a",
+              className: "font-medium",
+            },
+            PENDING: {
+              label: "Pending",
+              bg: "#fff8e6",
+              color: "#b07d00",
+              className: "font-medium",
+            },
+            REJECTED: {
+              label: "Rejected",
+              bg: "#fef0f0",
+              color: "#c0392b",
+              className: "font-medium",
+            },
+          },
         },
         {
           key: "createdAt",
@@ -125,12 +145,12 @@ export function HistoryTable({ data, isLoading }: HistoryTableProps) {
   return (
     <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
       <UniversalTable<SalonEntry>
-        title='Work History (Approved)'
+        title='Work History'
         data={data}
         columns={columns}
         loading={isLoading}
         pageSize={10}
-        emptyMessage='No approved history records found.'
+        emptyMessage='No history records found.'
       />
     </div>
   );

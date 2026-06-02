@@ -7,6 +7,7 @@ interface HistoryDateFiltersProps {
   filters: {
     startDate?: string;
     endDate?: string;
+    status?: string;
   };
   setFilters: React.Dispatch<
     React.SetStateAction<any>
@@ -60,8 +61,12 @@ export function HistoryDateFilters({
     setFilters((prev: any) => ({ ...prev, endDate: e.target.value }));
   };
 
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilters((prev: any) => ({ ...prev, status: e.target.value }));
+  };
+
   const clearFilters = () => {
-    setFilters((prev: any) => ({ ...prev, startDate: "", endDate: "" }));
+    setFilters((prev: any) => ({ ...prev, startDate: "", endDate: "", status: "APPROVED,PENDING" }));
   };
 
   const isActive = (getRange: () => { startDate: string; endDate: string }) => {
@@ -73,7 +78,7 @@ export function HistoryDateFilters({
     <section className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
-          Filter by Date Range
+          Filter by Date & Status
         </h3>
         <div className="flex flex-wrap gap-2">
           {presets.map((preset) => {
@@ -93,7 +98,7 @@ export function HistoryDateFilters({
               </button>
             );
           })}
-          {(filters.startDate || filters.endDate) && (
+          {(filters.startDate || filters.endDate || filters.status) && (
             <button
               type="button"
               onClick={clearFilters}
@@ -105,7 +110,19 @@ export function HistoryDateFilters({
         </div>
       </div>
 
-      <div className={`grid grid-cols-1 md:grid-cols-2 ${children ? 'lg:grid-cols-4' : ''} gap-4`}>
+      <div className={`grid grid-cols-1 md:grid-cols-3 ${children ? 'lg:grid-cols-5' : ''} gap-4`}>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-gray-500 ml-1">Status</label>
+          <select
+            value={filters.status || "APPROVED,PENDING"}
+            onChange={handleStatusChange}
+            className="w-full bg-gray-50 border border-gray-100 rounded-lg py-2.5 px-4 text-sm text-gray-800 appearance-none focus:ring-2 focus:ring-[#D13C92] focus:outline-none transition-all"
+          >
+            <option value="APPROVED,PENDING">All Statuses</option>
+            <option value="APPROVED">Approved</option>
+            <option value="PENDING">Pending</option>
+          </select>
+        </div>
         <div className="space-y-1.5">
           <label className="text-xs font-medium text-gray-500 ml-1">Start Date</label>
           <input

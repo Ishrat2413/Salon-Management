@@ -27,9 +27,11 @@ export default function EmployeeHistory() {
   const [filters, setFilters] = useState<{
     startDate?: string;
     endDate?: string;
+    status?: string;
   }>({
     startDate: defaultStartDate,
     endDate: defaultEndDate,
+    status: "APPROVED,PENDING", // Default to both
   });
   
   const [page] = useState(1);
@@ -39,8 +41,9 @@ export default function EmployeeHistory() {
     page,
     limit,
     employeeId: user?.id,
-    status: "APPROVED",
-    ...filters,
+    status: filters.status || "APPROVED,PENDING",
+    startDate: filters.startDate,
+    endDate: filters.endDate,
   });
 
   const summaryCards = useMemo(() => {
