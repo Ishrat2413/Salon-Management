@@ -237,7 +237,9 @@ export default function SalonEntryForm({
     if (!salonValue) newErrors.salon = "Salon is required";
     if (!employeeValue) newErrors.employee = "Employee is required";
     if (!serviceNameValue) newErrors.service = "Service is required";
+    if (!clientName || clientName.trim() === "") newErrors.clientName = "Client name is required";
     if (!totalPrice) newErrors.totalPrice = "Total price is required";
+    if (!notes || notes.trim() === "") newErrors.notes = "Notes are required";
 
     if (splitService) {
       const totalSplitsPrice = splits.reduce(
@@ -328,7 +330,7 @@ export default function SalonEntryForm({
             <div className='space-y-6'>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 <div className='w-full'>
-                  <label className={labelClasses}>Salon Name</label>
+                  <label className={labelClasses}>Salon Name <span className='text-red-500'>*</span></label>
                   <Select
                     value={salonValue}
                     onValueChange={(v) => {
@@ -359,7 +361,7 @@ export default function SalonEntryForm({
                 </div>
 
                 <div className='w-full'>
-                  <label className={labelClasses}>Employee name</label>
+                  <label className={labelClasses}>Employee name <span className='text-red-500'>*</span></label>
                   <Select
                     value={employeeValue}
                     onValueChange={(v) => {
@@ -414,7 +416,7 @@ export default function SalonEntryForm({
 
               <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 <div className='w-full'>
-                  <label className={labelClasses}>Service name</label>
+                  <label className={labelClasses}>Service name <span className='text-red-500'>*</span></label>
                   <Select
                     value={serviceNameValue}
                     onValueChange={(v) => {
@@ -448,13 +450,21 @@ export default function SalonEntryForm({
                 </div>
 
                 <div className='w-full'>
-                  <label className={labelClasses}>Client Name</label>
+                  <label className={labelClasses}>
+                    Client Name <span className='text-red-500'>*</span>
+                  </label>
                   <Input
                     value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
+                    onChange={(e) => {
+                      setClientName(e.target.value);
+                      setErrors((prev) => ({ ...prev, clientName: "" }));
+                    }}
                     placeholder='Enter client name'
                     className={inputClasses}
                   />
+                  {errors.clientName && (
+                    <p className={errorClasses}>{errors.clientName}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -463,7 +473,7 @@ export default function SalonEntryForm({
               <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 <div className='space-y-2'>
                   <label className={labelClasses}>
-                    Total price (Client Payment)
+                    Total price (Client Payment) <span className='text-red-500'>*</span>
                   </label>
                   <Input
                     value={totalPrice}
@@ -526,13 +536,21 @@ export default function SalonEntryForm({
             </div>
 
             <div className='space-y-2'>
-              <label className={labelClasses}>Notes (Optional)</label>
+              <label className={labelClasses}>
+                Notes <span className='text-red-500'>*</span>
+              </label>
               <Textarea
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder='Add any additional notes here...'
+                onChange={(e) => {
+                  setNotes(e.target.value);
+                  setErrors((prev) => ({ ...prev, notes: "" }));
+                }}
+                placeholder='Add notes here...'
                 className='min-h-24 rounded-xl border-gray-200 focus:ring-pink-500 focus:border-pink-500 px-3 py-2'
               />
+              {errors.notes && (
+                <p className={errorClasses}>{errors.notes}</p>
+              )}
             </div>
 
             <div className='space-y-6 pt-4'>
