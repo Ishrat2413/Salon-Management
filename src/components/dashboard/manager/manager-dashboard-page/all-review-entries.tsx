@@ -35,6 +35,7 @@ export default function AllReviewEntries() {
 
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("PENDING,APPROVED,REJECTED");
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -48,6 +49,7 @@ export default function AllReviewEntries() {
     page: 1,
     limit,
     searchTerm,
+    status: statusFilter,
   });
 
   const columns: ColumnDef<ManagerReviewEntry>[] = [
@@ -129,7 +131,29 @@ export default function AllReviewEntries() {
       <div className='flex flex-col md:flex-row items-start md:items-center justify-between gap-4'>
         <h2 className='text-3xl font-medium text-[#283E5C]'>Review Entries</h2>
         
-        <div className='flex items-center gap-4 w-full md:w-auto'>
+        <div className='flex flex-wrap items-center gap-4 w-full md:w-auto'>
+          <div className="relative w-full md:w-48">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full bg-[#F3F3F5] border-transparent rounded-lg py-2 pl-4 pr-10 text-sm text-[#364153] appearance-none focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all cursor-pointer"
+            >
+              <option value="PENDING,APPROVED,REJECTED">All Statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="APPROVED">Approved</option>
+            </select>
+            <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
+              <svg
+                className='h-4 w-4 text-[#a0aec0]'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2'
+                viewBox='0 0 24 24'>
+                <path d='M19 9l-7 7-7-7' strokeLinecap='round' strokeLinejoin='round' />
+              </svg>
+            </div>
+          </div>
+
           <div className='relative w-full md:w-72'>
             <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
               <Search className='h-4 w-4 text-[#334155]' />
