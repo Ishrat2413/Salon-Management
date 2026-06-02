@@ -54,13 +54,37 @@ export function ServiceHistoryList({
         key: "createdAt",
         header: "Created Date",
         sortable: true,
-        render: (val) => formatInTimeZone(new Date(val as string), "America/Chicago", "MMM d, yyyy h:mm a"),
+        render: (val) =>
+          formatInTimeZone(
+            new Date(val as string),
+            "America/Chicago",
+            "MMM d, yyyy h:mm a",
+          ),
       },
+      // {
+      //   key: "approvedByName",
+      //   header: "Approved By",
+      //   sortable: true,
+      //   render: (val) => (val ? String(val) : "System"),
+      // },
       {
-        key: "approvedByName",
-        header: "Approved By",
+        key: "status",
+        header: "Status",
         sortable: true,
-        render: (val) => (val ? String(val) : "System"),
+        statusMap: {
+          APPROVED: {
+            label: "Approved",
+            bg: "#e8f8f0",
+            color: "#1a7a4a",
+            className: "font-medium",
+          },
+          PENDING: {
+            label: "Pending",
+            bg: "#fff8e6",
+            color: "#b07d00",
+            className: "font-medium",
+          },
+        },
       },
       {
         key: "id",
@@ -69,12 +93,11 @@ export function ServiceHistoryList({
         render: (_, row) => (
           <button
             onClick={() => setSelectedEntry(row as SalonEntry)}
-            className="text-sm font-medium text-[#D13C92] hover:underline whitespace-nowrap inline-flex items-center gap-1"
-          >
+            className='text-sm font-medium text-[#D13C92] hover:underline whitespace-nowrap inline-flex items-center gap-1'>
             View Details
           </button>
-        )
-      }
+        ),
+      },
     ];
   }, []);
 
@@ -82,7 +105,7 @@ export function ServiceHistoryList({
     <>
       <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
         <UniversalTable<SalonEntry>
-          title='Work History (Approved)'
+          title='Work History'
           data={entries}
           columns={columns}
           loading={isLoading}
