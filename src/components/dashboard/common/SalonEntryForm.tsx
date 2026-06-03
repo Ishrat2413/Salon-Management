@@ -382,8 +382,6 @@ export default function SalonEntryForm({
       splitPercentage: mainSplitPercentage,
       splits: splitService ? formattedSplits : [],
     };
-
-    console.log("Submitting Salon Entry Payload:", JSON.stringify(values, null, 2));
     onSubmit(values);
   };
 

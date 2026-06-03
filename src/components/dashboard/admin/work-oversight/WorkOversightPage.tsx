@@ -52,7 +52,6 @@ const WorkOversightPage = () => {
     cardType: "pending" | "approved" | "corrections",
   ) => {
     // Handle card click - could filter table or navigate
-    console.log(`Card clicked: ${cardType}`);
 
     // Example: You could set filters based on card click
     // setStatusFilter(cardType);
