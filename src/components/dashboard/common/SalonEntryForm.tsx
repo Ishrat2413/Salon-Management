@@ -250,35 +250,25 @@ export default function SalonEntryForm({
     }));
   };
 
-  // Auto-redistribute splits when main amounts change
+  // Auto-update split dollar amounts when main amounts change, keeping percentages fixed
   useEffect(() => {
-    if (splitService) {
+    if (splitService && splits.length > 0) {
       const timeoutId = window.setTimeout(() => {
         setSplits((prev) => {
-          if (prev.length === 0) return prev;
+          const totalS = actualServiceAmount;
+          const totalT = Number(tipValue) || 0;
 
-          const totalSplitsPrice = prev.reduce(
-            (sum, s) => sum + (Number(s.totalPrice) || 0),
-            0,
-          );
-          const totalSplitsTips = prev.reduce(
-            (sum, s) => sum + (Number(s.tips) || 0),
-            0,
-          );
+          // Check if amounts actually changed
+          const totalSplitsPrice = prev.reduce((sum, s) => sum + (Number(s.totalPrice) || 0), 0);
+          const totalSplitsTips = prev.reduce((sum, s) => sum + (Number(s.tips) || 0), 0);
 
-          const priceMismatch =
-            Math.abs(totalSplitsPrice - actualServiceAmount) > 0.001;
-          const tipMismatch =
-            Math.abs(totalSplitsTips - (Number(tipValue) || 0)) > 0.001;
-
-          if (priceMismatch || tipMismatch) {
-            return redistributeAllSplits(
-              prev,
-              actualServiceAmount,
-              Number(tipValue) || 0,
-            );
+          if (Math.abs(totalSplitsPrice - totalS) > 0.001 || Math.abs(totalSplitsTips - totalT) > 0.001) {
+            return prev.map(split => ({
+              ...split,
+              totalPrice: ((Number(split.percentage) / 100) * totalS).toFixed(2),
+              tips: ((Number(split.percentage) / 100) * totalT).toFixed(2),
+            }));
           }
-
           return prev;
         });
       }, 0);
