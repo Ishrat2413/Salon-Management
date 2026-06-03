@@ -3,6 +3,7 @@ export interface Split {
   employeeName: string;
   totalPrice: number;
   tips: number;
+  splitPercentage: number;
 }
 
 export interface SalonEntry extends Record<string, unknown> {
@@ -29,6 +30,7 @@ export interface SalonEntry extends Record<string, unknown> {
   loggedInUserCommissionRate: number;
   commissionRate: number;
   commissionEarnings: number;
+  splitPercentage: number;
   isSplit: boolean;
   splits: Split[];
 }
@@ -40,6 +42,7 @@ export interface SalonEntriesResponse {
     page: number;
     limit: number;
     total: number;
+    approvedCount: number;
     totalPrices: number;
     totalTips: number;
     totalCommissionEarnings: number;

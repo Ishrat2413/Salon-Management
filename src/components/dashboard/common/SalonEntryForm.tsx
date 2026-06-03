@@ -31,10 +31,12 @@ export type SalonEntryFormValues = {
   addHair?: number;
   notes?: string;
   isSplit: boolean;
+  splitPercentage?: number;
   splits: Array<{
     employeeId: string;
     totalPrice: number;
     tips?: number;
+    splitPercentage?: number;
   }>;
 };
 
@@ -53,6 +55,12 @@ type SplitEntryState = {
   employeeId: string;
   totalPrice: string;
   tips: string;
+  percentage: string;
+};
+
+const calculatePercentage = (value: number, total: number) => {
+  if (total <= 0) return "0.00";
+  return ((value / total) * 100).toFixed(2);
 };
 
 const distributeAmount = (amount: number, count: number) => {
@@ -86,6 +94,10 @@ const redistributeAllSplits = (
     ...split,
     totalPrice: nextPrices[index],
     tips: nextTips[index],
+    percentage: calculatePercentage(
+      Number(nextPrices[index]),
+      nextActualAmount,
+    ),
   }));
 };
 
@@ -126,13 +138,32 @@ export default function SalonEntryForm({
   const [splitService, setSplitService] = useState<boolean>(
     initialData?.isSplit ?? false,
   );
+
+  const actualServiceAmount = useMemo(() => {
+    const total = Number(totalPrice) || 0;
+    const hair = Number(addHair) || 0;
+    return Math.max(0, total - hair);
+  }, [totalPrice, addHair]);
+
   const [splits, setSplits] = useState<SplitEntryState[]>(
-    initialData?.splits?.map((s, idx) => ({
-      id: `split-${idx}`,
-      employeeId: s.employeeId,
-      totalPrice: String(s.totalPrice),
-      tips: String(s.tips ?? 0),
-    })) ?? [],
+    initialData?.splits?.map((s, idx) => {
+      // Calculate total from splits if actualPrice is missing or 0
+      const totalFromSplits = initialData?.splits?.reduce((acc, split) => acc + (Number(split.totalPrice) || 0), 0) || 0;
+      const baseTotal = initialData.actualPrice || totalFromSplits || actualServiceAmount || 0;
+      
+      const percentage = s.splitPercentage != null ? Number(s.splitPercentage).toFixed(2) : calculatePercentage(
+        s.totalPrice,
+        baseTotal,
+      );
+      
+      return {
+        id: `split-${idx}`,
+        employeeId: s.employeeId,
+        totalPrice: String(s.totalPrice),
+        tips: String(s.tips ?? 0),
+        percentage,
+      };
+    }) ?? [],
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -141,12 +172,6 @@ export default function SalonEntryForm({
   const canEditSplitAmounts =
     user?.role === "admin" || user?.role === "manager";
   const employeeValue = isEmployee ? (user?.id ?? "") : employeeValueState;
-
-  const actualServiceAmount = useMemo(() => {
-    const total = Number(totalPrice) || 0;
-    const hair = Number(addHair) || 0;
-    return Math.max(0, total - hair);
-  }, [totalPrice, addHair]);
 
   const { data: salonsData, isLoading: isLoadingSalons } = useSalonsQuery({
     page: 1,
@@ -180,47 +205,88 @@ export default function SalonEntryForm({
   const services = servicesData?.data || [];
   const employees = usersData?.data || [];
 
-  // Auto-redistribute splits when main amounts change
+  const handleSplitChange = (
+    index: number,
+    field: "totalPrice" | "tips" | "percentage",
+    value: string,
+  ) => {
+    if (!canEditSplitAmounts) return;
+
+    setSplits((prev) => {
+      const next = [...prev];
+      const row = { ...next[index] };
+      const totalS = actualServiceAmount;
+      const totalT = Number(tipValue) || 0;
+
+      if (field === "percentage") {
+        row.percentage = value;
+        const pNum = Number(value) || 0;
+        row.totalPrice = ((pNum / 100) * totalS).toFixed(2);
+        row.tips = ((pNum / 100) * totalT).toFixed(2);
+      } else if (field === "totalPrice") {
+        row.totalPrice = value;
+        const vNum = Number(value) || 0;
+        const newP = totalS > 0 ? (vNum / totalS) * 100 : 0;
+        row.percentage = newP.toFixed(2);
+        row.tips = ((newP / 100) * totalT).toFixed(2);
+      } else if (field === "tips") {
+        row.tips = value;
+        const tNum = Number(value) || 0;
+        const newP = totalT > 0 ? (tNum / totalT) * 100 : 0;
+        row.percentage = newP.toFixed(2);
+        row.totalPrice = ((newP / 100) * totalS).toFixed(2);
+      }
+
+      next[index] = row;
+      return next;
+    });
+
+    setErrors((prev) => ({
+      ...prev,
+      [`splitPrice_${index}`]: "",
+      splitsPrice: "",
+      splitsTips: "",
+      splitsPercentage: "",
+    }));
+  };
+
+  // Auto-update split dollar amounts when main amounts change, keeping percentages fixed
   useEffect(() => {
-    if (splitService) {
+    if (splitService && splits.length > 0) {
       const timeoutId = window.setTimeout(() => {
         setSplits((prev) => {
-          if (prev.length === 0) return prev;
+          const totalS = actualServiceAmount;
+          const totalT = Number(tipValue) || 0;
 
-          const totalSplitsPrice = prev.reduce(
-            (sum, s) => sum + (Number(s.totalPrice) || 0),
-            0,
-          );
-          const totalSplitsTips = prev.reduce(
-            (sum, s) => sum + (Number(s.tips) || 0),
-            0,
-          );
+          // Check if amounts actually changed
+          const totalSplitsPrice = prev.reduce((sum, s) => sum + (Number(s.totalPrice) || 0), 0);
+          const totalSplitsTips = prev.reduce((sum, s) => sum + (Number(s.tips) || 0), 0);
 
-          const priceMismatch = Math.abs(totalSplitsPrice - actualServiceAmount) > 0.001;
-          const tipMismatch = Math.abs(totalSplitsTips - (Number(tipValue) || 0)) > 0.001;
-
-          if (priceMismatch || tipMismatch) {
-            return redistributeAllSplits(
-              prev,
-              actualServiceAmount,
-              Number(tipValue) || 0,
-            );
+          if (Math.abs(totalSplitsPrice - totalS) > 0.001 || Math.abs(totalSplitsTips - totalT) > 0.001) {
+            return prev.map(split => ({
+              ...split,
+              totalPrice: ((Number(split.percentage) / 100) * totalS).toFixed(2),
+              tips: ((Number(split.percentage) / 100) * totalT).toFixed(2),
+            }));
           }
-          
           return prev;
         });
       }, 0);
 
       return () => window.clearTimeout(timeoutId);
     }
-    // Note: 'splits' is intentionally excluded from the dependency array 
-    // so that manual edits to individual split fields don't get instantly overwritten.
   }, [actualServiceAmount, tipValue, splitService]);
 
   const handleAddBraider = () => {
     const newSplits = [
       ...splits,
-      { id: Date.now().toString(), employeeId: "", totalPrice: "", tips: "" },
+      {
+        id: Date.now().toString(),
+        employeeId: "",
+        totalPrice: "",
+        tips: "",
+        percentage: "0.00",
+      },
     ];
 
     setSplits(
@@ -237,11 +303,22 @@ export default function SalonEntryForm({
     if (!salonValue) newErrors.salon = "Salon is required";
     if (!employeeValue) newErrors.employee = "Employee is required";
     if (!serviceNameValue) newErrors.service = "Service is required";
-    if (!clientName || clientName.trim() === "") newErrors.clientName = "Client name is required";
+    if (!clientName || clientName.trim() === "")
+      newErrors.clientName = "Client name is required";
     if (!totalPrice) newErrors.totalPrice = "Total price is required";
     if (!notes || notes.trim() === "") newErrors.notes = "Notes are required";
 
     if (splitService) {
+      const totalPercentageSum = splits.reduce(
+        (sum, s) => sum + (Number(s.percentage) || 0),
+        0,
+      );
+
+      // We allow a small margin for floating point errors (e.g., 33.33 * 3 = 99.99)
+      if (Math.abs(totalPercentageSum - 100) > 0.05) {
+        newErrors.splitsPercentage = `Total split percentage must equal 100%. Current total: ${totalPercentageSum.toFixed(2)}%`;
+      }
+
       const totalSplitsPrice = splits.reduce(
         (sum, s) => sum + (Number(s.totalPrice) || 0),
         0,
@@ -251,11 +328,11 @@ export default function SalonEntryForm({
         0,
       );
 
-      if (Math.abs(totalSplitsPrice - actualServiceAmount) > 0.01) {
+      if (Math.abs(totalSplitsPrice - actualServiceAmount) > 0.1) {
         newErrors.splitsPrice = `Sum of splits ($${totalSplitsPrice.toFixed(2)}) does not match actual service amount ($${actualServiceAmount.toFixed(2)})`;
       }
 
-      if (Math.abs(totalSplitsTips - (Number(tipValue) || 0)) > 0.01) {
+      if (Math.abs(totalSplitsTips - (Number(tipValue) || 0)) > 0.1) {
         newErrors.splitsTips = `Sum of split tips ($${totalSplitsTips.toFixed(2)}) does not match total tip ($${(Number(tipValue) || 0).toFixed(2)})`;
       }
 
@@ -273,7 +350,8 @@ export default function SalonEntryForm({
     e.preventDefault();
 
     if (!validate()) {
-      toast.error("Please fix the errors in the form.");
+      const firstError = Object.values(errors).find(Boolean);
+      toast.error(firstError || "Please fix the errors in the form.");
       return;
     }
 
@@ -281,7 +359,14 @@ export default function SalonEntryForm({
       employeeId: s.employeeId,
       totalPrice: Number(s.totalPrice) || 0,
       tips: s.tips ? Number(s.tips) : undefined,
+      splitPercentage: Number(s.percentage) || 0,
     }));
+
+    // Calculate main employee split percentage (remaining from others)
+    const otherSplitsPercentage = formattedSplits
+      .filter((s) => s.employeeId !== employeeValue)
+      .reduce((sum, s) => sum + (s.splitPercentage || 0), 0);
+    const mainSplitPercentage = Math.max(0, 100 - otherSplitsPercentage);
 
     const values: SalonEntryFormValues = {
       salonId: salonValue,
@@ -294,9 +379,11 @@ export default function SalonEntryForm({
       addHair: Number(addHair) || undefined,
       notes: notes || undefined,
       isSplit: splitService,
+      splitPercentage: mainSplitPercentage,
       splits: splitService ? formattedSplits : [],
     };
 
+    console.log("Submitting Salon Entry Payload:", JSON.stringify(values, null, 2));
     onSubmit(values);
   };
 
@@ -330,9 +417,11 @@ export default function SalonEntryForm({
             <div className='space-y-6'>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 <div className='w-full'>
-                  <label className={labelClasses}>Salon Name <span className='text-red-500'>*</span></label>
+                  <label className={labelClasses}>
+                    Salon Name <span className='text-red-500'>*</span>
+                  </label>
                   <Select
-                    value={salonValue}
+                    value={salonValue || ""}
                     onValueChange={(v) => {
                       setSalonValue(v ?? "");
                       setErrors((prev) => ({ ...prev, salon: "" }));
@@ -361,9 +450,11 @@ export default function SalonEntryForm({
                 </div>
 
                 <div className='w-full'>
-                  <label className={labelClasses}>Employee name <span className='text-red-500'>*</span></label>
+                  <label className={labelClasses}>
+                    Employee name <span className='text-red-500'>*</span>
+                  </label>
                   <Select
-                    value={employeeValue}
+                    value={employeeValue || ""}
                     onValueChange={(v) => {
                       const nextEmployee = v ?? "";
                       setEmployeeValue(nextEmployee);
@@ -416,9 +507,11 @@ export default function SalonEntryForm({
 
               <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 <div className='w-full'>
-                  <label className={labelClasses}>Service name <span className='text-red-500'>*</span></label>
+                  <label className={labelClasses}>
+                    Service name <span className='text-red-500'>*</span>
+                  </label>
                   <Select
-                    value={serviceNameValue}
+                    value={serviceNameValue || ""}
                     onValueChange={(v) => {
                       setServiceNameValue(v ?? "");
                       setErrors((prev) => ({ ...prev, service: "" }));
@@ -454,7 +547,7 @@ export default function SalonEntryForm({
                     Client Name <span className='text-red-500'>*</span>
                   </label>
                   <Input
-                    value={clientName}
+                    value={clientName || ""}
                     onChange={(e) => {
                       setClientName(e.target.value);
                       setErrors((prev) => ({ ...prev, clientName: "" }));
@@ -473,10 +566,11 @@ export default function SalonEntryForm({
               <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 <div className='space-y-2'>
                   <label className={labelClasses}>
-                    Total price (Client Payment) <span className='text-red-500'>*</span>
+                    Total price (Client Payment){" "}
+                    <span className='text-red-500'>*</span>
                   </label>
                   <Input
-                    value={totalPrice}
+                    value={totalPrice || ""}
                     onChange={(e) => {
                       setTotalPrice(e.target.value);
                       setErrors((prev) => ({ ...prev, totalPrice: "" }));
@@ -497,7 +591,7 @@ export default function SalonEntryForm({
                     Hair
                   </label>
                   <Input
-                    value={addHair}
+                    value={addHair || ""}
                     onChange={(e) => {
                       setAddHair(e.target.value);
                     }}
@@ -512,7 +606,7 @@ export default function SalonEntryForm({
                 <div className='space-y-2'>
                   <label className={labelClasses}>Tip (Optional)</label>
                   <Input
-                    value={tipValue}
+                    value={tipValue || ""}
                     onChange={(e) => {
                       setTipValue(e.target.value);
                     }}
@@ -540,7 +634,7 @@ export default function SalonEntryForm({
                 Notes <span className='text-red-500'>*</span>
               </label>
               <Textarea
-                value={notes}
+                value={notes || ""}
                 onChange={(e) => {
                   setNotes(e.target.value);
                   setErrors((prev) => ({ ...prev, notes: "" }));
@@ -548,9 +642,7 @@ export default function SalonEntryForm({
                 placeholder='Add notes here...'
                 className='min-h-24 rounded-xl border-gray-200 focus:ring-pink-500 focus:border-pink-500 px-3 py-2'
               />
-              {errors.notes && (
-                <p className={errorClasses}>{errors.notes}</p>
-              )}
+              {errors.notes && <p className={errorClasses}>{errors.notes}</p>}
             </div>
 
             <div className='space-y-6 pt-4'>
@@ -576,6 +668,7 @@ export default function SalonEntryForm({
                           employeeId: employeeValue,
                           totalPrice: String(actualServiceAmount),
                           tips: tipValue || "0",
+                          percentage: "100.00",
                         },
                       ]);
                     }
@@ -593,7 +686,7 @@ export default function SalonEntryForm({
                     <table className='w-full'>
                       <thead className='bg-gray-50/50'>
                         <tr>
-                          <th className='px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500'>
+                          <th className='px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-72'>
                             Braider Name
                           </th>
                           <th className='px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-40'>
@@ -601,6 +694,9 @@ export default function SalonEntryForm({
                           </th>
                           <th className='px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-40'>
                             Tip $
+                          </th>
+                          <th className='px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-40'>
+                            Percentage %
                           </th>
                           <th className='px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500 w-20'>
                             Action
@@ -614,7 +710,7 @@ export default function SalonEntryForm({
                             className='hover:bg-gray-50/30 transition-colors'>
                             <td className='px-6 py-4'>
                               <Select
-                                value={split.employeeId}
+                                value={split.employeeId || ""}
                                 disabled={isAddMode && index === 0}
                                 onValueChange={(val) => {
                                   if (isAddMode && index === 0) {
@@ -659,21 +755,15 @@ export default function SalonEntryForm({
                             </td>
                             <td className='px-6 py-4'>
                               <Input
-                                value={split.totalPrice}
+                                value={split.totalPrice || ""}
                                 disabled={!canEditSplitAmounts}
-                                onChange={(e) => {
-                                  if (!canEditSplitAmounts) {
-                                    return;
-                                  }
-
-                                  const nextSplits = [...splits];
-                                  nextSplits[index].totalPrice = e.target.value;
-                                  setSplits(nextSplits);
-                                  setErrors((prev) => ({
-                                    ...prev,
-                                    [`splitPrice_${index}`]: "",
-                                  }));
-                                }}
+                                onChange={(e) =>
+                                  handleSplitChange(
+                                    index,
+                                    "totalPrice",
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder='0.00'
                                 type='number'
                                 step='any'
@@ -688,27 +778,54 @@ export default function SalonEntryForm({
                             </td>
                             <td className='px-6 py-4'>
                               <Input
-                                value={split.tips}
+                                value={split.tips || ""}
                                 disabled={!canEditSplitAmounts}
-                                onChange={(e) => {
-                                  if (!canEditSplitAmounts) {
-                                    return;
-                                  }
-
-                                  const nextSplits = [...splits];
-                                  nextSplits[index].tips = e.target.value;
-                                  setSplits(nextSplits);
-                                  setErrors((prev) => ({
-                                    ...prev,
-                                    splitsTips: "",
-                                  }));
-                                }}
+                                onChange={(e) =>
+                                  handleSplitChange(
+                                    index,
+                                    "tips",
+                                    e.target.value,
+                                  )
+                                }
                                 placeholder='0.00'
                                 type='number'
                                 step='any'
                                 min='0'
                                 className={inputClasses + " bg-white"}
                               />
+                            </td>
+                            <td className='px-6 py-4'>
+                              {canEditSplitAmounts ? (
+                                <div className='relative'>
+                                  <Input
+                                    value={split.percentage || ""}
+                                    onChange={(e) =>
+                                      handleSplitChange(
+                                        index,
+                                        "percentage",
+                                        e.target.value,
+                                      )
+                                    }
+                                    placeholder='0.00'
+                                    type='number'
+                                    step='any'
+                                    min='0'
+                                    max='100'
+                                    className={inputClasses + " bg-white pr-8"}
+                                  />
+                                  <span className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm'>
+                                    %
+                                  </span>
+                                </div>
+                              ) : (
+                                <div
+                                  className={
+                                    inputClasses +
+                                    " bg-gray-50 flex items-center px-3 text-gray-500 font-medium"
+                                  }>
+                                  {split.percentage || "0.00"}%
+                                </div>
+                              )}
                             </td>
                             <td className='px-6 py-4 text-right'>
                               <Button
@@ -733,6 +850,7 @@ export default function SalonEntryForm({
                                     delete nextErrors[`splitPrice_${index}`];
                                     delete nextErrors.splitsPrice;
                                     delete nextErrors.splitsTips;
+                                    delete nextErrors.splitsPercentage;
                                     return nextErrors;
                                   });
                                 }}
@@ -761,6 +879,9 @@ export default function SalonEntryForm({
                       <span className='text-xl mr-2'>+</span>
                       Add Braider to Split
                     </Button>
+                    {errors.splitsPercentage && (
+                      <p className={errorClasses}>{errors.splitsPercentage}</p>
+                    )}
                     {errors.splitsPrice && (
                       <p className={errorClasses}>{errors.splitsPrice}</p>
                     )}
