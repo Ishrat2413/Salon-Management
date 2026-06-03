@@ -74,16 +74,33 @@ export const useUpdateSalonEntryMutation = () => {
       apiClient
         .patch<{ data: SalonEntry }>(`/salon-entries/${id}`, data)
         .then((res) => res.data.data),
-    onSuccess: (updatedEntry, variables) => {
+    onSuccess: async (updatedEntry, variables) => {
+      await queryClient.cancelQueries({ queryKey: ["salon-entries"] });
+
       queryClient.setQueriesData<SalonEntriesResponse>(
         { queryKey: ["salon-entries"] },
         (current) => replaceEntryInCache(current, updatedEntry),
       );
       queryClient.setQueryData(["salon-entry", variables.id], updatedEntry);
-      queryClient.invalidateQueries({ queryKey: ["salon-entries"] });
-      queryClient.invalidateQueries({
-        queryKey: ["salon-entry", variables.id],
-      });
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["salon-entries"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["salon-entry", variables.id],
+        }),
+      ]);
+
+      await Promise.all([
+        queryClient.refetchQueries({
+          queryKey: ["salon-entries"],
+          type: "active",
+        }),
+        queryClient.refetchQueries({
+          queryKey: ["salon-entry", variables.id],
+          type: "active",
+        }),
+      ]);
+
       toast.success("Entry updated successfully.");
       router.push("/manager-review-entries");
     },
