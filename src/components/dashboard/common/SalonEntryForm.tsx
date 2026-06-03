@@ -146,16 +146,24 @@ export default function SalonEntryForm({
   }, [totalPrice, addHair]);
 
   const [splits, setSplits] = useState<SplitEntryState[]>(
-    initialData?.splits?.map((s, idx) => ({
-      id: `split-${idx}`,
-      employeeId: s.employeeId,
-      totalPrice: String(s.totalPrice),
-      tips: String(s.tips ?? 0),
-      percentage: s.splitPercentage != null ? Number(s.splitPercentage).toFixed(2) : calculatePercentage(
+    initialData?.splits?.map((s, idx) => {
+      // Calculate total from splits if actualPrice is missing or 0
+      const totalFromSplits = initialData?.splits?.reduce((acc, split) => acc + (Number(split.totalPrice) || 0), 0) || 0;
+      const baseTotal = initialData.actualPrice || totalFromSplits || actualServiceAmount || 0;
+      
+      const percentage = s.splitPercentage != null ? Number(s.splitPercentage).toFixed(2) : calculatePercentage(
         s.totalPrice,
-        initialData.actualPrice || 0,
-      ),
-    })) ?? [],
+        baseTotal,
+      );
+      
+      return {
+        id: `split-${idx}`,
+        employeeId: s.employeeId,
+        totalPrice: String(s.totalPrice),
+        tips: String(s.tips ?? 0),
+        percentage,
+      };
+    }) ?? [],
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
