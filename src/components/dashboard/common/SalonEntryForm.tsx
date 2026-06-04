@@ -196,8 +196,15 @@ export default function SalonEntryForm({
     limit: 500,
     searchTerm: "",
     role: "EMPLOYEE,MANAGER",
+    status: "ACTIVE",
     enabled: true,
   });
+
+  useEffect(() => {
+    if (usersData?.data) {
+      console.log("DEBUG: Fetched users for SalonEntryForm:", usersData.data.map((u: any) => ({ name: u.fullName, status: u.status, role: u.role })));
+    }
+  }, [usersData]);
 
   const loadingEmployees = isLoadingUsers || isFetchingUsers;
 
