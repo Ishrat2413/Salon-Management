@@ -113,7 +113,6 @@ export function ServiceEntriesTable({ data = serviceData }: { data?: ServiceEntr
   const handleSave = (updatedEntry: ServiceEntry) => {
     // In a real application, you would perform an API call here
     // or update the parent state. For now, we simulate the save.
-    console.log("Saving service entry:", updatedEntry);
   };
 
   const serviceAction: ActionDef<ServiceEntry>[] = [

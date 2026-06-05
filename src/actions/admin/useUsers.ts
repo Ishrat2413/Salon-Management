@@ -8,6 +8,7 @@ export const useUsersQuery = (params: {
   searchTerm: string;
   salonId?: string;
   role?: string;
+  status?: string;
   enabled?: boolean;
 }) => {
   return useQuery({
@@ -18,6 +19,7 @@ export const useUsersQuery = (params: {
       params.searchTerm,
       params.salonId,
       params.role,
+      params.status,
     ],
     queryFn: () =>
       userService.getUsers({
@@ -26,6 +28,7 @@ export const useUsersQuery = (params: {
         searchTerm: params.searchTerm,
         salonId: params.salonId,
         role: params.role as any,
+        status: params.status,
       }),
     enabled: params.enabled !== undefined ? params.enabled : true,
   });

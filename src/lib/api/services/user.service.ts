@@ -13,6 +13,7 @@ export const userService = {
     searchTerm?: string;
     salonId?: string;
     role?: UserRole;
+    status?: string;
   }) => {
     const response = await apiClient.get("/users", { params });
     return response.data;

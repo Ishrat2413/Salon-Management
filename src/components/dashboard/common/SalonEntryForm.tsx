@@ -196,8 +196,15 @@ export default function SalonEntryForm({
     limit: 500,
     searchTerm: "",
     role: "EMPLOYEE,MANAGER",
+    status: "ACTIVE",
     enabled: true,
   });
+
+  useEffect(() => {
+    if (usersData?.data) {
+      console.log("DEBUG: Fetched users for SalonEntryForm:", usersData.data.map((u: any) => ({ name: u.fullName, status: u.status, role: u.role })));
+    }
+  }, [usersData]);
 
   const loadingEmployees = isLoadingUsers || isFetchingUsers;
 
@@ -382,8 +389,6 @@ export default function SalonEntryForm({
       splitPercentage: mainSplitPercentage,
       splits: splitService ? formattedSplits : [],
     };
-
-    console.log("Submitting Salon Entry Payload:", JSON.stringify(values, null, 2));
     onSubmit(values);
   };
 
@@ -682,23 +687,23 @@ export default function SalonEntryForm({
 
               {splitService && (
                 <div className='space-y-6 animate-in fade-in slide-in-from-top-4 duration-300'>
-                  <div className='overflow-hidden rounded-2xl border border-gray-100 bg-white'>
-                    <table className='w-full'>
+                  <div className='overflow-x-auto -mx-6 px-6'>
+                    <table className='w-full min-w-150'>
                       <thead className='bg-gray-50/50'>
                         <tr>
-                          <th className='px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-72'>
+                          <th className='px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-1/2'>
                             Braider Name
                           </th>
-                          <th className='px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-40'>
+                          <th className='px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-1/6'>
                             Service $
                           </th>
-                          <th className='px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-40'>
+                          <th className='px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-1/6'>
                             Tip $
                           </th>
-                          <th className='px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-40'>
+                          <th className='px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500 w-1/6'>
                             Percentage %
                           </th>
-                          <th className='px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500 w-20'>
+                          <th className='px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-500 w-16'>
                             Action
                           </th>
                         </tr>
@@ -708,7 +713,7 @@ export default function SalonEntryForm({
                           <tr
                             key={split.id}
                             className='hover:bg-gray-50/30 transition-colors'>
-                            <td className='px-6 py-4'>
+                            <td className='px-4 py-3'>
                               <Select
                                 value={split.employeeId || ""}
                                 disabled={isAddMode && index === 0}
@@ -727,9 +732,9 @@ export default function SalonEntryForm({
                                 }}>
                                 <SelectTrigger
                                   className={
-                                    inputClasses + " w-full bg-white px-3"
+                                    "h-10 w-full rounded-md border-gray-200 bg-white px-2 text-sm"
                                   }>
-                                  <SelectValue placeholder='Select Employee'>
+                                  <SelectValue placeholder='Select'>
                                     {
                                       employees.find(
                                         (e: any) => e.id === split.employeeId,
@@ -753,7 +758,7 @@ export default function SalonEntryForm({
                                 </p>
                               )}
                             </td>
-                            <td className='px-6 py-4'>
+                            <td className='px-4 py-3'>
                               <Input
                                 value={split.totalPrice || ""}
                                 disabled={!canEditSplitAmounts}
@@ -768,15 +773,10 @@ export default function SalonEntryForm({
                                 type='number'
                                 step='any'
                                 min='0'
-                                className={inputClasses + " bg-white"}
+                                className="h-10 w-full rounded-md border-gray-200 bg-white px-2 text-sm"
                               />
-                              {errors[`splitPrice_${index}`] && (
-                                <p className={errorClasses}>
-                                  {errors[`splitPrice_${index}`]}
-                                </p>
-                              )}
                             </td>
-                            <td className='px-6 py-4'>
+                            <td className='px-4 py-3'>
                               <Input
                                 value={split.tips || ""}
                                 disabled={!canEditSplitAmounts}
@@ -791,10 +791,10 @@ export default function SalonEntryForm({
                                 type='number'
                                 step='any'
                                 min='0'
-                                className={inputClasses + " bg-white"}
+                                className="h-10 w-full rounded-md border-gray-200 bg-white px-2 text-sm"
                               />
                             </td>
-                            <td className='px-6 py-4'>
+                            <td className='px-4 py-3'>
                               {canEditSplitAmounts ? (
                                 <div className='relative'>
                                   <Input
@@ -811,23 +811,22 @@ export default function SalonEntryForm({
                                     step='any'
                                     min='0'
                                     max='100'
-                                    className={inputClasses + " bg-white pr-8"}
+                                    className="h-10 w-full rounded-md border-gray-200 bg-white px-2 text-sm pr-6"
                                   />
-                                  <span className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm'>
+                                  <span className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs'>
                                     %
                                   </span>
                                 </div>
                               ) : (
                                 <div
                                   className={
-                                    inputClasses +
-                                    " bg-gray-50 flex items-center px-3 text-gray-500 font-medium"
+                                    "h-10 w-full rounded-md border-gray-200 bg-gray-50 flex items-center px-2 text-gray-500 text-sm"
                                   }>
                                   {split.percentage || "0.00"}%
                                 </div>
                               )}
                             </td>
-                            <td className='px-6 py-4 text-right'>
+                            <td className='px-4 py-3 text-right'>
                               <Button
                                 type='button'
                                 variant='ghost'
@@ -854,21 +853,22 @@ export default function SalonEntryForm({
                                     return nextErrors;
                                   });
                                 }}
-                                className='h-10 w-10 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors'>
-                                <Trash2 className='h-5 w-5' />
+                                className='h-8 w-8 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors'>
+                                <Trash2 className='h-4 w-4' />
                               </Button>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                    {splits.length === 0 && (
-                      <div className='py-12 text-center text-gray-400 bg-white'>
-                        No braiders added. Use the button below to start
-                        splitting.
-                      </div>
-                    )}
                   </div>
+                  
+                  {splits.length === 0 && (
+                    <div className='py-12 text-center text-gray-400 bg-white'>
+                      No braiders added. Use the button below to start
+                      splitting.
+                    </div>
+                  )}
 
                   <div className='flex flex-col gap-2'>
                     <Button

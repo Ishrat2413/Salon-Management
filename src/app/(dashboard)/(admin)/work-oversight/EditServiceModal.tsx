@@ -330,7 +330,6 @@ export default function EditServiceModalDemo() {
         isOpen={open}
         onClose={() => setOpen(false)}
         onSave={(data) => {
-          console.log("Saved:", data);
           setOpen(false);
         }}
       />
