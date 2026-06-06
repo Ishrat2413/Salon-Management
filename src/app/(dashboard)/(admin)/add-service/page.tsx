@@ -47,16 +47,8 @@ const AddServiceRootPage = () => {
       {/* Tab Content */}
       <div className="max-w-7xl mx-auto">
         {activeTab === "service" && <ServicePage />}
-        {activeTab === "size" && (
-          <div className="p-4 md:p-8">
-            <SizePage />
-          </div>
-        )}
-        {activeTab === "length" && (
-          <div className="p-4 md:p-8">
-            <LengthPage />
-          </div>
-        )}
+        {activeTab === "size" && <SizePage />}
+        {activeTab === "length" && <LengthPage />}
       </div>
     </div>
   );
