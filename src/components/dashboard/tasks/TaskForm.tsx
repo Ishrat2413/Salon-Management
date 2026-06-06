@@ -30,7 +30,6 @@ export function TaskForm({ isOpen, onClose }: TaskFormProps) {
   const { data: usersData, isLoading: isLoadingUsers } = useUsersQuery({
     page: 1,
     limit: 500,
-    status: "ACTIVE",
     role: "EMPLOYEE",
     searchTerm: "",
   });
