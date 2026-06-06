@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { Flag, FilePen, Trash2, MoreVertical } from "lucide-react";
 import { createPortal } from "react-dom";
 import {
@@ -65,7 +66,7 @@ export default function ManagerReviewEntries() {
       width: "12%",
       sortable: true,
       render: (value) =>
-        value ? format(new Date(value as string), "yyyy-MM-dd") : "-",
+        value ? formatInTimeZone(new Date(value as string), "America/Chicago", "yyyy-MM-dd") : "-",
     },
     {
       key: "time",
@@ -74,7 +75,7 @@ export default function ManagerReviewEntries() {
       sortable: true,
       render: (_, row) =>
         row.createdAt
-          ? format(new Date(row.createdAt as string), "hh:mm a")
+          ? formatInTimeZone(new Date(row.createdAt as string), "America/Chicago", "hh:mm a")
           : "-",
     },
     {
