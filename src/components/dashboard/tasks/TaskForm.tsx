@@ -34,7 +34,7 @@ export function TaskForm({ isOpen, onClose }: TaskFormProps) {
     searchTerm: "",
   });
 
-  const employees = usersData?.data || [];
+  const employees = useMemo(() => usersData?.data || [], [usersData]);
 
   const filteredEmployees = useMemo(() => {
     if (!searchTerm) return employees;
@@ -106,7 +106,7 @@ export function TaskForm({ isOpen, onClose }: TaskFormProps) {
               setDescription(e.target.value);
               setErrors(prev => ({ ...prev, description: "" }));
             }}
-            className="min-h-[120px] rounded-lg border-gray-200 focus:ring-pink-500 focus:border-pink-500 p-3"
+            className="min-h-30 rounded-lg border-gray-200 focus:ring-pink-500 focus:border-pink-500 p-3"
           />
           {errors.description && (
             <p className={errorClasses}>{errors.description}</p>
@@ -136,7 +136,7 @@ export function TaskForm({ isOpen, onClose }: TaskFormProps) {
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
-              <div className="max-h-[200px] overflow-y-auto">
+              <div className="max-h-50 overflow-y-auto">
                 {filteredEmployees.length === 0 ? (
                   <div className='p-2 text-sm text-center text-gray-500'>
                     No employees found

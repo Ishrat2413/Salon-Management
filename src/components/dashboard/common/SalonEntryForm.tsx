@@ -2,6 +2,8 @@
 
 import { useSalonsQuery } from "@/actions/admin/useSalons";
 import { useServicesQuery } from "@/actions/admin/useServices";
+import { useSizesQuery } from "@/actions/admin/useSizes";
+import { useLengthsQuery } from "@/actions/admin/useLengths";
 import { useUsersQuery } from "@/actions/admin/useUsers";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -25,6 +27,8 @@ export type SalonEntryFormValues = {
   salonId?: string;
   employeeId?: string;
   serviceId?: string;
+  sizeId?: string;
+  lengthId?: string;
   clientName?: string;
   totalPrice: number;
   actualPrice: number;
@@ -121,15 +125,19 @@ export default function SalonEntryForm({
   const [entryTime, setEntryTime] = useState<string>("");
 
   useEffect(() => {
-    if (initialData?.createdAt) {
-      const dateObj = new Date(initialData.createdAt);
-      setEntryDate(formatInTimeZone(dateObj, "America/Chicago", "yyyy-MM-dd"));
-      setEntryTime(formatInTimeZone(dateObj, "America/Chicago", "HH:mm"));
-    } else {
-      const now = new Date();
-      setEntryDate(formatInTimeZone(now, "America/Chicago", "yyyy-MM-dd"));
-      setEntryTime(formatInTimeZone(now, "America/Chicago", "HH:mm"));
-    }
+    const timeoutId = window.setTimeout(() => {
+      if (initialData?.createdAt) {
+        const dateObj = new Date(initialData.createdAt);
+        setEntryDate(formatInTimeZone(dateObj, "America/Chicago", "yyyy-MM-dd"));
+        setEntryTime(formatInTimeZone(dateObj, "America/Chicago", "HH:mm"));
+      } else {
+        const now = new Date();
+        setEntryDate(formatInTimeZone(now, "America/Chicago", "yyyy-MM-dd"));
+        setEntryTime(formatInTimeZone(now, "America/Chicago", "HH:mm"));
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [initialData?.createdAt]);
 
   const [employeeValueState, setEmployeeValue] = useState<string>(
@@ -140,6 +148,12 @@ export default function SalonEntryForm({
   );
   const [serviceNameValue, setServiceNameValue] = useState<string>(
     initialData?.serviceId ?? "",
+  );
+  const [sizeValue, setSizeValue] = useState<string>(
+    initialData?.sizeId ?? "",
+  );
+  const [lengthValue, setLengthValue] = useState<string>(
+    initialData?.lengthId ?? "",
   );
   const [salonValue, setSalonValue] = useState<string>(
     initialData?.salonId ?? "",
@@ -211,6 +225,22 @@ export default function SalonEntryForm({
     },
   );
 
+  const { data: sizesData, isLoading: isLoadingSizes } = useSizesQuery(
+    {
+      page: 1,
+      limit: 100,
+      searchTerm: "",
+    },
+  );
+
+  const { data: lengthsData, isLoading: isLoadingLengths } = useLengthsQuery(
+    {
+      page: 1,
+      limit: 100,
+      searchTerm: "",
+    },
+  );
+
   const {
     data: usersData,
     isLoading: isLoadingUsers,
@@ -241,6 +271,8 @@ export default function SalonEntryForm({
 
   const salons = salonsData?.data || [];
   const services = servicesData?.data || [];
+  const sizes = sizesData?.data || [];
+  const lengths = lengthsData?.data || [];
   const employees = usersData?.data || [];
 
   const handleSplitChange = (
@@ -324,7 +356,7 @@ export default function SalonEntryForm({
 
       return () => window.clearTimeout(timeoutId);
     }
-  }, [actualServiceAmount, tipValue, splitService]);
+  }, [actualServiceAmount, tipValue, splitService, splits.length]);
 
   const handleAddBraider = () => {
     const newSplits = [
@@ -433,6 +465,8 @@ export default function SalonEntryForm({
       salonId: salonValue,
       employeeId: employeeValue,
       serviceId: serviceNameValue,
+      sizeId: sizeValue || undefined,
+      lengthId: lengthValue || undefined,
       clientName: clientName || undefined,
       totalPrice: Number(totalPrice),
       actualPrice: actualServiceAmount,
@@ -456,12 +490,12 @@ export default function SalonEntryForm({
 
   return (
     <div
-      className={isModalVariant ? "w-full" : "min-h-screen p-4 bg-gray-50/30"}>
+      className={isModalVariant ? "w-full" : "min-h-screen p-2 md:p-4 bg-gray-50/30"}>
       <Card
         className={
           isModalVariant
             ? "mx-auto w-full max-w-5xl rounded-3xl border-0 shadow-xl shadow-gray-200/50 bg-white"
-            : "mx-auto p-8 rounded-3xl border-0 shadow-xl shadow-gray-200/50 bg-white"
+            : "mx-auto p-3 md:p-8 rounded-3xl border-0 shadow-xl shadow-gray-200/50 bg-white"
         }>
         <CardHeader className='pb-2'>
           <CardTitle className='text-3xl font-bold text-gray-900'>
@@ -645,6 +679,58 @@ export default function SalonEntryForm({
                   )}
                 </div>
 
+                <div className='w-full grid grid-cols-2 gap-4'>
+                  <div className='w-full'>
+                    <label className={labelClasses}>Size</label>
+                    <Select
+                      value={sizeValue || ""}
+                      onValueChange={(v) => setSizeValue(v === "none" ? "" : (v || ""))}>
+                      <SelectTrigger className={inputClasses + " w-full px-3"}>
+                        <SelectValue
+                          placeholder={
+                            isLoadingSizes ? "Loading..." : "Select size"
+                          }>
+                          {sizes.find((s: any) => s.id === sizeValue)?.name}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none" className="text-gray-400 italic">None</SelectItem>
+                        {sizes.map((size: any) => (
+                          <SelectItem key={size.id} value={size.id}>
+                            {size.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className='w-full'>
+                    <label className={labelClasses}>Length</label>
+                    <Select
+                      value={lengthValue || ""}
+                      onValueChange={(v) => setLengthValue(v === "none" ? "" : (v || ""))}>
+                      <SelectTrigger className={inputClasses + " w-full px-3"}>
+                        <SelectValue
+                          placeholder={
+                            isLoadingLengths ? "Loading..." : "Select length"
+                          }>
+                          {lengths.find((l: any) => l.id === lengthValue)?.name}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none" className="text-gray-400 italic">None</SelectItem>
+                        {lengths.map((length: any) => (
+                          <SelectItem key={length.id} value={length.id}>
+                            {length.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 <div className='w-full'>
                   <label className={labelClasses}>
                     Client Name <span className='text-red-500'>*</span>
@@ -662,11 +748,6 @@ export default function SalonEntryForm({
                     <p className={errorClasses}>{errors.clientName}</p>
                   )}
                 </div>
-              </div>
-            </div>
-
-            <div className='space-y-6'>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 <div className='space-y-2'>
                   <label className={labelClasses}>
                     Total price (Client Payment){" "}
@@ -688,7 +769,11 @@ export default function SalonEntryForm({
                     <p className={errorClasses}>{errors.totalPrice}</p>
                   )}
                 </div>
+              </div>
+            </div>
 
+            <div className='space-y-6'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 <div className='space-y-2'>
                   <label className={labelClasses + " text-pink-600"}>
                     Hair
