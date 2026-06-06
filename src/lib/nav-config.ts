@@ -1,6 +1,7 @@
 import {
   BarChart3,
   Briefcase,
+  CheckSquare,
   FileText,
   History,
   House,
@@ -24,16 +25,19 @@ export const NAV_CONFIG: Record<UserRole, SidebarNavItem[]> = {
     { title: "Dashboard", href: "/", icon: LayoutDashboard },
     { title: "Add Entry", href: "/add-entry", icon: PlusCircle },
     { title: "History", href: "/history", icon: History },
+    { title: "Tasks", href: "/tasks", icon: CheckSquare },
     { title: "Profile", href: "/profile", icon: User },
   ],
   manager: [
     { title: "Dashboard", href: "/", icon: LayoutDashboard },
+
     { title: "Add Entry", href: "/add-entry", icon: PlusCircle },
     {
       title: "Review Entries",
       href: "/manager-review-entries",
       icon: FileText,
     },
+    { title: "Tasks", href: "/tasks", icon: CheckSquare },
     { title: "History", href: "/history", icon: History },
     { title: "Profile", href: "/profile", icon: User },
   ],
@@ -48,6 +52,7 @@ export const NAV_CONFIG: Record<UserRole, SidebarNavItem[]> = {
     { title: "Add Service", href: "/add-service", icon: Plus },
     { title: "History", href: "/history", icon: History },
     { title: "Manage Users", href: "/manage-users", icon: House },
+    { title: "Task Management", href: "/tasks", icon: CheckSquare },
     { title: "Salon Management", href: "/salon-management", icon: Briefcase },
     { title: "Payroll", href: "/payroll", icon: Wallet },
     { title: "Reports", href: "/reports", icon: BarChart3 },
