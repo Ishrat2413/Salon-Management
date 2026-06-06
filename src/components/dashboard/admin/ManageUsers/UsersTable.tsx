@@ -423,8 +423,14 @@ export function UsersTable({ data }: UsersTableProps) {
 
   const handleApproveConfirm = async () => {
     if (!userToApprove) return;
+
+    if (!commissionRate || commissionRate.trim() === "") {
+      toast.error("Commission rate is required before approving this user.");
+      return;
+    }
+
     try {
-      const rate = commissionRate ? Number(commissionRate) : undefined;
+      const rate = Number(commissionRate);
       await updateStatus({
         userId: String(userToApprove.userId),
         status: userToApprove.newStatus,
@@ -604,11 +610,11 @@ export function UsersTable({ data }: UsersTableProps) {
         title='Approve User'>
         <div className='space-y-4'>
           <p className='text-gray-600'>
-            Set a commission rate for this user (Optional).
+            Set a commission rate for this user.
           </p>
           <div className='space-y-2'>
             <label className='text-sm font-semibold text-gray-700'>
-              Commission Rate (%)
+              Commission Rate (%) <span className="text-red-500">*</span>
             </label>
             <Input
               type='number'
@@ -618,6 +624,7 @@ export function UsersTable({ data }: UsersTableProps) {
               placeholder='e.g. 60'
               min='0'
               max='100'
+              required
             />
           </div>
           <div className='flex justify-end gap-3 pt-4 border-t border-gray-100'>
