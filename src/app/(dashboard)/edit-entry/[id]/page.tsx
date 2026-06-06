@@ -21,6 +21,8 @@ export default function EditEntryPage() {
     employeeId: entry.employeeId,
     salonId: entry.salonId,
     serviceId: entry.serviceId,
+    sizeId: entry.sizeId || "",
+    lengthId: entry.lengthId || "",
     clientName: entry.clientName || "",
     totalPrice: entry.totalPrice,
     tips: entry.tips,

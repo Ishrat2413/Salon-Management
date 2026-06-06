@@ -30,6 +30,8 @@ export function ManagerEditModal({
     employeeId: row.employeeId,
     salonId: row.salonId,
     serviceId: row.serviceId,
+    sizeId: row.sizeId || "",
+    lengthId: row.lengthId || "",
     clientName: row.clientName || "",
     totalPrice: row.totalPrice,
     tips: row.tips ?? undefined,

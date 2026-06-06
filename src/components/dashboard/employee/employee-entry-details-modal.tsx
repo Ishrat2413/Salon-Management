@@ -63,6 +63,14 @@ export function EmployeeEntryDetailsModal({ isOpen, onClose, entry }: EmployeeEn
                 <p className="text-xs text-gray-500 mb-1">Service</p>
                 <p className="text-sm font-medium text-gray-900">{entry.serviceName}</p>
               </div>
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Size</p>
+                <p className="text-sm font-medium text-gray-900">{entry.sizeName || "None"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Length</p>
+                <p className="text-sm font-medium text-gray-900">{entry.lengthName || "None"}</p>
+              </div>
               <div className="col-span-2">
                 <p className="text-xs text-gray-500 mb-1">Client Name</p>
                 <p className="text-sm font-medium text-gray-900">{entry.clientName || "Walk-in"}</p>
