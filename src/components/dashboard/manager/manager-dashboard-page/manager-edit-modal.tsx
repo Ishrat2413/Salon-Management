@@ -36,6 +36,7 @@ export function ManagerEditModal({
     addHair: row.addHair ?? undefined,
     notes: row.notes || "",
     isSplit: row.isSplit,
+    createdAt: row.createdAt,
     splits: row.splits?.map((split) => ({
       employeeId: split.employeeId,
       totalPrice: split.totalPrice,

@@ -16,9 +16,10 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2 } from "lucide-react";
+import { Trash2, Calendar, Clock } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 
 export type SalonEntryFormValues = {
   salonId?: string;
@@ -32,6 +33,7 @@ export type SalonEntryFormValues = {
   notes?: string;
   isSplit: boolean;
   splitPercentage?: number;
+  createdAt?: string;
   splits: Array<{
     employeeId: string;
     totalPrice: number;
@@ -112,6 +114,23 @@ export default function SalonEntryForm({
 }: SalonEntryFormProps) {
   const { user } = useAuth();
   const isAddMode = !initialData;
+  const isAdminOrManager = user?.role === "admin" || user?.role === "manager";
+
+  // State for Late Entry date/time correction
+  const [entryDate, setEntryDate] = useState<string>("");
+  const [entryTime, setEntryTime] = useState<string>("");
+
+  useEffect(() => {
+    if (initialData?.createdAt) {
+      const dateObj = new Date(initialData.createdAt);
+      setEntryDate(formatInTimeZone(dateObj, "America/Chicago", "yyyy-MM-dd"));
+      setEntryTime(formatInTimeZone(dateObj, "America/Chicago", "HH:mm"));
+    } else {
+      const now = new Date();
+      setEntryDate(formatInTimeZone(now, "America/Chicago", "yyyy-MM-dd"));
+      setEntryTime(formatInTimeZone(now, "America/Chicago", "HH:mm"));
+    }
+  }, [initialData?.createdAt]);
 
   const [employeeValueState, setEmployeeValue] = useState<string>(
     initialData?.employeeId ?? "",
@@ -148,14 +167,19 @@ export default function SalonEntryForm({
   const [splits, setSplits] = useState<SplitEntryState[]>(
     initialData?.splits?.map((s, idx) => {
       // Calculate total from splits if actualPrice is missing or 0
-      const totalFromSplits = initialData?.splits?.reduce((acc, split) => acc + (Number(split.totalPrice) || 0), 0) || 0;
-      const baseTotal = initialData.actualPrice || totalFromSplits || actualServiceAmount || 0;
-      
-      const percentage = s.splitPercentage != null ? Number(s.splitPercentage).toFixed(2) : calculatePercentage(
-        s.totalPrice,
-        baseTotal,
-      );
-      
+      const totalFromSplits =
+        initialData?.splits?.reduce(
+          (acc, split) => acc + (Number(split.totalPrice) || 0),
+          0,
+        ) || 0;
+      const baseTotal =
+        initialData.actualPrice || totalFromSplits || actualServiceAmount || 0;
+
+      const percentage =
+        s.splitPercentage != null
+          ? Number(s.splitPercentage).toFixed(2)
+          : calculatePercentage(s.totalPrice, baseTotal);
+
       return {
         id: `split-${idx}`,
         employeeId: s.employeeId,
@@ -202,7 +226,14 @@ export default function SalonEntryForm({
 
   useEffect(() => {
     if (usersData?.data) {
-      console.log("DEBUG: Fetched users for SalonEntryForm:", usersData.data.map((u: any) => ({ name: u.fullName, status: u.status, role: u.role })));
+      console.log(
+        "DEBUG: Fetched users for SalonEntryForm:",
+        usersData.data.map((u: any) => ({
+          name: u.fullName,
+          status: u.status,
+          role: u.role,
+        })),
+      );
     }
   }, [usersData]);
 
@@ -266,13 +297,24 @@ export default function SalonEntryForm({
           const totalT = Number(tipValue) || 0;
 
           // Check if amounts actually changed
-          const totalSplitsPrice = prev.reduce((sum, s) => sum + (Number(s.totalPrice) || 0), 0);
-          const totalSplitsTips = prev.reduce((sum, s) => sum + (Number(s.tips) || 0), 0);
+          const totalSplitsPrice = prev.reduce(
+            (sum, s) => sum + (Number(s.totalPrice) || 0),
+            0,
+          );
+          const totalSplitsTips = prev.reduce(
+            (sum, s) => sum + (Number(s.tips) || 0),
+            0,
+          );
 
-          if (Math.abs(totalSplitsPrice - totalS) > 0.001 || Math.abs(totalSplitsTips - totalT) > 0.001) {
-            return prev.map(split => ({
+          if (
+            Math.abs(totalSplitsPrice - totalS) > 0.001 ||
+            Math.abs(totalSplitsTips - totalT) > 0.001
+          ) {
+            return prev.map((split) => ({
               ...split,
-              totalPrice: ((Number(split.percentage) / 100) * totalS).toFixed(2),
+              totalPrice: ((Number(split.percentage) / 100) * totalS).toFixed(
+                2,
+              ),
               tips: ((Number(split.percentage) / 100) * totalT).toFixed(2),
             }));
           }
@@ -375,6 +417,18 @@ export default function SalonEntryForm({
       .reduce((sum, s) => sum + (s.splitPercentage || 0), 0);
     const mainSplitPercentage = Math.max(0, 100 - otherSplitsPercentage);
 
+    // Combine date and time for Admin/Manager correction
+    let finalCreatedAt: string | undefined = undefined;
+    if (isAdminOrManager && entryDate && entryTime) {
+      // Create date object in Chicago time and convert to UTC ISO string
+      // NOTE: Using space instead of T to ensure date-fns-tz treats it as a floating time
+      const chicagoDateTime = `${entryDate} ${entryTime}:00`;
+      finalCreatedAt = fromZonedTime(
+        chicagoDateTime,
+        "America/Chicago",
+      ).toISOString();
+    }
+
     const values: SalonEntryFormValues = {
       salonId: salonValue,
       employeeId: employeeValue,
@@ -387,6 +441,7 @@ export default function SalonEntryForm({
       notes: notes || undefined,
       isSplit: splitService,
       splitPercentage: mainSplitPercentage,
+      createdAt: finalCreatedAt,
       splits: splitService ? formattedSplits : [],
     };
     onSubmit(values);
@@ -420,6 +475,49 @@ export default function SalonEntryForm({
         <CardContent className='pt-6'>
           <form onSubmit={handleSubmit} className='space-y-10'>
             <div className='space-y-6'>
+              {/* Date and Time Fields for Admin/Manager Edit Mode */}
+              {!isAddMode && isAdminOrManager && (
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-8 bg-pink-50/30 p-6 rounded-2xl border border-pink-100/50'>
+                  <div className='w-full'>
+                    <label className={labelClasses + " text-pink-700"}>
+                      <span className='flex items-center gap-2'>
+                        <Calendar size={16} />
+                        Entry Date <span className='text-red-500'>*</span>
+                      </span>
+                    </label>
+                    <Input
+                      type='date'
+                      value={entryDate}
+                      onChange={(e) => setEntryDate(e.target.value)}
+                      className={inputClasses + " bg-white border-pink-200"}
+                      required
+                    />
+                  </div>
+                  <div className='w-full'>
+                    <label className={labelClasses + " text-pink-700"}>
+                      <span className='flex items-center gap-2'>
+                        <Clock size={16} />
+                        Entry Time <span className='text-red-500'>*</span>
+                      </span>
+                    </label>
+                    <Input
+                      type='time'
+                      value={entryTime}
+                      onChange={(e) => setEntryTime(e.target.value)}
+                      className={inputClasses + " bg-white border-pink-200"}
+                      required
+                    />
+                  </div>
+                  <div className='md:col-span-2'>
+                    <p className='text-xs text-pink-600 font-medium italic'>
+                      * Correcting the date/time will reposition this entry
+                      chronologically in all reports and history (using Chicago
+                      Time).
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
                 <div className='w-full'>
                   <label className={labelClasses}>
@@ -773,7 +871,7 @@ export default function SalonEntryForm({
                                 type='number'
                                 step='any'
                                 min='0'
-                                className="h-10 w-full rounded-md border-gray-200 bg-white px-2 text-sm"
+                                className='h-10 w-full rounded-md border-gray-200 bg-white px-2 text-sm'
                               />
                             </td>
                             <td className='px-4 py-3'>
@@ -791,7 +889,7 @@ export default function SalonEntryForm({
                                 type='number'
                                 step='any'
                                 min='0'
-                                className="h-10 w-full rounded-md border-gray-200 bg-white px-2 text-sm"
+                                className='h-10 w-full rounded-md border-gray-200 bg-white px-2 text-sm'
                               />
                             </td>
                             <td className='px-4 py-3'>
@@ -811,7 +909,7 @@ export default function SalonEntryForm({
                                     step='any'
                                     min='0'
                                     max='100'
-                                    className="h-10 w-full rounded-md border-gray-200 bg-white px-2 text-sm pr-6"
+                                    className='h-10 w-full rounded-md border-gray-200 bg-white px-2 text-sm pr-6'
                                   />
                                   <span className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs'>
                                     %
@@ -862,7 +960,7 @@ export default function SalonEntryForm({
                       </tbody>
                     </table>
                   </div>
-                  
+
                   {splits.length === 0 && (
                     <div className='py-12 text-center text-gray-400 bg-white'>
                       No braiders added. Use the button below to start
