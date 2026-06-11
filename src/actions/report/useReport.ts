@@ -9,3 +9,10 @@ export const useWeeklyEmployeeEarningsQuery = (filters: { startDate?: string; en
     queryFn: () => reportService.getWeeklyEmployeeEarnings(filters),
   });
 };
+
+export const useSalonRevenueQuery = (filters: { startDate?: string; endDate?: string }) => {
+  return useQuery({
+    queryKey: ["report", "salon-revenue", filters],
+    queryFn: () => reportService.getSalonRevenue(filters),
+  });
+};
