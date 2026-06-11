@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
-import { Flag, FilePen, Trash2, MoreVertical, Search } from "lucide-react";
+import { Flag, FilePen, Trash2, MoreVertical, Search, Loader2 } from "lucide-react";
 import { createPortal } from "react-dom";
 import {
   useSalonEntriesQuery,
@@ -18,6 +18,7 @@ import { ManagerEditModal } from "./manager-edit-modal";
 import { ManagerCommentModal } from "./manager-comment-modal";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { useAuth } from "@/components/providers/auth-provider";
+import { HistoryWeekSelector } from "../../common/HistoryWeekSelector";
 
 type ManagerReviewEntry = SalonEntry & {
   percentage?: string;
@@ -35,6 +36,8 @@ export default function AllReviewEntries() {
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("PENDING,APPROVED,REJECTED");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -55,6 +58,8 @@ export default function AllReviewEntries() {
     limit,
     searchTerm,
     status: statusFilter,
+    startDate,
+    endDate,
   });
 
   const totalRecords = response?.meta?.total ?? 0;
@@ -135,14 +140,30 @@ export default function AllReviewEntries() {
     },
   ];
 
-  if (isLoading) return <div className='p-6 text-[#283E5C]'>Loading...</div>;
-
   return (
-    <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6'>
+    <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6 relative'>
+      {/* Floating loader to match History page */}
+      <div className={`fixed top-20 right-8 z-60 transition-opacity duration-300 ${isFetching ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-full p-2 border border-pink-100">
+           <Loader2 className="h-5 w-5 animate-spin text-[#D13C92]" />
+        </div>
+      </div>
+
       <div className='flex flex-col md:flex-row items-start md:items-center justify-between gap-4'>
         <h2 className='text-3xl font-medium text-[#283E5C]'>Review Entries</h2>
 
         <div className='flex flex-wrap items-center gap-4 w-full md:w-auto'>
+          <HistoryWeekSelector
+            startDate={startDate}
+            endDate={endDate}
+            onWeekChange={(start, end) => {
+              setStartDate(start);
+              setEndDate(end);
+              setCurrentPage(1);
+            }}
+            className="w-full md:w-64"
+          />
+
           <div className='relative w-full md:w-48'>
             <select
               value={statusFilter}
@@ -187,11 +208,11 @@ export default function AllReviewEntries() {
       </div>
 
       <div
-        className={`transition-opacity duration-300 ${isFetching && !isLoading ? "opacity-60" : "opacity-100"}`}>
+        className={`transition-opacity duration-300 ${isFetching || isLoading ? "opacity-60" : "opacity-100"}`}>
         <UniversalTable<SalonEntry>
-          data={(response?.data || []) as ManagerReviewEntry[]}
+          data={((isLoading ? [] : response?.data) || []) as ManagerReviewEntry[]}
           columns={columns}
-          emptyMessage='No entries found.'
+          emptyMessage={isLoading ? 'Loading entries...' : 'No entries found.'}
           pageSize={limit}
           showPagination={false}
           className='p-0!'
@@ -210,7 +231,7 @@ export default function AllReviewEntries() {
           <button
             type='button'
             onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-            disabled={currentPage <= 1 || isFetching}
+            disabled={currentPage <= 1 || isFetching || isLoading}
             className='h-9 rounded-md border border-[#E5E7EB] px-4 text-sm text-[#374151] transition disabled:cursor-not-allowed disabled:opacity-50'>
             Previous
           </button>
@@ -227,7 +248,7 @@ export default function AllReviewEntries() {
                 key={item}
                 type='button'
                 onClick={() => setCurrentPage(item)}
-                disabled={isFetching}
+                disabled={isFetching || isLoading}
                 className={`h-9 min-w-9 rounded-md px-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
                   currentPage === item
                     ? "bg-[#D13C92] text-white"
@@ -243,7 +264,7 @@ export default function AllReviewEntries() {
             onClick={() =>
               setCurrentPage((page) => Math.min(totalPages, page + 1))
             }
-            disabled={currentPage >= totalPages || isFetching}
+            disabled={currentPage >= totalPages || isFetching || isLoading}
             className='h-9 rounded-md border border-[#E5E7EB] px-4 text-sm text-[#374151] transition disabled:cursor-not-allowed disabled:opacity-50'>
             Next
           </button>
