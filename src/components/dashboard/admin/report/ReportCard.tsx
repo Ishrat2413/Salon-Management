@@ -102,36 +102,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
             </p>
             {/* Employee Avatars */}
             <div className='flex items-center gap-0'>
-              <div className='flex -space-x-1.5 items-center'>
-                <Image
-                  alt='Employee Avatar 1'
-                  width={22}
-                  height={22}
-                  className='w-5.5 h-5.5 rounded-full ring-[1.5px] ring-white object-cover'
-                  src='/image/Elena.svg'
-                />
-                <Image
-                  alt='Employee Avatar 2'
-                  width={22}
-                  height={22}
-                  className='w-5.5 h-5.5 rounded-full ring-[1.5px] ring-white object-cover'
-                  src='/image/Elena.svg'
-                />
-                <Image
-                  alt='Employee Avatar 3'
-                  width={22}
-                  height={22}
-                  className='w-5.5 h-5.5 rounded-full ring-[1.5px] ring-white object-cover'
-                  src='/image/Elena.svg'
-                />
-                {/* Overlap Indicator */}
-                <div className='w-5.5 h-5.5 rounded-full ring-[1.5px] ring-white bg-gray-100 flex items-center justify-center z-10'>
-                  <span className='text-[8px] font-medium text-gray-500'>
-                    +{Math.max(0, activeEmployees - 3)}
-                  </span>
-                </div>
-              </div>
-              <p className='text-[10px] font-medium text-[#A8A2A2] tracking-wide ml-2'>
+              <p className='text-[10px] font-medium text-[#A8A2A2] tracking-wide'>
                 {formatGrowth(employeesGrowth)} from {employeesPeriod}
               </p>
             </div>

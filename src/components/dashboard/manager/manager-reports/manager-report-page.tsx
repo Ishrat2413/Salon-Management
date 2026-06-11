@@ -4,6 +4,8 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Download } from "lucide-react";
+import ReportCard from "../../admin/report/ReportCard";
+import { useDashboardOverviewQuery } from "@/actions/dashboard/useDashboardOverview";
 
 const tabs = [
   {
@@ -25,14 +27,30 @@ export default function ManagerReportPage({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
+  
+  const { data: overview } = useDashboardOverviewQuery({ period: "WEEK" });
 
   const handleExport = () => {
     window.dispatchEvent(new Event('trigger-export'));
   };
 
   return (
-    <div className='min-h-screen px-4 py-4 sm:px-6 lg:px-8 lg:py-6'>
+    <div className='min-h-screen px-4 py-4 sm:px-6 lg:p-8'>
       <div className='mx-auto w-full max-w-480'>
+        {/* Dynamic Summary Cards */}
+        {overview && (
+            <div className="mb-8">
+                <ReportCard 
+                    totalRevenue={overview.metrics.weeklyEarnings}
+                    totalServices={overview.metrics.weeklyServicesDone}
+                    activeEmployees={overview.systemCounts?.employees || 0}
+                    revenuePeriod="this week"
+                    servicesPeriod="this week"
+                    employeesPeriod="this week"
+                />
+            </div>
+        )}
+
         <div className='mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'>
           <div className='border-b border-gray-200'>
             <nav
@@ -58,9 +76,9 @@ export default function ManagerReportPage({
           </div>
           <button 
             onClick={handleExport}
-            className='flex w-full items-center justify-center gap-2 rounded-lg border border-(--primary-color) bg-white px-6 py-2 transition hover:bg-gray-50 lg:w-auto'>
+            className='flex w-full items-center justify-center gap-2 rounded-lg border border-[#D13C92] bg-white px-6 py-2 transition hover:bg-gray-50 lg:w-auto'>
             <Download className='w-5 h-5' color='#D13C92' />
-            <span className='text-(--primary-color)'>Export</span>
+            <span className='text-[#D13C92]'>Export</span>
           </button>
         </div>
 
