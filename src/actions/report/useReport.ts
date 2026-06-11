@@ -16,3 +16,10 @@ export const useSalonRevenueQuery = (filters: { startDate?: string; endDate?: st
     queryFn: () => reportService.getSalonRevenue(filters),
   });
 };
+
+export const useTopServicesQuery = (filters: { startDate?: string; endDate?: string }) => {
+  return useQuery({
+    queryKey: ["report", "top-services", filters],
+    queryFn: () => reportService.getTopServices(filters),
+  });
+};

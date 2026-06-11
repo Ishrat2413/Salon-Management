@@ -17,13 +17,23 @@ export type SalonRevenueData = {
   expenses: number;
 };
 
+export type TopServiceData = {
+  name: string;
+  count: number;
+  revenue: number;
+};
+
 export const reportService = {
   getWeeklyEmployeeEarnings: async (filters: { startDate?: string; endDate?: string }) => {
-    const response = await apiClient.get<{ data: WeeklyEarningsResponse }>("/report/employee-earnings", { params: filters });
+    const response = await apiClient.get<{ data: WeeklyEarningsResponse }>("/reports/employee-earnings", { params: filters });
     return response.data.data;
   },
   getSalonRevenue: async (filters: { startDate?: string; endDate?: string }) => {
-    const response = await apiClient.get<{ data: SalonRevenueData[] }>("/report/salon-revenue", { params: filters });
+    const response = await apiClient.get<{ data: SalonRevenueData[] }>("/reports/salon-revenue", { params: filters });
+    return response.data.data;
+  },
+  getTopServices: async (filters: { startDate?: string; endDate?: string }) => {
+    const response = await apiClient.get<{ data: TopServiceData[] }>("/reports/top-services", { params: filters });
     return response.data.data;
   },
 };
