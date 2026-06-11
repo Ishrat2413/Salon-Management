@@ -26,6 +26,10 @@ export default function ManagerReportPage({
 }>) {
   const pathname = usePathname();
 
+  const handleExport = () => {
+    window.dispatchEvent(new Event('trigger-export'));
+  };
+
   return (
     <div className='min-h-screen px-4 py-4 sm:px-6 lg:px-8 lg:py-6'>
       <div className='mx-auto w-full max-w-480'>
@@ -52,7 +56,9 @@ export default function ManagerReportPage({
               ))}
             </nav>
           </div>
-          <button className='flex w-full items-center justify-center gap-2 rounded-lg border border-(--primary-color) bg-white px-6 py-2 transition hover:bg-gray-50 lg:w-auto'>
+          <button 
+            onClick={handleExport}
+            className='flex w-full items-center justify-center gap-2 rounded-lg border border-(--primary-color) bg-white px-6 py-2 transition hover:bg-gray-50 lg:w-auto'>
             <Download className='w-5 h-5' color='#D13C92' />
             <span className='text-(--primary-color)'>Export</span>
           </button>
