@@ -11,6 +11,10 @@ export interface SalonEntry extends Record<string, unknown> {
   clientName: string | null;
   serviceId: string;
   serviceName: string;
+  sizeId?: string | null;
+  sizeName?: string | null;
+  lengthId?: string | null;
+  lengthName?: string | null;
   salonId: string;
   salonName: string;
   employeeId: string;

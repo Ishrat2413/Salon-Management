@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
-import { Flag, FilePen, Trash2, MoreVertical } from "lucide-react";
+import { Flag, FilePen, Trash2, MoreVertical, Loader2 } from "lucide-react";
 import { createPortal } from "react-dom";
 import {
   useSalonEntriesQuery,
@@ -114,23 +114,27 @@ export default function ManagerReviewEntries() {
     },
   ];
 
-  if (isLoading) return <div className='p-6 text-[#283E5C]'>Loading...</div>;
-
   return (
-    <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6'>
+    <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6 relative'>
+      {/* Floating loader to match History page */}
+      <div className={`fixed top-20 right-8 z-60 transition-opacity duration-300 ${isFetching ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-full p-2 border border-pink-100">
+           <Loader2 className="h-5 w-5 animate-spin text-[#D13C92]" />
+        </div>
+      </div>
+
       <div className='flex flex-col md:flex-row items-start md:items-center justify-between gap-4'>
         <h2 className='text-3xl font-medium text-[#283E5C]'>Review Entries</h2>
-        
+
         <div className='flex items-center gap-4 w-full md:w-auto'>
-          <div className="relative w-full md:w-48">
+          <div className='relative w-full md:w-48'>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full bg-[#F3F3F5] border-transparent rounded-lg py-2 pl-4 pr-10 text-sm text-[#364153] appearance-none focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all cursor-pointer"
-            >
-              <option value="PENDING,APPROVED,REJECTED">All Status</option>
-              <option value="PENDING">Pending</option>
-              <option value="APPROVED">Approved</option>
+              className='w-full bg-[#F3F3F5] border-transparent rounded-lg py-2 pl-4 pr-10 text-sm text-[#364153] appearance-none focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all cursor-pointer'>
+              <option value='PENDING,APPROVED,REJECTED'>All Status</option>
+              <option value='PENDING'>Pending</option>
+              <option value='APPROVED'>Approved</option>
             </select>
             <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
               <svg
@@ -139,18 +143,23 @@ export default function ManagerReviewEntries() {
                 stroke='currentColor'
                 strokeWidth='2'
                 viewBox='0 0 24 24'>
-                <path d='M19 9l-7 7-7-7' strokeLinecap='round' strokeLinejoin='round' />
+                <path
+                  d='M19 9l-7 7-7-7'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                />
               </svg>
             </div>
           </div>
         </div>
       </div>
 
-      <div className={`transition-opacity duration-300 ${isFetching && !isLoading ? 'opacity-60' : 'opacity-100'}`}>
+      <div
+        className={`transition-opacity duration-300 ${isFetching || isLoading ? "opacity-60" : "opacity-100"}`}>
         <UniversalTable<SalonEntry>
-          data={(response?.data || []) as ManagerReviewEntry[]}
+          data={((isLoading ? [] : response?.data) || []) as ManagerReviewEntry[]}
           columns={columns}
-          emptyMessage='No entries found.'
+          emptyMessage={isLoading ? 'Loading entries...' : 'No entries found.'}
           showPagination={false}
           className='p-0!'
           rowStyle={(row) =>

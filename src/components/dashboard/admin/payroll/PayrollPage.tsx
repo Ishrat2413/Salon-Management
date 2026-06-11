@@ -8,6 +8,8 @@ import { useUsersQuery } from "@/actions/admin/useUsers";
 import { usePayrollQuery } from "@/actions/payroll/usePayroll";
 import type { PayrollQueryParams } from "@/actions/payroll/payroll.types";
 import PayrollCard from "./PayrollCard";
+import { Loader2 } from "lucide-react";
+import { HistoryWeekSelector } from "../../common/HistoryWeekSelector";
 
 const PayrollPage = () => {
   const [searchInput, setSearchInput] = useState("");
@@ -79,7 +81,8 @@ const PayrollPage = () => {
     );
   }, [payrollData]);
 
-  const isLoading = payrollQuery.isLoading || payrollQuery.isFetching;
+  const isLoading = payrollQuery.isLoading || usersQuery.isLoading;
+  const isFetching = payrollQuery.isFetching;
 
   const hasActiveFilters = Boolean(
     searchInput.trim() || startDate !== defaultStartDate || endDate !== defaultEndDate || employeeId,
@@ -98,7 +101,29 @@ const PayrollPage = () => {
     "Failed to load payroll data.";
 
   return (
-    <div className='w-full space-y-6'>
+    <div className='w-full space-y-6 relative'>
+      {/* Floating loader to match History page */}
+      <div className={`fixed top-20 right-8 z-60 transition-opacity duration-300 ${isFetching ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-full p-2 border border-pink-100">
+           <Loader2 className="h-5 w-5 animate-spin text-[#D13C92]" />
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+          Quick Week Selection
+        </h3>
+        <HistoryWeekSelector
+          startDate={startDate}
+          endDate={endDate}
+          onWeekChange={(start, end) => {
+            setStartDate(start);
+            setEndDate(end);
+          }}
+          className="w-full md:w-72"
+        />
+      </div>
+
       <PayrollFilterBar
         searchTerm={searchInput}
         startDate={startDate}
@@ -125,23 +150,25 @@ const PayrollPage = () => {
           </button>
         </div>
       ) : (
-        <PayrollAccordionTable
-          data={payrollData}
-          isLoading={isLoading || usersQuery.isLoading}
-          emptyMessage={
-            hasActiveFilters
-              ? "No payroll entries match the current filters."
-              : "No payroll entries available."
-          }
-          startDate={startDate}
-          endDate={endDate}
-        />
+        <div className={`transition-opacity duration-300 ${isFetching && !isLoading ? "opacity-60" : "opacity-100"}`}>
+          <PayrollAccordionTable
+            data={payrollData}
+            isLoading={isLoading}
+            emptyMessage={
+              hasActiveFilters
+                ? "No payroll entries match the current filters."
+                : "No payroll entries available."
+            }
+            startDate={startDate}
+            endDate={endDate}
+          />
+        </div>
       )}
 
       <div>
         <PayrollCard
           summary={payrollSummary}
-          isLoading={isLoading || usersQuery.isLoading}
+          isLoading={isLoading}
         />
       </div>
     </div>

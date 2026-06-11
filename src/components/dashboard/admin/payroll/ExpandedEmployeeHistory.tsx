@@ -85,7 +85,7 @@ export function ExpandedEmployeeHistory({
                     </div>
                   </td>
                   <td className="py-3 px-4 font-medium text-gray-700">{entry.salonName}</td>
-                  <td className="py-3 px-4 font-medium text-gray-900">
+                  <td className='py-3 px-4 font-medium text-gray-900'>
                     {entry.serviceName}
                   </td>
                   <td className="py-3 px-4 text-gray-900 font-medium">

@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
-import { Flag, FilePen, Trash2, MoreVertical, Search } from "lucide-react";
+import { Flag, FilePen, Trash2, MoreVertical, Search, Loader2 } from "lucide-react";
 import { createPortal } from "react-dom";
 import {
   useSalonEntriesQuery,
@@ -19,14 +18,14 @@ import { ManagerEditModal } from "./manager-edit-modal";
 import { ManagerCommentModal } from "./manager-comment-modal";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { useAuth } from "@/components/providers/auth-provider";
+import { HistoryWeekSelector } from "../../common/HistoryWeekSelector";
 
 type ManagerReviewEntry = SalonEntry & {
   percentage?: string;
 };
 
 export default function AllReviewEntries() {
-  const router = useRouter();
-  const limit = 1000;
+  const limit = 10;
   const { user } = useAuth();
   const canDelete =
     user?.role === "admin" ||
@@ -37,21 +36,37 @@ export default function AllReviewEntries() {
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("PENDING,APPROVED,REJECTED");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
       setSearchTerm(searchInput.trim());
+      setCurrentPage(1);
     }, 300);
 
     return () => window.clearTimeout(timeoutId);
   }, [searchInput]);
 
-  const { data: response, isLoading, isFetching } = useSalonEntriesQuery({
-    page: 1,
+  const {
+    data: response,
+    isLoading,
+    isFetching,
+  } = useSalonEntriesQuery({
+    page: currentPage,
     limit,
     searchTerm,
     status: statusFilter,
+    startDate,
+    endDate,
   });
+
+  const totalRecords = response?.meta?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / limit));
+  const paginationItems = getPaginationItems(currentPage, totalPages);
+  const pageStart = totalRecords === 0 ? 0 : (currentPage - 1) * limit + 1;
+  const pageEnd = Math.min(currentPage * limit, totalRecords);
 
   const columns: ColumnDef<ManagerReviewEntry>[] = [
     { key: "employeeName", header: "Employee", width: "15%", sortable: true },
@@ -125,23 +140,41 @@ export default function AllReviewEntries() {
     },
   ];
 
-  if (isLoading) return <div className='p-6 text-[#283E5C]'>Loading...</div>;
-
   return (
-    <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6'>
+    <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6 relative'>
+      {/* Floating loader to match History page */}
+      <div className={`fixed top-20 right-8 z-60 transition-opacity duration-300 ${isFetching ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-full p-2 border border-pink-100">
+           <Loader2 className="h-5 w-5 animate-spin text-[#D13C92]" />
+        </div>
+      </div>
+
       <div className='flex flex-col md:flex-row items-start md:items-center justify-between gap-4'>
         <h2 className='text-3xl font-medium text-[#283E5C]'>Review Entries</h2>
-        
+
         <div className='flex flex-wrap items-center gap-4 w-full md:w-auto'>
-          <div className="relative w-full md:w-48">
+          <HistoryWeekSelector
+            startDate={startDate}
+            endDate={endDate}
+            onWeekChange={(start, end) => {
+              setStartDate(start);
+              setEndDate(end);
+              setCurrentPage(1);
+            }}
+            className="w-full md:w-64"
+          />
+
+          <div className='relative w-full md:w-48'>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full bg-[#F3F3F5] border-transparent rounded-lg py-2 pl-4 pr-10 text-sm text-[#364153] appearance-none focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all cursor-pointer"
-            >
-              <option value="PENDING,APPROVED,REJECTED">All Status</option>
-              <option value="PENDING">Pending</option>
-              <option value="APPROVED">Approved</option>
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className='w-full bg-[#F3F3F5] border-transparent rounded-lg py-2 pl-4 pr-10 text-sm text-[#364153] appearance-none focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all cursor-pointer'>
+              <option value='PENDING,APPROVED,REJECTED'>All Status</option>
+              <option value='PENDING'>Pending</option>
+              <option value='APPROVED'>Approved</option>
             </select>
             <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
               <svg
@@ -150,7 +183,11 @@ export default function AllReviewEntries() {
                 stroke='currentColor'
                 strokeWidth='2'
                 viewBox='0 0 24 24'>
-                <path d='M19 9l-7 7-7-7' strokeLinecap='round' strokeLinejoin='round' />
+                <path
+                  d='M19 9l-7 7-7-7'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                />
               </svg>
             </div>
           </div>
@@ -161,7 +198,7 @@ export default function AllReviewEntries() {
             </div>
             <input
               className='block w-full pl-9 pr-3 py-2 bg-[#F3F3F5] border-transparent rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-[#364153] placeholder-[#334155] sm:text-sm'
-              placeholder="Search by name, service, salon..."
+              placeholder='Search by name, service, salon...'
               type='text'
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
@@ -170,19 +207,90 @@ export default function AllReviewEntries() {
         </div>
       </div>
 
-      <div className={`transition-opacity duration-300 ${isFetching && !isLoading ? 'opacity-60' : 'opacity-100'}`}>
+      <div
+        className={`transition-opacity duration-300 ${isFetching || isLoading ? "opacity-60" : "opacity-100"}`}>
         <UniversalTable<SalonEntry>
-          data={(response?.data || []) as ManagerReviewEntry[]}
+          data={((isLoading ? [] : response?.data) || []) as ManagerReviewEntry[]}
           columns={columns}
-          emptyMessage='No entries found.'
+          emptyMessage={isLoading ? 'Loading entries...' : 'No entries found.'}
+          pageSize={limit}
+          showPagination={false}
           className='p-0!'
           rowStyle={(row) =>
             (row as ManagerReviewEntry) ? { backgroundColor: "#FFFFFF" } : {}
           }
         />
       </div>
+
+      <div className='flex flex-col gap-3 border-t border-[#f5f4fa] pt-4 text-sm text-[#6B7280] sm:flex-row sm:items-center sm:justify-between'>
+        <span>
+          Showing {pageStart} to {pageEnd} of {totalRecords} records
+        </span>
+
+        <div className='flex flex-wrap items-center gap-2'>
+          <button
+            type='button'
+            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+            disabled={currentPage <= 1 || isFetching || isLoading}
+            className='h-9 rounded-md border border-[#E5E7EB] px-4 text-sm text-[#374151] transition disabled:cursor-not-allowed disabled:opacity-50'>
+            Previous
+          </button>
+
+          {paginationItems.map((item, index) =>
+            item === "..." ? (
+              <span
+                key={`ellipsis-${index}`}
+                className='flex h-9 min-w-9 items-center justify-center px-1 text-[#9CA3AF]'>
+                ...
+              </span>
+            ) : (
+              <button
+                key={item}
+                type='button'
+                onClick={() => setCurrentPage(item)}
+                disabled={isFetching || isLoading}
+                className={`h-9 min-w-9 rounded-md px-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                  currentPage === item
+                    ? "bg-[#D13C92] text-white"
+                    : "border border-[#E5E7EB] text-[#374151]"
+                }`}>
+                {item}
+              </button>
+            ),
+          )}
+
+          <button
+            type='button'
+            onClick={() =>
+              setCurrentPage((page) => Math.min(totalPages, page + 1))
+            }
+            disabled={currentPage >= totalPages || isFetching || isLoading}
+            className='h-9 rounded-md border border-[#E5E7EB] px-4 text-sm text-[#374151] transition disabled:cursor-not-allowed disabled:opacity-50'>
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
+}
+
+function getPaginationItems(
+  currentPage: number,
+  totalPages: number,
+): (number | "...")[] {
+  return Array.from({ length: totalPages }, (_, index) => index + 1)
+    .filter(
+      (page) =>
+        page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1,
+    )
+    .reduce<(number | "...")[]>((items, page, index, pages) => {
+      if (index > 0 && page - pages[index - 1] > 1) {
+        items.push("...");
+      }
+
+      items.push(page);
+      return items;
+    }, []);
 }
 
 function SalonEntryActions({
@@ -192,7 +300,6 @@ function SalonEntryActions({
   row: SalonEntry;
   canDelete?: boolean;
 }) {
-  const router = useRouter();
   const { mutateAsync: updateStatus, isPending: isUpdatingStatus } =
     useUpdateSalonEntryStatusMutation();
   const { mutateAsync: updateEntry, isPending: isUpdatingEntry } =
