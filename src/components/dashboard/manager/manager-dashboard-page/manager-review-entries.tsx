@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
-import { Flag, FilePen, Trash2, MoreVertical } from "lucide-react";
+import { Flag, FilePen, Trash2, MoreVertical, Loader2 } from "lucide-react";
 import { createPortal } from "react-dom";
 import {
   useSalonEntriesQuery,
@@ -114,10 +114,15 @@ export default function ManagerReviewEntries() {
     },
   ];
 
-  if (isLoading) return <div className='p-6 text-[#283E5C]'>Loading...</div>;
-
   return (
-    <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6'>
+    <div className='flex flex-col gap-6 p-6 bg-white rounded-[12px] mt-6 relative'>
+      {/* Floating loader to match History page */}
+      <div className={`fixed top-20 right-8 z-60 transition-opacity duration-300 ${isFetching ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-full p-2 border border-pink-100">
+           <Loader2 className="h-5 w-5 animate-spin text-[#D13C92]" />
+        </div>
+      </div>
+
       <div className='flex flex-col md:flex-row items-start md:items-center justify-between gap-4'>
         <h2 className='text-3xl font-medium text-[#283E5C]'>Review Entries</h2>
 
@@ -150,11 +155,11 @@ export default function ManagerReviewEntries() {
       </div>
 
       <div
-        className={`transition-opacity duration-300 ${isFetching && !isLoading ? "opacity-60" : "opacity-100"}`}>
+        className={`transition-opacity duration-300 ${isFetching || isLoading ? "opacity-60" : "opacity-100"}`}>
         <UniversalTable<SalonEntry>
-          data={(response?.data || []) as ManagerReviewEntry[]}
+          data={((isLoading ? [] : response?.data) || []) as ManagerReviewEntry[]}
           columns={columns}
-          emptyMessage='No entries found.'
+          emptyMessage={isLoading ? 'Loading entries...' : 'No entries found.'}
           showPagination={false}
           className='p-0!'
           rowStyle={(row) =>
