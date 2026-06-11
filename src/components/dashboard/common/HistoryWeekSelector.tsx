@@ -34,31 +34,38 @@ export function HistoryWeekSelector({
   return (
     <div className={`relative ${className}`}>
       <select
-        value={!startDate && !endDate ? "ALL" : (isPresetMatch ? selectedWeekValue : "")}
+        value={
+          !startDate && !endDate
+            ? "ALL"
+            : isPresetMatch
+              ? selectedWeekValue
+              : ""
+        }
         onChange={handleWeekChange}
-        className="w-full bg-[#F3F3F5] border-transparent rounded-lg py-2 pl-4 pr-10 text-sm text-[#364153] appearance-none focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all cursor-pointer"
-      >
-        <option value="" disabled>
+        className='w-full bg-[#F3F3F5] border-transparent rounded-lg py-2 pl-4 pr-10 text-sm text-[#364153] appearance-none focus:ring-2 focus:ring-pink-500 focus:outline-none transition-all cursor-pointer'>
+        <option value='' disabled>
           {startDate || endDate ? "Custom Date Range" : "Select a Week..."}
         </option>
-        {showOverall && <option value="ALL">Overall</option>}
+        {showOverall && <option value='ALL'>Overall</option>}
         {recentWeeks.map((week) => (
           <option key={week.value} value={week.value}>
             {week.label}
           </option>
         ))}
       </select>
-...
 
-      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+      <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
         <svg
-          className="h-4 w-4 text-[#a0aec0]"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-        >
-          <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
+          className='h-4 w-4 text-[#a0aec0]'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+          viewBox='0 0 24 24'>
+          <path
+            d='M19 9l-7 7-7-7'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+          />
         </svg>
       </div>
     </div>
