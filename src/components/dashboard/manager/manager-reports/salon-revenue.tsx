@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  ResponsiveContainer,
 } from "recharts";
 import { Loader2 } from "lucide-react";
 import { format, startOfWeek, endOfWeek } from "date-fns";
@@ -114,42 +115,41 @@ export default function SalonRevenuePage() {
         </p>
       ) : (
         <div
-          style={{ width: "100%", height: 300 }}
+          style={{ width: "100%", height: 400 }}
           className={`transition-opacity duration-300 ${isFetching ? "opacity-60" : "opacity-100"}`}>
-          <LineChart
-            key={JSON.stringify(chartData)}
-            width={600}
-            height={300}
-            data={chartData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
-            <XAxis dataKey='day' />
-            <YAxis />
-            <Tooltip
-              formatter={(value) => [`$${value}`, "Amount"]}
-              contentStyle={{
-                borderRadius: "8px",
-                border: "1px solid #F1EAE3",
-              }}
-            />
-            <Legend />
-            <Line
-              type='natural'
-              dataKey='revenue'
-              stroke='#4ECDC4'
-              strokeWidth={3}
-              dot={{ fill: "#4ECDC4", r: 5 }}
-              name='Revenue'
-            />
-            <Line
-              type='natural'
-              dataKey='expenses'
-              stroke='#FFB74D'
-              strokeWidth={3}
-              dot={{ fill: "#FFB74D", r: 5 }}
-              name='Expenses'
-            />
-          </LineChart>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
+              <XAxis dataKey='day' />
+              <YAxis />
+              <Tooltip
+                formatter={(value) => [`$${value}`, "Amount"]}
+                contentStyle={{
+                  borderRadius: "8px",
+                  border: "1px solid #F1EAE3",
+                }}
+              />
+              <Legend />
+              <Line
+                type='natural'
+                dataKey='revenue'
+                stroke='#4ECDC4'
+                strokeWidth={3}
+                dot={{ fill: "#4ECDC4", r: 5 }}
+                name='Revenue'
+              />
+              <Line
+                type='natural'
+                dataKey='expenses'
+                stroke='#FFB74D'
+                strokeWidth={3}
+                dot={{ fill: "#FFB74D", r: 5 }}
+                name='Expenses'
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       )}
     </div>
