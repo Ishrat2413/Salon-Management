@@ -2,12 +2,12 @@
 
 import React from "react";
 import { getRecentWeeks } from "./week-utils";
-
 interface HistoryWeekSelectorProps {
   startDate?: string;
   endDate?: string;
   onWeekChange: (start: string, end: string) => void;
   className?: string;
+  showOverall?: boolean;
 }
 
 export function HistoryWeekSelector({
@@ -15,6 +15,7 @@ export function HistoryWeekSelector({
   endDate,
   onWeekChange,
   className = "",
+  showOverall = true,
 }: HistoryWeekSelectorProps) {
   const recentWeeks = getRecentWeeks();
   const selectedWeekValue = `${startDate}_${endDate}`;
@@ -40,13 +41,15 @@ export function HistoryWeekSelector({
         <option value="" disabled>
           {startDate || endDate ? "Custom Date Range" : "Select a Week..."}
         </option>
-        <option value="ALL">Overall</option>
+        {showOverall && <option value="ALL">Overall</option>}
         {recentWeeks.map((week) => (
           <option key={week.value} value={week.value}>
             {week.label}
           </option>
         ))}
       </select>
+...
+
       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
         <svg
           className="h-4 w-4 text-[#a0aec0]"
